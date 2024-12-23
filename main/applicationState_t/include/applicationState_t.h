@@ -6,4 +6,5 @@
 typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
+    Uint64 totalFrameCount;
 } applicationState_t;

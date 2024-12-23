@@ -14,5 +14,7 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
 
     SDL_RenderPresent( l_applicationState->renderer );
 
+    ( l_applicationState->totalFrameCount )++;
+
     return ( l_returnValue );
 }
