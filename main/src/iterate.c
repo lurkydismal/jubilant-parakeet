@@ -1,5 +1,6 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 
 #include "applicationState_t.h"
@@ -15,6 +16,8 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
     SDL_RenderPresent( l_applicationState->renderer );
 
     ( l_applicationState->totalFrameCount )++;
+
+    SDL_Delay( 16 );
 
     return ( l_returnValue );
 }
