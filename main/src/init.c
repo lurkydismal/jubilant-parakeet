@@ -1,3 +1,4 @@
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
@@ -23,6 +24,20 @@ Uint32 SDLCALL FPSCountAndShow( void* _totalFrameCount,
     return ( _interval );
 }
 
+void SDLCALL iterateIntervalHintCallback( void* _iterateSleepTime,
+                                          const char* _hintName,
+                                          const char* _hintOldValue,
+                                          const char* _hintNewValue ) {
+    if ( _hintNewValue ) {
+        Uint16* l_iterateSleepTime = ( Uint16* )_iterateSleepTime;
+
+        const Uint16 l_oneSecond = 1000;
+        const Uint16 l_hintNewValue = SDL_atoi( _hintNewValue );
+
+        *l_iterateSleepTime = ( l_oneSecond / l_hintNewValue );
+    }
+}
+
 SDL_AppResult SDL_AppInit( void** _applicationState,
                            int _arcgumentCount,
                            char** _argumentVector ) {
@@ -38,25 +53,43 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
         applicationState_t l_applicationState;
 
         l_applicationState.totalFrameCount = 0;
+        l_applicationState.iterateSleepTime = ( 1000 / 60 );
 
         SDL_CreateWindowAndRenderer( "fgengine", 640, 480, 0,
                                      &( l_applicationState.window ),
                                      &( l_applicationState.renderer ) );
 
-        *_applicationState = SDL_malloc( sizeof( applicationState_t ) );
+        {
+            *_applicationState = SDL_malloc( sizeof( applicationState_t ) );
 
-        SDL_memcpy( *_applicationState, &l_applicationState,
-                    sizeof( applicationState_t ) );
+            SDL_memcpy( *_applicationState, &l_applicationState,
+                        sizeof( applicationState_t ) );
+        }
     }
 
-    // Register FPS counter timer
     {
-        applicationState_t* l_applicationState =
-            ( applicationState_t* )( *_applicationState );
+        // Register iterate loop rate hint callback
+        {
+            applicationState_t* l_applicationState =
+                ( applicationState_t* )( *_applicationState );
 
-        size_t* l_totalFrameCount = &( l_applicationState->totalFrameCount );
+            Uint16* l_iterateSleepTime =
+                &( l_applicationState->iterateSleepTime );
 
-        SDL_AddTimer( 1000, FPSCountAndShow, l_totalFrameCount );
+            SDL_AddHintCallback( SDL_HINT_MAIN_CALLBACK_RATE,
+                                 iterateIntervalHintCallback,
+                                 l_iterateSleepTime );
+        }
+
+        // Register FPS counter timer
+        {
+            applicationState_t* l_applicationState =
+                ( applicationState_t* )( *_applicationState );
+
+            size_t* l_totalFrameCount = &( l_applicationState->totalFrameCount );
+
+            SDL_AddTimer( 1000, FPSCountAndShow, l_totalFrameCount );
+        }
     }
 
     return ( l_returnValue );

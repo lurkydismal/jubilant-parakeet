@@ -1,8 +1,8 @@
 SRCDIR                = .
 SUBDIRS               =
 DLLS                  =
-LIBS                  =
-EXES                  = libmain.a
+LIBS                  = libstate_t.a
+EXES                  =
 
 
 
@@ -12,41 +12,41 @@ CEXTRA                =
 CXXEXTRA              =
 RCEXTRA               =
 DEFINES               =
-INCLUDE_PATH          = -I applicationState_t/include
+INCLUDE_PATH          = -I include \
+			-I ../stdfunc/include \
+			-I ../animation_t/include \
+			-I ../boxes_t/include \
+			-I ../color_t/include
 DLL_PATH              =
 DLL_IMPORTS           =
 LIBRARY_PATH          =
 LIBRARIES             = -lSDL3
 
 
-### libmain.a sources and settings
+### libstate_t.a sources and settings
 
-libmain_a_MODULE       = libmain.a
-libmain_a_C_SRCS       = src/main.c \
-			src/init.c \
-			src/iterate.c \
-			src/event.c \
-			src/quit.c
-libmain_a_CXX_SRCS     =
-libmain_a_RC_SRCS      =
-libmain_a_LDFLAGS      =
-libmain_a_ARFLAGS      = rc
-libmain_a_DLL_PATH     =
-libmain_a_DLLS         =
-libmain_a_LIBRARY_PATH =
-libmain_a_LIBRARIES    =
+libstate_t_a_MODULE       = libstate_t.a
+libstate_t_a_C_SRCS       = src/state_t.c
+libstate_t_a_CXX_SRCS     =
+libstate_t_a_RC_SRCS      =
+libstate_t_a_LDFLAGS      =
+libstate_t_a_ARFLAGS      = rc
+libstate_t_a_DLL_PATH     =
+libstate_t_a_DLLS         =
+libstate_t_a_LIBRARY_PATH =
+libstate_t_a_LIBRARIES    =
 
-libmain_a_OBJS         = $(libmain_a_C_SRCS:.c=.o) \
-			$(libmain_a_CXX_SRCS:.cpp=.o) \
-			$(libmain_a_RC_SRCS:.rc=.res)
+libstate_t_a_OBJS         = $(libstate_t_a_C_SRCS:.c=.o) \
+			$(libstate_t_a_CXX_SRCS:.cpp=.o) \
+			$(libstate_t_a_RC_SRCS:.rc=.res)
 
 
 
 ### Global source lists
 
-C_SRCS                = $(libmain_a_C_SRCS)
-CXX_SRCS              = $(libmain_a_CXX_SRCS)
-RC_SRCS               = $(libmain_a_RC_SRCS)
+C_SRCS                = $(libstate_t_a_C_SRCS)
+CXX_SRCS              = $(libstate_t_a_CXX_SRCS)
+RC_SRCS               = $(libstate_t_a_RC_SRCS)
 
 
 ### Tools
@@ -103,7 +103,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 ### Target specific build rules
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
-$(libmain_a_MODULE): $(libmain_a_OBJS)
-	$(AR) $(libmain_a_ARFLAGS) $@ $(libmain_a_OBJS)
+$(libstate_t_a_MODULE): $(libstate_t_a_OBJS)
+	$(AR) $(libstate_t_a_ARFLAGS) $@ $(libstate_t_a_OBJS)
 
 

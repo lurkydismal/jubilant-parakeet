@@ -17,7 +17,7 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
 
     ( l_applicationState->totalFrameCount )++;
 
-    SDL_Delay( 16 );
+    SDL_Delay( l_applicationState->iterateSleepTime );
 
     return ( l_returnValue );
 }

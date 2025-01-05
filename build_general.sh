@@ -2,7 +2,6 @@
 TARGET_DIRECTORY=$1
 
 source "$SCRIPT_DIRECTORY/config.sh" && \
-clear && \
     cd $TARGET_DIRECTORY && \
     make clean && \
     make -j $(( `nproc` - 1 )) && \

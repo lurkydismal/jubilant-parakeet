@@ -1,8 +1,8 @@
 SRCDIR                = .
 SUBDIRS               =
 DLLS                  =
-LIBS                  =
-EXES                  = libmain.a
+LIBS                  = libcolor_t.a
+EXES                  =
 
 
 
@@ -12,41 +12,38 @@ CEXTRA                =
 CXXEXTRA              =
 RCEXTRA               =
 DEFINES               =
-INCLUDE_PATH          = -I applicationState_t/include
+INCLUDE_PATH          = -I include \
+			-I ../stdfunc/include
 DLL_PATH              =
 DLL_IMPORTS           =
 LIBRARY_PATH          =
 LIBRARIES             = -lSDL3
 
 
-### libmain.a sources and settings
+### libcolor_t.a sources and settings
 
-libmain_a_MODULE       = libmain.a
-libmain_a_C_SRCS       = src/main.c \
-			src/init.c \
-			src/iterate.c \
-			src/event.c \
-			src/quit.c
-libmain_a_CXX_SRCS     =
-libmain_a_RC_SRCS      =
-libmain_a_LDFLAGS      =
-libmain_a_ARFLAGS      = rc
-libmain_a_DLL_PATH     =
-libmain_a_DLLS         =
-libmain_a_LIBRARY_PATH =
-libmain_a_LIBRARIES    =
+libcolor_t_a_MODULE       = libcolor_t.a
+libcolor_t_a_C_SRCS       = src/color_t.c
+libcolor_t_a_CXX_SRCS     =
+libcolor_t_a_RC_SRCS      =
+libcolor_t_a_LDFLAGS      =
+libcolor_t_a_ARFLAGS      = rc
+libcolor_t_a_DLL_PATH     =
+libcolor_t_a_DLLS         =
+libcolor_t_a_LIBRARY_PATH =
+libcolor_t_a_LIBRARIES    =
 
-libmain_a_OBJS         = $(libmain_a_C_SRCS:.c=.o) \
-			$(libmain_a_CXX_SRCS:.cpp=.o) \
-			$(libmain_a_RC_SRCS:.rc=.res)
+libcolor_t_a_OBJS         = $(libcolor_t_a_C_SRCS:.c=.o) \
+			$(libcolor_t_a_CXX_SRCS:.cpp=.o) \
+			$(libcolor_t_a_RC_SRCS:.rc=.res)
 
 
 
 ### Global source lists
 
-C_SRCS                = $(libmain_a_C_SRCS)
-CXX_SRCS              = $(libmain_a_CXX_SRCS)
-RC_SRCS               = $(libmain_a_RC_SRCS)
+C_SRCS                = $(libcolor_t_a_C_SRCS)
+CXX_SRCS              = $(libcolor_t_a_CXX_SRCS)
+RC_SRCS               = $(libcolor_t_a_RC_SRCS)
 
 
 ### Tools
@@ -103,7 +100,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 ### Target specific build rules
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
-$(libmain_a_MODULE): $(libmain_a_OBJS)
-	$(AR) $(libmain_a_ARFLAGS) $@ $(libmain_a_OBJS)
+$(libcolor_t_a_MODULE): $(libcolor_t_a_OBJS)
+	$(AR) $(libcolor_t_a_ARFLAGS) $@ $(libcolor_t_a_OBJS)
 
 

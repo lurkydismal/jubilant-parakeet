@@ -7,4 +7,5 @@ typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
     size_t totalFrameCount;
+    Uint16 iterateSleepTime;
 } applicationState_t;
