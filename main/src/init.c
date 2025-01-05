@@ -9,11 +9,11 @@
 Uint32 SDLCALL FPSCountAndShow( void* _totalFrameCount,
                                 SDL_TimerID _timerId,
                                 Uint32 _interval ) {
-    static Uint64 l_previousTotalFrameCount = 0;
+    static size_t l_previousTotalFrameCount = 0;
 
-    Uint64 l_currentTotalFrameCount = *( ( Uint64* )( _totalFrameCount ) );
+    size_t l_currentTotalFrameCount = *( ( size_t* )( _totalFrameCount ) );
 
-    Uint64 l_framesElapsed =
+    size_t l_framesElapsed =
         ( l_currentTotalFrameCount - l_previousTotalFrameCount );
 
     SDL_Log( "FPS: %u\n", l_framesElapsed );
@@ -54,7 +54,7 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
         applicationState_t* l_applicationState =
             ( applicationState_t* )( *_applicationState );
 
-        Uint64* l_totalFrameCount = &( l_applicationState->totalFrameCount );
+        size_t* l_totalFrameCount = &( l_applicationState->totalFrameCount );
 
         SDL_AddTimer( 1000, FPSCountAndShow, l_totalFrameCount );
     }
