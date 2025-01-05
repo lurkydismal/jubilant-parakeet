@@ -52,7 +52,7 @@ void state_t$step( state_t* _state, bool _canLoop ) {
     boxes_t$step( &( _state->boxes ), _canLoop );
 }
 
-void state_t$render( state_t* _state,
+void state_t$render( const state_t* _state,
                      const SDL_FRect* _targetRectanble,
                      bool _doDrawBoxes ) {
     animation_t$render( _state->renderer, &( _state->animation ),
