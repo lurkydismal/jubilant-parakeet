@@ -1,19 +1,21 @@
 SRCDIR                = .
 SUBDIRS               =
 DLLS                  =
-LIBS                  = libanimation_t.a
+LIBS                  = libobject_t.a
 EXES                  =
 
 
 
 ### Common settings
 
-CEXTRA                =
+CEXTRA                = -g
 CXXEXTRA              =
 RCEXTRA               =
 DEFINES               =
 INCLUDE_PATH          = -I include \
 			-I ../stdfunc/include \
+			-I ../state_t/include \
+			-I ../animation_t/include \
 			-I ../boxes_t/include \
 			-I ../color_t/include
 DLL_PATH              =
@@ -22,30 +24,30 @@ LIBRARY_PATH          =
 LIBRARIES             = -lSDL3
 
 
-### libanimation_t.a sources and settings
+### libobject_t.a sources and settings
 
-libanimation_t_a_MODULE       = libanimation_t.a
-libanimation_t_a_C_SRCS       = src/animation_t.c
-libanimation_t_a_CXX_SRCS     =
-libanimation_t_a_RC_SRCS      =
-libanimation_t_a_LDFLAGS      =
-libanimation_t_a_ARFLAGS      = rc
-libanimation_t_a_DLL_PATH     =
-libanimation_t_a_DLLS         =
-libanimation_t_a_LIBRARY_PATH =
-libanimation_t_a_LIBRARIES    =
+libobject_t_a_MODULE       = libobject_t.a
+libobject_t_a_C_SRCS       = src/object_t.c
+libobject_t_a_CXX_SRCS     =
+libobject_t_a_RC_SRCS      =
+libobject_t_a_LDFLAGS      =
+libobject_t_a_ARFLAGS      = rc
+libobject_t_a_DLL_PATH     =
+libobject_t_a_DLLS         =
+libobject_t_a_LIBRARY_PATH =
+libobject_t_a_LIBRARIES    =
 
-libanimation_t_a_OBJS         = $(libanimation_t_a_C_SRCS:.c=.o) \
-			$(libanimation_t_a_CXX_SRCS:.cpp=.o) \
-			$(libanimation_t_a_RC_SRCS:.rc=.res)
+libobject_t_a_OBJS         = $(libobject_t_a_C_SRCS:.c=.o) \
+			$(libobject_t_a_CXX_SRCS:.cpp=.o) \
+			$(libobject_t_a_RC_SRCS:.rc=.res)
 
 
 
 ### Global source lists
 
-C_SRCS                = $(libanimation_t_a_C_SRCS)
-CXX_SRCS              = $(libanimation_t_a_CXX_SRCS)
-RC_SRCS               = $(libanimation_t_a_RC_SRCS)
+C_SRCS                = $(libobject_t_a_C_SRCS)
+CXX_SRCS              = $(libobject_t_a_CXX_SRCS)
+RC_SRCS               = $(libobject_t_a_RC_SRCS)
 
 
 ### Tools
@@ -102,7 +104,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 ### Target specific build rules
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
-$(libanimation_t_a_MODULE): $(libanimation_t_a_OBJS)
-	$(AR) $(libanimation_t_a_ARFLAGS) $@ $(libanimation_t_a_OBJS)
+$(libobject_t_a_MODULE): $(libobject_t_a_OBJS)
+	$(AR) $(libobject_t_a_ARFLAGS) $@ $(libobject_t_a_OBJS)
 
 

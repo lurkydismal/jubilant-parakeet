@@ -86,7 +86,8 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
             applicationState_t* l_applicationState =
                 ( applicationState_t* )( *_applicationState );
 
-            size_t* l_totalFrameCount = &( l_applicationState->totalFrameCount );
+            size_t* l_totalFrameCount =
+                &( l_applicationState->totalFrameCount );
 
             SDL_AddTimer( 1000, FPSCountAndShow, l_totalFrameCount );
         }

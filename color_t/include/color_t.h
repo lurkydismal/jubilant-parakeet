@@ -22,4 +22,4 @@ typedef struct {
     Uint8 alpha;
 } color_t;
 
-color_t color_t$getFromString( const char* _string, Uint16 _base );
+color_t color_t$fromString( const char* _string, Uint16 _base );

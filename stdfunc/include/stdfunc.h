@@ -59,16 +59,16 @@ typedef long int ssize_t;
     for ( _type _element = arrayFirstElementPointer( _array ); \
           _element != ( arrayLastElementPointer( _array ) + 1 ); _element++ )
 
-#define FREE_ARRAY( _type, _array, _elementToFree ) \
-    FOR_ARRAY( _type, _array ) {                    \
-        /*                                          \
-        SDL_Log( "{\n" );                           \
-        SDL_Log( "%p\n", _elementToFree );          \
-        SDL_Log( "}\n" );                           \
-        */                                          \
-                                                    \
-        SDL_free( _elementToFree );                 \
-    }                                               \
+#define FREE_ARRAY( _type, _array )   \
+    FOR_ARRAY( _type, _array ) {      \
+        /*                            \
+        SDL_Log( "{\n" );             \
+        SDL_Log( "%p\n", *_element ); \
+        SDL_Log( "}\n" );             \
+        */                            \
+                                      \
+        SDL_free( *_element );        \
+    }                                 \
     SDL_free( _array )
 
 size_t lengthOfNumber( size_t _number );
