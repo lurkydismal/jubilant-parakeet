@@ -47,7 +47,7 @@ jobs:
       with:
         submodules: recursive
 
-    - uses: libsdl-org/setup-sdl@0b4058be1a69a43f9875e9a17f41e636495f5852 # main
+    - uses: libsdl-org/setup-sdl@bc89bdfe0d14c9d4e37549c20f5328a9f84789e6 # main
       id: sdl
       with:
         install-linux-dependencies: true
