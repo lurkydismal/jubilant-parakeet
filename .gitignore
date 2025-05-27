@@ -4,13 +4,18 @@
 **/.*~
 **/.*.swp
 
+# glad
+glad
+
+# Profiling
+**/*.gc*
+**/*.info
+
 # Binary
 **/*.o
-**/*.exe
-**/*.bmp
-**/*.a
 **/out
 **/*vgcore*
+**/*.data
 
 # In-progress
 Style_Guide.md

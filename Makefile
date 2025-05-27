@@ -1,60 +1,57 @@
 SRCDIR                = .
 SUBDIRS               =
 DLLS                  =
-LIBS                  = libstate_t.a
+LIBS                  = $(OUTPUT_FILE)
 EXES                  =
 
 
 
 ### Common settings
 
-CEXTRA                =
+CEXTRA                = $(C_FLAGS)
 CXXEXTRA              =
 RCEXTRA               =
-DEFINES               =
-INCLUDE_PATH          = -I include \
-			-I ../stdfunc/include \
-			-I ../animation_t/include \
-			-I ../boxes_t/include \
-			-I ../color_t/include
+DEFINES               = $(DEFINES)
+INCLUDE_PATH          = $(INCLUDES) \
+			$(patsubst %/*.h, %, $(FILES_TO_INCLUDE))
 DLL_PATH              =
 DLL_IMPORTS           =
 LIBRARY_PATH          =
-LIBRARIES             = -lSDL3
+LIBRARIES             =
 
 
-### libstate_t.a sources and settings
+### Output file sources and settings
 
-libstate_t_a_MODULE       = libstate_t.a
-libstate_t_a_C_SRCS       = src/state_t.c
-libstate_t_a_CXX_SRCS     =
-libstate_t_a_RC_SRCS      =
-libstate_t_a_LDFLAGS      =
-libstate_t_a_ARFLAGS      = rc
-libstate_t_a_DLL_PATH     =
-libstate_t_a_DLLS         =
-libstate_t_a_LIBRARY_PATH =
-libstate_t_a_LIBRARIES    =
+libfile_a_MODULE       = $(OUTPUT_FILE)
+libfile_a_C_SRCS       = $(foreach _pattern, $(FILES_TO_COMPILE), $(wildcard $(_pattern)))
+libfile_a_CXX_SRCS     =
+libfile_a_RC_SRCS      =
+libfile_a_LDFLAGS      =
+libfile_a_ARFLAGS      = rc
+libfile_a_DLL_PATH     =
+libfile_a_DLLS         =
+libfile_a_LIBRARY_PATH =
+libfile_a_LIBRARIES    =
 
-libstate_t_a_OBJS         = $(libstate_t_a_C_SRCS:.c=.o) \
-			$(libstate_t_a_CXX_SRCS:.cpp=.o) \
-			$(libstate_t_a_RC_SRCS:.rc=.res)
+libfile_a_OBJS         = $(libfile_a_C_SRCS:.c=.o) \
+			$(libfile_a_CXX_SRCS:.cpp=.o) \
+			$(libfile_a_RC_SRCS:.rc=.res)
 
 
 
 ### Global source lists
 
-C_SRCS                = $(libstate_t_a_C_SRCS)
-CXX_SRCS              = $(libstate_t_a_CXX_SRCS)
-RC_SRCS               = $(libstate_t_a_RC_SRCS)
+C_SRCS                = $(libfile_a_C_SRCS)
+CXX_SRCS              = $(libfile_a_CXX_SRCS)
+RC_SRCS               = $(libfile_a_RC_SRCS)
 
 
 ### Tools
 
-CC = ccache gcc
+CC = $(C_COMPILER)
 CXX = ccache g++
 RC = rcc
-AR = ar
+AR = gcc-ar
 
 
 ### Generic targets
@@ -103,7 +100,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 ### Target specific build rules
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
-$(libstate_t_a_MODULE): $(libstate_t_a_OBJS)
-	$(AR) $(libstate_t_a_ARFLAGS) $@ $(libstate_t_a_OBJS)
+$(libfile_a_MODULE): $(libfile_a_OBJS)
+	$(AR) $(libfile_a_ARFLAGS) $@ $(libfile_a_OBJS)
 
 

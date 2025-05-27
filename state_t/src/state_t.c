@@ -1,80 +1,180 @@
 #include "state_t.h"
 
-#include <SDL3/SDL_log.h>
-#include <SDL3/SDL_stdinc.h>
-
 #include "stdfunc.h"
 
-state_t state_t$load( SDL_Renderer* _renderer,
-                      const char* _path,
-                      const char* _name,
-                      bool _isActionable,
-                      bool _canLoop ) {
+state_t state_t$create( void ) {
     state_t l_returnValue = DEFAULT_STATE;
 
-    l_returnValue.renderer = _renderer;
-    l_returnValue.isActionable = _isActionable;
-    l_returnValue.canLoop = _canLoop;
-
-    // Load animation
-    {
-        char* l_pattern = duplicateString( "_*x*_*-*." );
-
-        // _name_*-*.bmp
-        concatBeforeAndAfterString( &l_pattern, _name, "bmp" );
-
-        l_returnValue.animation =
-            animation_t$load( _renderer, _path, l_pattern );
-
-        SDL_free( l_pattern );
-    }
-
-    // Load boxes
-    {
-        char* l_pattern = duplicateString( "_*." );
-
-        // _name.txt
-        concatBeforeAndAfterString( &l_pattern, _name, "txt" );
-
-        l_returnValue.boxes = boxes_t$load( _path, l_pattern );
-
-        SDL_free( l_pattern );
-    }
+    l_returnValue.animation = animation_t$create();
+    l_returnValue.boxes = boxes_t$create();
 
     return ( l_returnValue );
 }
 
-void state_t$unload( state_t* _state ) {
-    animation_t$unload( &( _state->animation ) );
-    boxes_t$unload( &( _state->boxes ) );
-}
+bool state_t$destroy( state_t* restrict _state ) {
+    bool l_returnValue = false;
 
-void state_t$step( state_t* _state ) {
-    animation_t$step( &( _state->animation ), _state->canLoop );
-    boxes_t$step( &( _state->boxes ), _state->canLoop );
-}
-
-void state_t$render( const state_t* _state,
-                     const SDL_FRect* _targetRectangle,
-                     bool _doDrawBoxes ) {
-    const animation_t* l_animation = &( _state->animation );
-    const boxes_t* l_targetBoxes = &( l_animation->targetBoxes );
-
-    // Always a single box
-    const SDL_FRect* l_targetBox =
-        l_targetBoxes->keyFrames
-            [ l_targetBoxes->frames[ l_targetBoxes->currentFrame ][ 1 ] ];
-
-    const SDL_FRect l_targetRectangle = {
-        ( _targetRectangle->x + l_targetBox->x ),
-        ( _targetRectangle->y + l_targetBox->y ), l_targetBox->w,
-        l_targetBox->h };
-
-    animation_t$render( _state->renderer, &( _state->animation ),
-                        _targetRectangle );
-
-    if ( _doDrawBoxes ) {
-        boxes_t$render( _state->renderer, &( _state->boxes ), _targetRectangle,
-                        true );
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
     }
+
+    {
+        l_returnValue = animation_t$destroy( &( _state->animation ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = boxes_t$destroy( &( _state->boxes ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        _state->renderer = NULL;
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool state_t$load$fromFiles( state_t* restrict _state,
+                             char* const* restrict _files ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = animation_t$load$fromFiles(
+            &( _state->animation ), _state->renderer, &( _files[ 1 ] ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = boxes_t$load$fromFiles(
+            &( _state->boxes ), arrayFirstElementPointer( _files ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool state_t$unload( state_t* restrict _state ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = animation_t$unload( &( _state->animation ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = boxes_t$unload( &( _state->boxes ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool state_t$step( state_t* restrict _state ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue =
+            animation_t$step( &( _state->animation ), _state->canLoop );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = boxes_t$step( &( _state->boxes ), _state->canLoop );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool state_t$render( const state_t* restrict _state,
+                     const SDL_FRect* restrict _cameraRectangle,
+                     bool _doDrawBoxes ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_cameraRectangle ) ) {
+        goto EXIT;
+    }
+
+    {
+        const boxes_t* l_targetBoxes = &( _state->animation.targetBoxes );
+
+        // Always single box
+        const SDL_FRect* l_targetBox =
+            l_targetBoxes->keyFrames
+                [ l_targetBoxes->frames[ l_targetBoxes->currentFrame ][ 0 ] ];
+
+        const SDL_FRect l_targetRectangle = {
+            ( _cameraRectangle->x + l_targetBox->x ),
+            ( _cameraRectangle->y + l_targetBox->y ), l_targetBox->w,
+            l_targetBox->h };
+
+        l_returnValue = animation_t$render(
+            &( _state->animation ), _state->renderer, &l_targetRectangle );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        if ( _doDrawBoxes ) {
+            l_returnValue =
+                boxes_t$render( &( _state->boxes ), _state->renderer,
+                                &l_targetRectangle, true );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
 }

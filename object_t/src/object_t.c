@@ -1,60 +1,189 @@
 #include "object_t.h"
 
-#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_rect.h>
 
 #include "stdfunc.h"
 
-object_t object_t$create( float _worldX, float _worldY ) {
+object_t object_t$create( void ) {
     object_t l_returnValue = DEFAULT_OBJECT;
 
-    l_returnValue.states = ( state_t** )createArray( sizeof( state_t* ) );
-
-    l_returnValue.worldX = _worldX;
-    l_returnValue.worldY = _worldY;
+    l_returnValue.states = createArray( state_t* );
 
     return ( l_returnValue );
 }
 
-void object_t$destroy( object_t* _object ) {
-    FOR_ARRAY( state_t**, _object->states ) {
-        state_t$unload( *_element );
+bool object_t$destroy( object_t* restrict _object ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
     }
+
+    {
+        FOR_ARRAY( state_t* const*, _object->states ) {
+            state_t$destroy( *_element );
+        }
+
+        FREE_ARRAY_ELEMENTS( _object->states );
+        FREE_ARRAY( _object->states );
+
+        _object->currentState = 0;
+        _object->worldX = 0;
+        _object->worldY = 0;
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
 }
 
-void object_t$step( object_t* _object, float _velocityX, float _velocityY ) {
-    _object->worldX += _velocityX;
-    _object->worldY += _velocityY;
-
-    state_t$step( _object->currentState );
-}
-
-void object_t$render( const object_t* _object,
-                      const object_t* _camera,
-                      bool _doDrawBoxes ) {
-    const SDL_FRect l_targetRectangle = {
-        .x = ( _object->worldX - _camera->worldX ),
-        .y = ( _object->worldY - _camera->worldY ),
-        .w = 0,
-        .w = 0 };
-
-    state_t$render( _object->currentState, &l_targetRectangle, _doDrawBoxes );
-}
-
-void object_t$add$state( object_t* _object,
+bool object_t$add$state$fromFiles( object_t* restrict _object,
                          SDL_Renderer* _renderer,
-                         const char* _path,
-                         const char* _pattern,
+                         char* const* restrict _files,
                          bool _isActionable,
                          bool _canLoop ) {
-    state_t l_state =
-        state_t$load( _renderer, _path, _pattern, _isActionable, _canLoop );
+    bool l_returnValue = false;
 
-    state_t* l_stateAllocated = ( state_t* )SDL_malloc( sizeof( state_t ) );
-    SDL_memcpy( l_stateAllocated, &l_state, sizeof( state_t ) );
-
-    insertIntoArray( ( void*** )( &( _object->states ) ), l_stateAllocated );
-
-    if ( arrayLength( _object->states ) == 1 ) {
-        _object->currentState = _object->states[ 1 ];
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
     }
+
+    if ( UNLIKELY( !_renderer ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+        goto EXIT;
+    }
+
+    {
+        state_t l_state = state_t$create();
+
+        l_state.renderer = _renderer;
+        l_state.canLoop = _canLoop;
+        l_state.isActionable = _isActionable;
+
+        l_returnValue = state_t$load$fromFiles( &l_state, _files );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        state_t* l_stateAllocated = ( state_t* )malloc( sizeof( state_t ) );
+
+        __builtin_memcpy( l_stateAllocated, &l_state, sizeof( state_t ) );
+
+        insertIntoArray( &( _object->states ), l_stateAllocated );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$move( object_t* restrict _object, float _x, float _y, const SDL_FRect* restrict _clipRectangle ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( ( _x == 0 ) && ( _y == 0 ) ) ) {
+        l_returnValue = true;
+
+        goto EXIT;
+    }
+
+    {
+        _object->worldX += _x;
+        _object->worldY += _y;
+
+        if ( _object->worldX < 0 ) {
+            _object->worldX = 0;
+        }
+
+        if ( _object->worldY < 0 ) {
+            _object->worldY = 0;
+        }
+
+        if ( _object->worldX > 0 ) {
+            _object->worldX = _object->worldXMax;
+        }
+
+        if ( _object->worldY > 0 ) {
+            _object->worldY = _object->worldYMax;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$step( object_t* restrict _object,
+                    float _velocityX,
+                    float _velocityY ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = object_t$move( _object, _velocityX, _velocityY );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue =
+            state_t$step( _object->states[ _object->currentState ] );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$render( const object_t* restrict _object,
+                      const object_t* restrict _camera,
+                      bool _doDrawBoxes ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_camera ) ) {
+        goto EXIT;
+    }
+
+    {
+        const SDL_FRect l_targetRectangle = {
+            .x = ( _object->worldX - _camera->worldX ),
+            .y = ( _object->worldY - _camera->worldY ),
+            .w = 0,
+            .h = 0 };
+
+        l_returnValue =
+            state_t$render( _object->states[ _object->currentState ],
+                            &l_targetRectangle, _doDrawBoxes );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
 }

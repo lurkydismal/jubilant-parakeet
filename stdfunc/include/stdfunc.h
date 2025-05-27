@@ -1,113 +1,337 @@
 #pragma once
 
-#include <SDL3/SDL_stdinc.h>
+#define XXH_CPU_LITTLE_ENDIAN 1
+#define XXH_INLINE_ALL
+#define XXH_NO_STDLIB
+#define XXH_NO_STREAM
+#define XXH_STATIC_LINKING_ONLY
 
-#if !defined( NO_TYPEDEF_SSIZE_T )
+#include <omp.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <xxhash.h>
 
-#if __WORDSIZE == 32
+// Function attributes
+#define FORCE_INLINE __attribute__( ( always_inline ) ) inline
+#define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
+#define NO_RETURN __attribute__( ( noreturn ) )
+#define HOT __attribute__( ( hot ) )
+#define COLD __attribute__( ( cold ) )
+#define SENTINEL __attribute__( ( sentinel ) )
 
-typedef int ssize_t;
+// Branch prediction hints
+#define LIKELY( _expression ) __builtin_expect( !!( _expression ), 1 )
+#define UNLIKELY( _expression ) __builtin_expect( !!( _expression ), 0 )
 
-#elif __WORDSIZE == 64
+// Constants
+#define DECIMAL_RADIX 10
+#define ONE_SECOND_IN_MILLISECONDS ( ( size_t )( 1000 ) )
+#define ONE_MILLISECOND_IN_NANOSECONDS ( ( size_t )( 1000000 ) )
 
-typedef long int ssize_t;
+// Utility macros ( no side-effects )
+#define MILLISECONDS_TO_NANOSECONDS( _milliseconds ) \
+    ( ( _milliseconds ) * ONE_MILLISECOND_IN_NANOSECONDS )
+#define BITS_TO_BYTES( _bits ) ( ( size_t )( ( _bits ) / 8 ) )
+// This macro turns a value into a string literal
+#define STRINGIFY_MACRO( _value ) #_value
+// This is a helper macro that handles the stringify
+#define MACRO_TO_STRING( _macro ) STRINGIFY_MACRO( _macro )
 
-#else
+// Utility functions ( no side-effects )
+#define max( _a, _b ) ( ( ( _a ) > ( _b ) ) ? ( _a ) : ( _b ) )
+#define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
 
-#error
-
-#endif
-
-#endif
-
-#define trim( _string, _from, _to ) \
-    do {                            \
-        ( _string ) += _from;       \
-        ( _string )[ _to ] = '\0';  \
-    } while ( false );
-
-#define arrayLength( _array ) ( ( size_t )( _array[ 0 ] ) - 1 )
-#define arrayFirstElementPointer( _array ) ( _array + 1 )
+// Non-native and native array utility functions
+#define arrayLengthPointer( _array ) \
+    ( ( size_t* )( ( char* )( _array ) - sizeof( size_t ) ) )
+#define arrayAllocationPointer( _array ) ( arrayLengthPointer( _array ) )
+#define arrayFirstElementPointer( _array ) ( _array )
 #define arrayLastElementPointer( _array ) \
-    ( ( arrayFirstElementPointer( _array ) - 1 ) + arrayLength( _array ) )
+    ( ( _array ) + arrayLength( _array ) - 1 )
 
-#define _findStringInArray( _array, _value )                      \
-    ( findStringInArray(                                          \
-          ( const char** )( arrayFirstElementPointer( _array ) ), \
-          arrayLength( _array ), _value ) +                       \
-      1 )
+#define arrayFirstElement( _array ) ( *arrayFirstElementPointer( _array ) )
+#define arrayLastElement( _array ) ( *arrayLastElementPointer( _array ) )
 
-#define _findInArray( _array, _value )                                      \
-    findInArray( arrayFirstElementPointer( _array ), arrayLength( _array ), \
-                 _value )
+#define arrayLength( _array ) ( *arrayLengthPointer( _array ) )
+#define randomValueFromArray( _array ) \
+    ( ( _array )[ randomNumber() % arrayLength( ( _array ) ) ] )
 
-#define _containsString( _array, _value )                                   \
-    containsString( ( const char** )( arrayFirstElementPointer( _array ) ), \
-                    arrayLength( _array ), _value )
+#define arrayLengthNative( _array ) \
+    ( sizeof( ( _array ) ) / sizeof( ( _array )[ 0 ] ) )
+#define randomValueFromArrayNative( _array ) \
+    ( ( _array )[ randomNumber() % arrayLengthNative( ( _array ) ) ] )
 
-#define _contains( _array, _value )                                      \
-    contains( arrayFirstElementPointer( _array ), arrayLength( _array ), \
-              _value )
-
-#define FOR( _type, _array )                                         \
-    for ( _type _element = _array;                                   \
-          _element <                                                 \
-          ( _array + ( sizeof( _array ) / sizeof( _array[ 0 ] ) ) ); \
+// Native array iteration FOR
+#define FOR( _type, _array )                                       \
+    for ( _type _element = ( _array );                             \
+          _element < ( ( _array ) + arrayLengthNative( _array ) ); \
           _element++ )
 
+// Non-native array iteration FOR
 #define FOR_ARRAY( _type, _array )                             \
     for ( _type _element = arrayFirstElementPointer( _array ); \
           _element != ( arrayLastElementPointer( _array ) + 1 ); _element++ )
 
-#define FREE_ARRAY( _type, _array )   \
-    FOR_ARRAY( _type, _array ) {      \
-        /*                            \
-        SDL_Log( "{\n" );             \
-        SDL_Log( "%p\n", *_element ); \
-        SDL_Log( "}\n" );             \
-        */                            \
-                                      \
-        SDL_free( *_element );        \
-    }                                 \
-    SDL_free( _array )
+// Range iteration FOR
+#define FOR_RANGE( _type, _start, _end ) \
+    for ( _type _index = ( _start ); _index < ( _end ); _index++ )
 
-size_t lengthOfNumber( size_t _number );
-Sint64 power( Sint64 _base, Uint8 _exponent );
-char* convertNumberToString( size_t _number );
-char* duplicateString( const char* _string );
-ssize_t findSymbolInString( const char* _string, const char _symbol );
-ssize_t findLastSymbolInString( const char* _string, const char _symbol );
-size_t concatBeforeAndAfterString( char** _string,
-                                   const char* _beforeString,
-                                   const char* _afterString );
-char* sanitizeString( const char* _string );
-char** splitStringIntoArray( const char* _string, const char* _delimiter );
-void** createArray( const size_t _elementSize );
-void preallocateArray( void*** _array, const size_t _length );
-size_t insertIntoArray( void*** _array, void* _value );
-void insertIntoArrayByIndex( void*** _array,
-                             const size_t _index,
-                             void* _value );
-ssize_t findStringInArray( const char** _array,
+// Range iteration FOR with increase BY amount
+#define FOR_RANGE_BY( _type, _start, _end, _amount ) \
+    for ( _type _index = ( _start ); _index < ( _end ); _index += ( _amount ) )
+
+// Non-native array free every element
+#define FREE_ARRAY_ELEMENTS( _array )               \
+    do {                                            \
+        FOR_ARRAY( typeof( _array ), ( _array ) ) { \
+            free( *_element );                      \
+        }                                           \
+    } while ( 0 )
+
+#define FREE_ARRAY( _array )                      \
+    do {                                          \
+        free( arrayAllocationPointer( _array ) ); \
+    } while ( 0 )
+
+// Utility functions ( no side-effects )
+static FORCE_INLINE bool stringToBool( const char* restrict _string ) {
+    if ( UNLIKELY( !_string ) ) {
+        return ( false );
+    }
+
+    if ( __builtin_strcmp( _string, "true" ) == 0 ) {
+        return ( true );
+
+    } else {
+        return ( false );
+    }
+}
+
+static FORCE_INLINE void trim( char** restrict _string,
+                               const ssize_t _from,
+                               const ssize_t _to ) {
+    if ( UNLIKELY( _from >= 0 ) ) {
+        ( *_string ) += _from;
+    }
+
+    if ( UNLIKELY( _to >= 0 ) ) {
+        ( *_string )[ _to ] = '\0';
+    }
+}
+
+static FORCE_INLINE size_t lengthOfNumber( size_t _number ) {
+    // clang-format off
+    return (
+        ( (_number < 10ULL) ) ? ( 1 ) :
+        ( (_number < 100ULL) ) ? ( 2 ) :
+        ( (_number < 1000ULL) ) ? ( 3 ) :
+        ( (_number < 10000ULL) ) ? ( 4 ) :
+        ( (_number < 100000ULL) ) ? ( 5 ) :
+        ( (_number < 1000000ULL) ) ? ( 6 ) :
+        ( (_number < 10000000ULL) ) ? ( 7 ) :
+        ( (_number < 100000000ULL) ) ? ( 8 ) :
+        ( (_number < 1000000000ULL) ) ? ( 9 ) :
+        ( (_number < 10000000000ULL) ) ? ( 10 ) :
+        ( (_number < 100000000000ULL) ) ? ( 11 ) :
+        ( (_number < 1000000000000ULL) ) ? ( 12 ) :
+        ( (_number < 10000000000000ULL) ) ? ( 13 ) :
+        ( (_number < 100000000000000ULL) ) ? ( 14 ) :
+        ( (_number < 1000000000000000ULL) ) ? ( 15 ) :
+        ( (_number < 10000000000000000ULL) ) ? ( 16 ) :
+        ( (_number < 100000000000000000ULL) ) ? ( 17 ) :
+        ( (_number < 1000000000000000000ULL) ) ? ( 18 ) :
+        ( (_number < 10000000000000000000ULL) ) ? ( 19 ) :
+        ( 20 )
+    );
+    // clang-format on
+}
+
+void randomNumber$seed$set( const size_t _seed );
+size_t randomNumber$seed$get( void );
+size_t randomNumber( void );
+
+static FORCE_INLINE size_t generateHash( const uint8_t* restrict _data,
+                                         const size_t _dataSize ) {
+    size_t l_returnValue = 0;
+
+    if ( !_data ) {
+        goto EXIT;
+    }
+
+    if ( !_dataSize ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = XXH32( _data, _dataSize, randomNumber$seed$get() );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE char* duplicateString( const char* restrict _string ) {
+    char* l_returnValue = NULL;
+
+    if ( UNLIKELY( !_string ) ) {
+        goto EXIT;
+    }
+
+    const size_t l_stringLength = __builtin_strlen( _string );
+
+    l_returnValue = ( char* )malloc( ( l_stringLength + 1 ) * sizeof( char ) );
+
+    __builtin_memcpy( l_returnValue, _string, ( l_stringLength + 1 ) );
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE ssize_t findSymbolInString( const char* restrict _string,
+                                                const char _symbol ) {
+    ssize_t l_returnValue = -1;
+
+    if ( UNLIKELY( !_string ) ) {
+        goto EXIT;
+    }
+
+    {
+        char* l_result = __builtin_strchr( _string, _symbol );
+
+        if ( UNLIKELY( !l_result ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = ( l_result - _string );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE ssize_t
+findLastSymbolInString( const char* restrict _string, const char _symbol ) {
+    ssize_t l_returnValue = -1;
+
+    if ( UNLIKELY( !_string ) ) {
+        goto EXIT;
+    }
+
+    {
+        char* l_result = __builtin_strrchr( _string, _symbol );
+
+        if ( UNLIKELY( !l_result ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = ( l_result - _string );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+size_t concatBeforeAndAfterString( char* restrict* restrict _string,
+                                   const char* restrict _beforeString,
+                                   const char* restrict _afterString );
+char* sanitizeString( const char* restrict _string );
+char** splitStringIntoArray( const char* restrict _string,
+                             const char* restrict _delimiter );
+char** splitStringIntoArrayBySymbol( const char* restrict _string,
+                                     const char _symbol );
+
+#define createArray( _elementType )                   \
+    ( {                                               \
+        size_t* l_array = malloc( sizeof( size_t ) ); \
+        *l_array = ( size_t )0;                       \
+        ( _elementType* )( l_array + 1 );             \
+    } )
+
+#define preallocateArray( _array, _length )                               \
+    do {                                                                  \
+        size_t* l_arrayAllocationCurrent =                                \
+            arrayAllocationPointer( *( _array ) );                        \
+        size_t l_arrayLengthCurrent = arrayLength( *( _array ) );         \
+        size_t l_arrayLengthNew = ( l_arrayLengthCurrent + ( _length ) ); \
+        size_t* l_arrayAllocationNew = ( size_t* )realloc(                \
+            l_arrayAllocationCurrent,                                     \
+            ( sizeof( size_t ) +                                          \
+              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) ); \
+        if ( l_arrayAllocationNew ) {                                     \
+            *l_arrayAllocationNew = l_arrayLengthNew;                     \
+            *( _array ) =                                                 \
+                ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );    \
+        }                                                                 \
+    } while ( 0 )
+
+#define insertIntoArray( _array, _value )                                    \
+    ( {                                                                      \
+        size_t* l_arrayAllocationCurrent =                                   \
+            arrayAllocationPointer( *( _array ) );                           \
+        size_t l_arrayLengthCurrent = arrayLength( *( _array ) );            \
+        size_t l_arrayLengthNew = ( l_arrayLengthCurrent + 1 );              \
+        size_t* l_arrayAllocationNew = ( size_t* )realloc(                   \
+            l_arrayAllocationCurrent,                                        \
+            ( sizeof( size_t ) +                                             \
+              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) );    \
+        *l_arrayAllocationNew = l_arrayLengthNew;                            \
+        *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 ); \
+        ( *( _array ) )[ l_arrayLengthCurrent ] =                            \
+            ( typeof( **( _array ) ) )( _value );                            \
+        ( ( size_t )l_arrayLengthCurrent );                                  \
+    } )
+
+ssize_t findStringInArray( const char** restrict _array,
                            const size_t _arrayLength,
-                           const char* _value );
-ssize_t findInArray( const size_t* _array,
+                           const char* restrict _value );
+
+ssize_t findInArray( const size_t* restrict _array,
                      const size_t _arrayLength,
                      const size_t _value );
-bool containsString( const char** _array,
-                     const size_t _arrayLength,
-                     const char* _value );
-bool contains( const size_t* _array,
-               const size_t _arrayLength,
-               const size_t _value );
 
-#if 0
-void freeSettingsContent( char*** _content );
-ssize_t findKeyInSettings( char*** _settings, const char* _key );
-ssize_t findValueInSettings( char*** _settings, const char* _value );
-char*** getLabelFromSettingsOrDefault( const char* _label,
-                                       const char* _default );
-char* getKeyFromSettingsOrDefault( const char* _label,
-                                   const char* _key,
-                                   const char* _default );
-#endif
+static FORCE_INLINE bool containsString( const char** restrict _array,
+                                         const size_t _arrayLength,
+                                         const char* restrict _value ) {
+    return ( findStringInArray( _array, _arrayLength, _value ) >= 0 );
+}
+
+static FORCE_INLINE bool contains( const size_t* restrict _array,
+                                   const size_t _arrayLength,
+                                   const size_t _value ) {
+    return ( findInArray( _array, _arrayLength, _value ) >= 0 );
+}
+
+// Utility functions ( no side-effects ) wrappers for non-naitve array
+static FORCE_INLINE ssize_t _findStringInArray( const char** restrict _array,
+                                                const char* restrict _value ) {
+    return ( findStringInArray(
+                 ( const char** )( arrayFirstElementPointer( _array ) ),
+                 arrayLength( _array ), _value ) +
+             1 );
+}
+
+static FORCE_INLINE ssize_t _findInArray( const size_t* restrict _array,
+                                          const size_t _value ) {
+    return ( findInArray( arrayFirstElementPointer( _array ),
+                          arrayLength( _array ), _value ) );
+}
+
+static FORCE_INLINE bool _containsString( const char** restrict _array,
+                                          const char* restrict _value ) {
+    return (
+        containsString( ( const char** )( arrayFirstElementPointer( _array ) ),
+                        arrayLength( _array ), _value ) );
+}
+
+static FORCE_INLINE bool _contains( const size_t* restrict _array,
+                                    const size_t _value ) {
+    return ( contains( arrayFirstElementPointer( _array ),
+                       arrayLength( _array ), _value ) );
+}
+
+// Utility OS specific functions ( no side-effects )
+char* getApplicationDirectoryAbsolutePath( void );

@@ -1,97 +1,158 @@
-#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
-#include <SDL3/SDL_log.h>
 #include <SDL3/SDL_render.h>
-#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
+#include <stdlib.h>
 
+#include "FPS.h"
 #include "applicationState_t.h"
+#include "asset_t.h"
+#include "log.h"
+#include "stdfunc.h"
+#include "vsync.h"
 
-Uint32 SDLCALL FPSCountAndShow( void* _totalFrameCount,
-                                SDL_TimerID _timerId,
-                                Uint32 _interval ) {
-    static size_t l_previousTotalFrameCount = 0;
+#define LOG_FILE_NAME_DEFAULT "log"
+#define LOG_FILE_EXTENSION_DEFAULT "txt"
 
-    size_t l_currentTotalFrameCount = *( ( size_t* )( _totalFrameCount ) );
+#define ASSETS_DIRECTORY "assets"
 
-    size_t l_framesElapsed =
-        ( l_currentTotalFrameCount - l_previousTotalFrameCount );
-
-    SDL_Log( "FPS: %u\n", l_framesElapsed );
-
-    l_previousTotalFrameCount = l_currentTotalFrameCount;
-
-    return ( _interval );
-}
-
-void SDLCALL iterateIntervalHintCallback( void* _iterateSleepTime,
-                                          const char* _hintName,
-                                          const char* _hintOldValue,
-                                          const char* _hintNewValue ) {
-    if ( _hintNewValue ) {
-        Uint16* l_iterateSleepTime = ( Uint16* )_iterateSleepTime;
-
-        const Uint16 l_oneSecond = 1000;
-        const Uint16 l_hintNewValue = SDL_atoi( _hintNewValue );
-
-        *l_iterateSleepTime = ( l_oneSecond / l_hintNewValue );
-    }
-}
+#define SETTINGS_FILE_NAME "settings"
+#define SETTINGS_FILE_EXTENSION "ini"
 
 SDL_AppResult SDL_AppInit( void** _applicationState,
-                           int _arcgumentCount,
+                           int _argumentCount,
                            char** _argumentVector ) {
-    SDL_AppResult l_returnValue = SDL_APP_CONTINUE;
+    SDL_AppResult l_returnValue = SDL_APP_FAILURE;
 
-    SDL_SetAppMetadata( "fgengine", "0.1", "com.github.fgengine" );
-
-    // Init sub-systems
-    { SDL_Init( SDL_INIT_VIDEO ); }
-
-    // Generate application state
-    {
-        applicationState_t l_applicationState;
-
-        l_applicationState.totalFrameCount = 0;
-        l_applicationState.iterateSleepTime = ( 1000 / 60 );
-
-        SDL_CreateWindowAndRenderer( "fgengine", 640, 480, 0,
-                                     &( l_applicationState.window ),
-                                     &( l_applicationState.renderer ) );
-
-        {
-            *_applicationState = SDL_malloc( sizeof( applicationState_t ) );
-
-            SDL_memcpy( *_applicationState, &l_applicationState,
-                        sizeof( applicationState_t ) );
-        }
+    if ( UNLIKELY( !_applicationState ) ) {
+        goto EXIT;
     }
 
+    ( void )( sizeof( _argumentCount ) );
+    ( void )( sizeof( _argumentVector ) );
+
     {
-        // Register iterate loop rate hint callback
+        SDL_SetAppMetadata( "jubilant-parakeet", "0.1",
+                            "com.github.jubilant-parakeet" );
+
+        // Init SDL sub-systems
         {
-            applicationState_t* l_applicationState =
-                ( applicationState_t* )( *_applicationState );
-
-            Uint16* l_iterateSleepTime =
-                &( l_applicationState->iterateSleepTime );
-
-            SDL_AddHintCallback( SDL_HINT_MAIN_CALLBACK_RATE,
-                                 iterateIntervalHintCallback,
-                                 l_iterateSleepTime );
+            SDL_Init( SDL_INIT_VIDEO );
         }
 
-        // Register FPS counter timer
+        // Log
         {
-            applicationState_t* l_applicationState =
-                ( applicationState_t* )( *_applicationState );
+            if ( UNLIKELY( !log$init( LOG_FILE_NAME_DEFAULT,
+                                      LOG_FILE_EXTENSION_DEFAULT ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Initializing logging system\n" );
 
-            size_t* l_totalFrameCount =
-                &( l_applicationState->totalFrameCount );
+                goto EXIT;
+            }
 
-            SDL_AddTimer( 1000, FPSCountAndShow, l_totalFrameCount );
+#if defined( DEBUG )
+
+            const logLevel_t l_logLevel = debug;
+
+#elif defined( PROFILE )
+
+            const logLevel_t l_logLevel = info;
+
+#endif
+
+#if ( defined( DEBUG ) || defined( PROFILE ) )
+
+            if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Setting log level to %s\n",
+                    log$level$convert$toString( l_logLevel ) );
+
+                goto EXIT;
+            }
+
+#endif
         }
+
+        // Generate application state
+        {
+            applicationState_t l_applicationState = applicationState_t$create();
+
+            // Asset loader
+            {
+                if ( UNLIKELY( !asset_t$loader$init( ASSETS_DIRECTORY ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Initializing asset loader\n" );
+
+                    goto EXIT;
+                }
+            }
+
+            // Settings
+            {
+                if ( UNLIKELY( !settings_t$load$fromPath(
+                         &( l_applicationState.settings ), SETTINGS_FILE_NAME,
+                         SETTINGS_FILE_EXTENSION ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading settings\n" );
+
+                    log$transaction$query( ( logLevel_t )info,
+                                           "Loading default settings\n" );
+
+                    l_applicationState.settings = settings_t$create();
+                }
+            }
+
+            // Window and Renderer
+            {
+                if ( UNLIKELY( !SDL_CreateWindowAndRenderer(
+                         l_applicationState.settings.window.name,
+                         l_applicationState.settings.window.height,
+                         l_applicationState.settings.window.width, 0,
+                         &( l_applicationState.window ),
+                         &( l_applicationState.renderer ) ) ) ) {
+                    log$transaction$query$format(
+                        ( logLevel_t )error,
+                        "Window or Renderer creation: '%s'\n", SDL_GetError() );
+
+                    goto EXIT;
+                }
+            }
+
+            // Vsync
+            {
+                if ( UNLIKELY( !vsync$init(
+                         l_applicationState.settings.window.vsync,
+                         l_applicationState.settings.window.desiredFPS,
+                         l_applicationState.renderer ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Initializing Vsync\n" );
+
+                    goto EXIT;
+                }
+            }
+
+            {
+                *_applicationState = malloc( sizeof( applicationState_t ) );
+
+                __builtin_memcpy( *_applicationState, &l_applicationState,
+                                  sizeof( applicationState_t ) );
+            }
+
+            // FPS
+            {
+                if ( UNLIKELY( !FPS$init(
+                         &( ( ( applicationState_t* )_applicationState )
+                                ->totalFramesRendered ) ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Initializing FPS\n" );
+
+                    goto EXIT;
+                }
+            }
+        }
+
+        l_returnValue = SDL_APP_CONTINUE;
     }
 
+EXIT:
     return ( l_returnValue );
 }
