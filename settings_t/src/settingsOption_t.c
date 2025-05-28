@@ -102,20 +102,10 @@ bool settingsOption_t$unmap( settingsOption_t* restrict _settingsOption ) {
     {
         free( _settingsOption->key );
 
-        switch ( _settingsOption->type ) {
-            case ( string ): {
-                free( *( _settingsOption->storage ) );
-
-                *( _settingsOption->storage ) = NULL;
-
-                break;
-            }
-
-            default: {
-            }
-        }
+        _settingsOption->key = NULL;
 
         _settingsOption->storage = NULL;
+
         _settingsOption->type =
             ( settingsOptionType_t )unknownSettingsOptionType;
 

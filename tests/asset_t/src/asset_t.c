@@ -7,18 +7,18 @@ TEST( asset_t$loader$init ) {
     {
         bool l_returnValue = asset_t$loader$init( "TEST" );
 
-        ASSERT_TRUE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
 
         l_returnValue = asset_t$loader$quit();
 
-        ASSERT_TRUE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
     }
 
     // Duplicate init
     {
         bool l_returnValue = asset_t$loader$init( "TEST" );
 
-        ASSERT_TRUE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
 
         l_returnValue = asset_t$loader$init( "TEST2" );
 
@@ -26,7 +26,7 @@ TEST( asset_t$loader$init ) {
 
         l_returnValue = asset_t$loader$quit();
 
-        ASSERT_TRUE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
     }
 
     // NULL input - should fail

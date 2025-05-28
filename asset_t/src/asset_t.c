@@ -8,7 +8,7 @@
 #include "log.h"
 #include "stdfunc.h"
 
-static char* g_assetsDirectory;
+static char* g_assetsDirectory = NULL;
 
 bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
     bool l_returnValue = false;
@@ -38,6 +38,21 @@ bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
             free( l_directoryPath );
         }
 
+        // TODO: Improve
+        if ( UNLIKELY( !l_returnValue ) ) {
+            free( l_assetsDirectory );
+
+            goto EXIT;
+        }
+
+        l_returnValue = checkPathIsDirectory( l_assetsDirectory );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            free( l_assetsDirectory );
+
+            goto EXIT;
+        }
+
         g_assetsDirectory = l_assetsDirectory;
 
         l_returnValue = true;
@@ -50,6 +65,10 @@ EXIT:
 bool asset_t$loader$quit( void ) {
     bool l_returnValue = false;
 
+    if ( UNLIKELY( !g_assetsDirectory ) ) {
+        goto EXIT;
+    }
+
     {
         free( g_assetsDirectory );
 
@@ -58,6 +77,7 @@ bool asset_t$loader$quit( void ) {
         l_returnValue = true;
     }
 
+EXIT:
     return ( l_returnValue );
 }
 
@@ -149,6 +169,8 @@ bool asset_t$load( asset_t* restrict _asset, const char* restrict _path ) {
 
                 goto FILE_EXIT;
             }
+
+            l_returnValue = true;
         }
 
     FILE_EXIT:
@@ -196,6 +218,8 @@ bool asset_t$unload( asset_t* restrict _asset ) {
 
     {
         free( _asset->data );
+
+        _asset->data = NULL;
 
         _asset->size = 0;
 

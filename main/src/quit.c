@@ -5,6 +5,7 @@
 #include "applicationState_t.h"
 #include "log.h"
 
+// TODO: Quit everything
 void SDL_AppQuit( void* _applicationState, SDL_AppResult _appRunResult ) {
     applicationState_t* l_applicationState =
         ( applicationState_t* )_applicationState;

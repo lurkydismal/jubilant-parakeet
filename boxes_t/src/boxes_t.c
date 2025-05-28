@@ -127,8 +127,16 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
     }
 
     {
+        log$transaction$query$format( ( logLevel_t )debug,
+                                      "Boxes loading string: '%s'\n", _string );
+
         char** l_boxProperties = splitStringIntoArrayBySymbol( _string, ' ' );
 
+        // X
+        // Y
+        // Width
+        // Height
+        // StartIndex - EndIndex
         if ( UNLIKELY( arrayLength( l_boxProperties ) != 5 ) ) {
             l_returnValue = false;
 
@@ -187,12 +195,20 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
     }
 
     {
+        log$transaction$query$format( ( logLevel_t )debug,
+                                      "Boxes loading asset: Size = %zu\n",
+                                      _asset->size );
+
         char* l_dataWithNull =
             ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
 
-        __builtin_memcpy( l_dataWithNull, &( _asset->data ), _asset->size );
+        __builtin_memcpy( l_dataWithNull, _asset->data, _asset->size );
 
         l_dataWithNull[ _asset->size ] = '\0';
+
+        log$transaction$query$format( ( logLevel_t )debug,
+                                      "Boxes loading asset: Data = '%s'\n",
+                                      l_dataWithNull );
 
         char** l_lines = splitStringIntoArrayBySymbol( l_dataWithNull, '\n' );
 
@@ -232,7 +248,7 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
     {
         FOR_ARRAY( char* const*, _files ) {
             log$transaction$query$format( ( logLevel_t )debug,
-                                          "Loading file: \"%s\" as boxes_t\n",
+                                          "Loading file: '%s' as boxes_t\n",
                                           *_element );
 
             asset_t l_asset = asset_t$create();
@@ -265,22 +281,31 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
             {
                 char* l_colorAsString = *_element;
 
-                trim( &l_colorAsString,
-                      ( findSymbolInString( l_colorAsString, '_' ) + 1 ),
+                const ssize_t l_colorAsStringStartIndex =
+                    findSymbolInString( l_colorAsString, '_' );
+
+                if ( l_colorAsStringStartIndex == -1 ) {
+                    goto EXIT_COLOR_TRIM_FILE_NAME;
+                }
+
+                trim( &l_colorAsString, ( l_colorAsStringStartIndex + 1 ),
                       findLastSymbolInString( l_colorAsString, '.' ) );
 
+            EXIT_COLOR_TRIM_FILE_NAME:
                 const color_t l_color =
                     color_t$convert$fromString( l_colorAsString );
 
                 _boxes->color = l_color;
 
-                l_colorAsString = color_t$convert$toString( &l_color );
+                {
+                    l_colorAsString = color_t$convert$toString( &l_color );
 
-                log$transaction$query$format( ( logLevel_t )debug,
-                                              "Box color: \"%s\"\n",
-                                              l_colorAsString );
+                    log$transaction$query$format( ( logLevel_t )debug,
+                                                  "Box color: '%s'\n",
+                                                  l_colorAsString );
 
-                free( l_colorAsString );
+                    free( l_colorAsString );
+                }
             }
         }
 

@@ -55,7 +55,7 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
 
         char* l_data = ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
 
-        __builtin_memcpy( l_data, &( _asset->data ), _asset->size );
+        __builtin_memcpy( l_data, _asset->data, _asset->size );
 
         l_data[ _asset->size ] = '\0';
 
@@ -197,7 +197,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
 
     {
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Settings path: \"%s.%s\"\n", _fileName,
+                                      "Settings path: '%s.%s'\n", _fileName,
                                       _fileExtension );
 
         // Parse settings file
@@ -259,10 +259,6 @@ bool settings_t$unload( settings_t* restrict _settings ) {
     }
 
     {
-        if ( UNLIKELY( !window_t$destroy( &( _settings->window ) ) ) ) {
-            goto EXIT;
-        }
-
         l_returnValue = true;
     }
 
