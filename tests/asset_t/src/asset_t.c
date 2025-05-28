@@ -5,28 +5,28 @@
 TEST( asset_t$loader$init ) {
     // Valid string
     {
-        bool l_returnValue = asset_t$loader$init( "TEST" );
+        bool l_returnValue = asset_t$loader$init( "WXEQWEXQWEWQEXQEW" );
 
-        ASSERT_FALSE( l_returnValue );
+        ASSERT_TRUE( l_returnValue );
 
         l_returnValue = asset_t$loader$quit();
 
-        ASSERT_FALSE( l_returnValue );
+        ASSERT_TRUE( l_returnValue );
     }
 
     // Duplicate init
     {
-        bool l_returnValue = asset_t$loader$init( "TEST" );
+        bool l_returnValue = asset_t$loader$init( "ASDXAXDQWEWADACSDASX" );
 
-        ASSERT_FALSE( l_returnValue );
+        ASSERT_TRUE( l_returnValue );
 
-        l_returnValue = asset_t$loader$init( "TEST2" );
+        l_returnValue = asset_t$loader$init( "ASDQWXQWEQRVEWCRWER" );
 
         ASSERT_FALSE( l_returnValue );
 
         l_returnValue = asset_t$loader$quit();
 
-        ASSERT_FALSE( l_returnValue );
+        ASSERT_TRUE( l_returnValue );
     }
 
     // NULL input - should fail

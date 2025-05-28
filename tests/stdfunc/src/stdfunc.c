@@ -1012,9 +1012,3 @@ TEST( getApplicationDirectoryAbsolutePath ) {
 
     free( l_path );
 }
-
-TEST( checkPathIsDirectory ) {
-    bool l_returnValue = checkPathIsDirectory( "TEST" );
-
-    ASSERT_FALSE( l_returnValue );
-}

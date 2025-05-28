@@ -41,6 +41,8 @@ TEST( settingsOption_t$map ) {
             l_returnValue = settingsOption_t$unmap( &l_settingsOption );
 
             ASSERT_TRUE( l_returnValue );
+
+            free( l_storage );
         }
 
         {
@@ -203,7 +205,7 @@ TEST( settingsOption_t$bind ) {
 
             ASSERT_TRUE( l_returnValue );
 
-            ASSERT_EQ( "%p", l_storage, NULL );
+            free( l_storage );
         }
 
         {
@@ -302,6 +304,8 @@ TEST( settingsOption_t$bind ) {
                 settingsOption_t$bind( NULL, "window_name", "WindowName" );
 
             ASSERT_FALSE( l_returnValue );
+
+            ASSERT_EQ( "%p", l_storage, NULL );
 
             l_returnValue = settingsOption_t$unmap( &l_settingsOption );
 

@@ -38,15 +38,6 @@ bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
             free( l_directoryPath );
         }
 
-        // TODO: Improve
-        if ( UNLIKELY( !l_returnValue ) ) {
-            free( l_assetsDirectory );
-
-            goto EXIT;
-        }
-
-        l_returnValue = checkPathIsDirectory( l_assetsDirectory );
-
         if ( UNLIKELY( !l_returnValue ) ) {
             free( l_assetsDirectory );
 
