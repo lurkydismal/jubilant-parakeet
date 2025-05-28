@@ -150,6 +150,8 @@ static FORCE_INLINE size_t lengthOfNumber( size_t _number ) {
     // clang-format on
 }
 
+#define RANDOM_NUMBER_MAX SIZE_MAX
+
 void randomNumber$seed$set( const size_t _seed );
 size_t randomNumber$seed$get( void );
 size_t randomNumber( void );

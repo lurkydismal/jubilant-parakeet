@@ -10,6 +10,8 @@
       .currentState = 0, \
       .worldX = 0,       \
       .worldY = 0,       \
+      .worldXMin = 0,    \
+      .worldYMin = 0,    \
       .worldXMax = 0,    \
       .worldYMax = 0 }
 
@@ -18,6 +20,8 @@ typedef struct {
     size_t currentState;
     float worldX;
     float worldY;
+    float worldXMin;
+    float worldYMin;
     float worldXMax;
     float worldYMax;
 } object_t;
@@ -26,12 +30,12 @@ object_t object_t$create( void );
 bool object_t$destroy( object_t* restrict _object );
 
 bool object_t$add$state$fromFiles( object_t* restrict _object,
-                         SDL_Renderer* _renderer,
-                         char* const* restrict _files,
-                         bool _isActionable,
-                         bool _canLoop );
+                                   SDL_Renderer* _renderer,
+                                   char* const* restrict _files,
+                                   bool _isActionable,
+                                   bool _canLoop );
 
-bool object_t$move( object_t* restrict _object, float _x, float _y, const SDL_FRect* restrict _clipRectangle );
+bool object_t$move( object_t* restrict _object, float _x, float _y );
 bool object_t$step( object_t* restrict _object,
                     float _velocityX,
                     float _velocityY );

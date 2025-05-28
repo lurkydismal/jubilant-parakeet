@@ -39,10 +39,10 @@ EXIT:
 }
 
 bool object_t$add$state$fromFiles( object_t* restrict _object,
-                         SDL_Renderer* _renderer,
-                         char* const* restrict _files,
-                         bool _isActionable,
-                         bool _canLoop ) {
+                                   SDL_Renderer* _renderer,
+                                   char* const* restrict _files,
+                                   bool _isActionable,
+                                   bool _canLoop ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
@@ -83,7 +83,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool object_t$move( object_t* restrict _object, float _x, float _y, const SDL_FRect* restrict _clipRectangle ) {
+bool object_t$move( object_t* restrict _object, float _x, float _y ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
@@ -98,23 +98,16 @@ bool object_t$move( object_t* restrict _object, float _x, float _y, const SDL_FR
 
     {
         _object->worldX += _x;
+
+        _object->worldX = __builtin_fminf(
+            __builtin_fmaxf( _object->worldX, _object->worldXMin ),
+            _object->worldXMax );
+
         _object->worldY += _y;
 
-        if ( _object->worldX < 0 ) {
-            _object->worldX = 0;
-        }
-
-        if ( _object->worldY < 0 ) {
-            _object->worldY = 0;
-        }
-
-        if ( _object->worldX > 0 ) {
-            _object->worldX = _object->worldXMax;
-        }
-
-        if ( _object->worldY > 0 ) {
-            _object->worldY = _object->worldYMax;
-        }
+        _object->worldY = __builtin_fminf(
+            __builtin_fmaxf( _object->worldY, _object->worldYMin ),
+            _object->worldYMax );
 
         l_returnValue = true;
     }
