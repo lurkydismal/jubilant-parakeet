@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <xxhash.h>
 
@@ -337,3 +338,26 @@ static FORCE_INLINE bool _contains( const size_t* restrict _array,
 
 // Utility OS specific functions ( no side-effects )
 char* getApplicationDirectoryAbsolutePath( void );
+
+static FORCE_INLINE bool checkPathIsDirectory( const char* restrict _path ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
+        struct stat l_pathInformation;
+
+        l_returnValue = ( stat( _path, &l_pathInformation ) == 0 );
+
+        if ( l_returnValue ) {
+            goto EXIT;
+        }
+
+        l_returnValue = ( l_pathInformation.st_mode & S_IFDIR );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}

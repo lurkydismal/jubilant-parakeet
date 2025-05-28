@@ -26,6 +26,8 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
                        const SDL_FRect* restrict _targetRectangle,
                        size_t _startIndex,
                        size_t _endIndex );
+
+// X Y Width Height StartIndex-EndIndex
 bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                                   const char* restrict _string );
 bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,

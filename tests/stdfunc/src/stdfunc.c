@@ -1004,3 +1004,17 @@ TEST( contains ) {
         ASSERT_FALSE( contains( NULL, 0, 0 ) );
     }
 }
+
+TEST( getApplicationDirectoryAbsolutePath ) {
+    char* l_path = getApplicationDirectoryAbsolutePath();
+
+    ASSERT_NOT_EQ( "%p", l_path, NULL );
+
+    free( l_path );
+}
+
+TEST( checkPathIsDirectory ) {
+    bool l_returnValue = checkPathIsDirectory( "TEST" );
+
+    ASSERT_FALSE( l_returnValue );
+}

@@ -40,6 +40,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// First file - boxes
 bool state_t$load$fromFiles( state_t* restrict _state,
                              char* const* restrict _files ) {
     bool l_returnValue = false;
@@ -53,18 +54,43 @@ bool state_t$load$fromFiles( state_t* restrict _state,
     }
 
     {
-        l_returnValue = animation_t$load$fromFiles(
-            &( _state->animation ), _state->renderer, &( _files[ 1 ] ) );
+        // Animation
+        {
+            char** l_animation = createArray( char* );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
+            FOR_ARRAY( char* const*, _files ) {
+                // Skip first element
+                if ( UNLIKELY( _files == _element ) ) {
+                    continue;
+                }
+
+                insertIntoArray( &l_animation, *_element );
+            }
+
+            l_returnValue = animation_t$load$fromFiles(
+                &( _state->animation ), _state->renderer, l_animation );
+
+            FREE_ARRAY( l_animation );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
         }
 
-        l_returnValue = boxes_t$load$fromFiles(
-            &( _state->boxes ), arrayFirstElementPointer( _files ) );
+        // Boxes
+        {
+            char** l_boxes = createArray( char* );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
+            insertIntoArray( &l_boxes, arrayFirstElement( _files ) );
+
+            l_returnValue =
+                boxes_t$load$fromFiles( &( _state->boxes ), l_boxes );
+
+            FREE_ARRAY( l_boxes );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;

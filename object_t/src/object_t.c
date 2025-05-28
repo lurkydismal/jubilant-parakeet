@@ -38,7 +38,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool object_t$add$state$fromFiles( object_t* restrict _object,
+bool object_t$state$add$fromFiles( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* const* restrict _files,
                                    bool _isActionable,

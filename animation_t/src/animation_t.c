@@ -66,6 +66,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
     {
         {
+            // Properties will be printed in boxes_t$load$one
             log$transaction$query$format( ( logLevel_t )debug,
                                           "Animation properties: Size = %zu\n",
                                           _asset->size );
@@ -125,13 +126,16 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
         l_returnValue = true;
 
         FOR_ARRAY( char* const*, _files ) {
-            log$transaction$query$format(
-                ( logLevel_t )debug, "Loading file: \"%s\" as animation_t\n",
-                *_element );
+            log$transaction$query$format( ( logLevel_t )debug,
+                                          "Loading file: '%s' as animation_t\n",
+                                          *_element );
 
             char** l_animationProperties =
                 splitStringIntoArrayBySymbol( *_element, '_' );
 
+            // File Name
+            // Width x Height
+            // StartIndex - EndIndex
             if ( UNLIKELY( arrayLength( l_animationProperties ) != 3 ) ) {
                 l_returnValue = false;
 
@@ -144,22 +148,19 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
             // Target rectangle
             {
                 char* l_targetRectangleSizeAsString =
-                    l_animationProperties[ 0 ];
+                    l_animationProperties[ 1 ];
 
                 {
                     char** l_targetRectangleWidthAndHeight =
                         splitStringIntoArrayBySymbol(
                             l_targetRectangleSizeAsString, 'x' );
 
-                    const float l_targetRectangleWidth = strtof(
+                    l_targetRectangle.w = strtof(
                         arrayFirstElement( l_targetRectangleWidthAndHeight ),
                         NULL );
-                    const float l_targetRectangleHeight = strtof(
+                    l_targetRectangle.h = strtof(
                         arrayLastElement( l_targetRectangleWidthAndHeight ),
                         NULL );
-
-                    l_targetRectangle.w = l_targetRectangleWidth;
-                    l_targetRectangle.h = l_targetRectangleHeight;
 
                     FREE_ARRAY_ELEMENTS( l_targetRectangleWidthAndHeight );
                     FREE_ARRAY( l_targetRectangleWidthAndHeight );
@@ -172,7 +173,7 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
             // Start and End indexes
             {
                 char** l_startAndEndIndexAsString =
-                    splitStringIntoArray( l_animationProperties[ 1 ], "-" );
+                    splitStringIntoArray( l_animationProperties[ 2 ], "-" );
 
                 l_startIndex = strtoul(
                     arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );

@@ -25,6 +25,7 @@ typedef struct {
 state_t state_t$create( void );
 bool state_t$destroy( state_t* restrict _state );
 
+// First file - boxes
 bool state_t$load$fromFiles( state_t* restrict _state,
                              char* const* restrict _files );
 bool state_t$unload( state_t* restrict _state );

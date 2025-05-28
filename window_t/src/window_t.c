@@ -17,12 +17,18 @@ window_t window_t$create( void ) {
 bool window_t$destroy( window_t* restrict _window ) {
     bool l_returnValue = false;
 
+    if ( UNLIKELY( !_window ) ) {
+        goto EXIT;
+    }
+
     {
         if ( UNLIKELY( !( _window->name ) ) ) {
             goto EXIT;
         }
 
         free( _window->name );
+
+        _window->name = NULL;
 
         l_returnValue = true;
     }
