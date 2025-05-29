@@ -2,6 +2,7 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
+#include "FPS.h"
 #include "applicationState_t.h"
 #include "camera_t.h"
 #include "log.h"
@@ -28,7 +29,7 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
         char** files = createArray( char* );
 
         insertIntoArray( &files, "test.boxes" );
-        insertIntoArray( &files, "test_100x100_1-2.png" );
+        insertIntoArray( &files, "test_1280x720_1-2.png" );
 
         bool ret = object_t$state$add$fromFiles( &( cam.object ),
                                                  l_applicationState->renderer,
@@ -47,6 +48,10 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
     }
 
     if ( UNLIKELY( !vsync$begin() ) ) {
+        l_returnValue = SDL_APP_FAILURE;
+
+        log$transaction$query( ( logLevel_t )error, "Vsync begin\n" );
+
         goto EXIT;
     }
 
@@ -54,10 +59,23 @@ SDL_AppResult SDL_AppIterate( void* _applicationState ) {
     {
         SDL_RenderClear( l_applicationState->renderer );
 
+        {
+            bool ret =
+                object_t$render( &( cam.object ), &( cam.object ), true );
+
+            if ( !ret ) {
+                log$transaction$query( ( logLevel_t )error, "2\n" );
+            }
+        }
+
         SDL_RenderPresent( l_applicationState->renderer );
     }
 
     if ( UNLIKELY( !vsync$end() ) ) {
+        l_returnValue = SDL_APP_FAILURE;
+
+        log$transaction$query( ( logLevel_t )error, "Vsync end\n" );
+
         goto EXIT;
     }
 

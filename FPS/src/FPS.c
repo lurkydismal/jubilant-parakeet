@@ -15,7 +15,7 @@ static size_t* g_totalFramesPassed = NULL;
 static void* FPS$count( void* _data ) {
     ( void )( sizeof( _data ) );
 
-    struct timespec l_sleepTime = { .tv_sec = 1, .tv_nsec = 0 };
+    const struct timespec l_sleepTime = { .tv_sec = 1, .tv_nsec = 0 };
 
     size_t l_previousTotalFramesPerSecond = 0;
 
@@ -74,6 +74,12 @@ EXIT:
 bool FPS$quit( void ) {
     bool l_returnValue = false;
 
+    if ( UNLIKELY( !g_totalFramesPassed ) ) {
+        l_returnValue = false;
+
+        goto EXIT;
+    }
+
     {
         g_shouldFPSCountThreadWork = false;
 
@@ -86,6 +92,7 @@ bool FPS$quit( void ) {
         l_returnValue = true;
     }
 
+EXIT:
     return ( l_returnValue );
 }
 
@@ -93,7 +100,7 @@ size_t FPS$get$current( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        l_returnValue = 0;
+        l_returnValue = SIZE_MAX;
 
         goto EXIT;
     }
@@ -110,7 +117,7 @@ size_t FPS$get$total( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        l_returnValue = 0;
+        l_returnValue = SIZE_MAX;
 
         goto EXIT;
     }
