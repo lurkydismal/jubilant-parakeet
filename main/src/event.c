@@ -1,9 +1,96 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 #include "applicationState_t.h"
 #include "log.h"
+#include "stdfunc.h"
+
+typedef SDL_Event event_t;
+
+static FORCE_INLINE bool windowResize(
+    applicationState_t* restrict _applicationState,
+    event_t* restrict _event ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_applicationState ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_event ) ) {
+        goto EXIT;
+    }
+
+    {
+        static size_t l_lastResize = 0;
+
+        // TODO: Refactor
+        if ( l_lastResize < _applicationState->totalFramesRendered ) {
+            int l_newWidth = _event->window.data1;
+            int l_newHeight = _event->window.data2;
+
+            float l_scaleX =
+                ( float )l_newWidth / ( float )_applicationState->logicalWidth;
+            float l_scaleY = ( float )l_newHeight /
+                             ( float )_applicationState->logicalHeight;
+
+            if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
+                                      l_scaleY ) ) {
+                l_returnValue = false;
+
+                log$transaction$query$format( ( logLevel_t )error,
+                                              "Setting render scale: '%s'\n",
+                                              SDL_GetError() );
+
+                goto EXIT;
+            }
+        }
+
+        l_lastResize = _applicationState->totalFramesRendered;
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool event( applicationState_t* _applicationState,
+                                event_t* _event ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_applicationState ) ) {
+        goto EXIT;
+    }
+
+    {
+        ( void )( sizeof( _applicationState ) );
+
+        switch ( _event->type ) {
+            case ( SDL_EVENT_QUIT ): {
+                l_returnValue = false;
+
+                goto EXIT;
+            }
+
+            case SDL_EVENT_WINDOW_RESIZED: {
+                windowResize( _applicationState, _event );
+
+                break;
+            }
+
+            default: {
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
 
 SDL_AppResult SDL_AppEvent( void* _applicationState, SDL_Event* _event ) {
     SDL_AppResult l_returnValue = SDL_APP_FAILURE;
@@ -11,46 +98,10 @@ SDL_AppResult SDL_AppEvent( void* _applicationState, SDL_Event* _event ) {
     applicationState_t* l_applicationState =
         ( applicationState_t* )_applicationState;
 
-    ( void )( sizeof( l_applicationState ) );
+    event_t* l_event = ( event_t* )_event;
 
-    switch ( _event->type ) {
-        case ( SDL_EVENT_QUIT ): {
-            l_returnValue = SDL_APP_SUCCESS;
-
-            goto EXIT;
-        }
-
-        case SDL_EVENT_WINDOW_RESIZED: {
-            static size_t l_lastResize = 0;
-
-            // TODO: Refactor
-            if ( l_lastResize < l_applicationState->totalFramesRendered ) {
-                int l_newWidth = _event->window.data1;
-                int l_newHeight = _event->window.data2;
-                float l_scaleX = ( float )l_newWidth /
-                                 ( float )l_applicationState->logicalWidth;
-                float l_scaleY = ( float )l_newHeight /
-                                 ( float )l_applicationState->logicalHeight;
-
-                if ( !SDL_SetRenderScale( l_applicationState->renderer,
-                                          l_scaleX, l_scaleY ) ) {
-                    l_returnValue = SDL_APP_FAILURE;
-
-                    log$transaction$query$format(
-                        ( logLevel_t )error, "Setting render scale: '%s'\n",
-                        SDL_GetError() );
-
-                    goto EXIT;
-                }
-            }
-
-            l_lastResize = l_applicationState->totalFramesRendered;
-
-            break;
-        }
-
-        default: {
-        }
+    if ( UNLIKELY( !event( l_applicationState, l_event ) ) ) {
+        goto EXIT;
     }
 
     l_returnValue = SDL_APP_CONTINUE;

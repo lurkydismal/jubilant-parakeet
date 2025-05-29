@@ -1,6 +1,7 @@
 #!/bin/bash
 declare -a partsToBuild=(
     "FPS"
+    "player_t"
     "camera_t"
     "object_t"
     "state_t"
@@ -17,6 +18,7 @@ declare -a partsToBuild=(
 declare -a testsToBuild=(
     "FPS"
     # "camera_t"
+    "player_t"
     "object_t"
     "state_t"
     "animation_t"

@@ -5,6 +5,9 @@
 
 #include "state_t.h"
 
+// TODO: Improve
+typedef struct camera_t camera_t;
+
 #define DEFAULT_OBJECT   \
     { .states = NULL,    \
       .currentState = 0, \
@@ -45,5 +48,5 @@ bool object_t$step( object_t* restrict _object,
                     float _velocityX,
                     float _velocityY );
 bool object_t$render( const object_t* restrict _object,
-                      const object_t* restrict _camera,
+                      const camera_t* restrict _camera,
                       bool _doDrawBoxes );

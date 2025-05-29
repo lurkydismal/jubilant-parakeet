@@ -11,6 +11,9 @@ settings_t settings_t$create( void ) {
 
     {
         l_returnValue.window = window_t$create();
+        // TODO: Improve
+        l_returnValue.version = duplicateString( DEFAULT_SETTINGS_VERSION );
+        l_returnValue.identifier = duplicateString( l_returnValue.window.name );
     }
 
     return ( l_returnValue );
@@ -29,6 +32,14 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
+
+        free( _settings->version );
+
+        _settings->version = NULL;
+
+        free( _settings->identifier );
+
+        _settings->identifier = NULL;
 
         l_returnValue = true;
     }

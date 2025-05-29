@@ -309,12 +309,9 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
             }
         }
 
-        {
-            const size_t l_boxCount = arrayLength( _boxes->keyFrames );
-
-            log$transaction$query$format( ( logLevel_t )debug,
-                                          "Loaded %zu boxes\n", l_boxCount );
-        }
+        log$transaction$query$format(
+            ( logLevel_t )debug, "Loaded %zu boxes and %zu frames\n",
+            arrayLength( _boxes->keyFrames ), arrayLength( _boxes->frames ) );
 
         l_returnValue = true;
     }
