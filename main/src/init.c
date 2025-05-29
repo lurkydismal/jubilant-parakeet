@@ -74,7 +74,11 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
 
         // Generate application state
         {
-            applicationState_t l_applicationState = applicationState_t$create();
+            // TODO: Free on error
+            applicationState_t* l_applicationState =
+                ( applicationState_t* )malloc( sizeof( applicationState_t ) );
+
+            *l_applicationState = applicationState_t$create();
 
             // Asset loader
             {
@@ -89,7 +93,7 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
             // Settings
             {
                 if ( UNLIKELY( !settings_t$load$fromPath(
-                         &( l_applicationState.settings ), SETTINGS_FILE_NAME,
+                         &( l_applicationState->settings ), SETTINGS_FILE_NAME,
                          SETTINGS_FILE_EXTENSION ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
                                            "Loading settings\n" );
@@ -97,18 +101,18 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
                     log$transaction$query( ( logLevel_t )info,
                                            "Loading default settings\n" );
 
-                    l_applicationState.settings = settings_t$create();
+                    l_applicationState->settings = settings_t$create();
                 }
             }
 
             // Window and Renderer
             {
                 if ( UNLIKELY( !SDL_CreateWindowAndRenderer(
-                         l_applicationState.settings.window.name,
-                         l_applicationState.settings.window.height,
-                         l_applicationState.settings.window.width, 0,
-                         &( l_applicationState.window ),
-                         &( l_applicationState.renderer ) ) ) ) {
+                         l_applicationState->settings.window.name,
+                         l_applicationState->settings.window.height,
+                         l_applicationState->settings.window.width, 0,
+                         &( l_applicationState->window ),
+                         &( l_applicationState->renderer ) ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
                         "Window or Renderer creation: '%s'\n", SDL_GetError() );
@@ -117,12 +121,34 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
                 }
             }
 
+            // Scaling
+#if 0
+            // TODO: Fix
+            {
+                float l_scaleX =
+                    ( ( float )( l_applicationState->settings.window.width ) /
+                      ( float )( l_applicationState->logicalWidth ) );
+                float l_scaleY =
+                    ( ( float )( l_applicationState->settings.window.height ) /
+                      ( float )( l_applicationState->logicalHeight ) );
+
+                if ( !SDL_SetRenderScale( l_applicationState->renderer,
+                                          l_scaleX, l_scaleY ) ) {
+                    log$transaction$query$format(
+                        ( logLevel_t )error, "Setting render scale: '%s'\n",
+                        SDL_GetError() );
+
+                    goto EXIT;
+                }
+            }
+#endif
+
             // Vsync
             {
                 if ( UNLIKELY( !vsync$init(
-                         l_applicationState.settings.window.vsync,
-                         l_applicationState.settings.window.desiredFPS,
-                         l_applicationState.renderer ) ) ) {
+                         l_applicationState->settings.window.vsync,
+                         l_applicationState->settings.window.desiredFPS,
+                         l_applicationState->renderer ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
                                            "Initializing Vsync\n" );
 
@@ -130,24 +156,18 @@ SDL_AppResult SDL_AppInit( void** _applicationState,
                 }
             }
 
-            {
-                *_applicationState = malloc( sizeof( applicationState_t ) );
-
-                __builtin_memcpy( *_applicationState, &l_applicationState,
-                                  sizeof( applicationState_t ) );
-            }
-
             // FPS
             {
                 if ( UNLIKELY( !FPS$init(
-                         &( ( ( applicationState_t* )_applicationState )
-                                ->totalFramesRendered ) ) ) ) {
+                         &l_applicationState->totalFramesRendered ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
                                            "Initializing FPS\n" );
 
                     goto EXIT;
                 }
             }
+
+            *_applicationState = l_applicationState;
         }
 
         l_returnValue = SDL_APP_CONTINUE;

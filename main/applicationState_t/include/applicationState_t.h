@@ -10,13 +10,18 @@
     { .window = NULL,               \
       .renderer = NULL,             \
       .settings = DEFAULT_SETTINGS, \
-      .totalFramesRendered = 0 }
+      .totalFramesRendered = 0,     \
+      .logicalWidth = 1280,         \
+      .logicalHeight = 720 }
 
 typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
     settings_t settings;
     size_t totalFramesRendered;
+    // TODO: Refactor
+    size_t logicalWidth;
+    size_t logicalHeight;
 } applicationState_t;
 
 applicationState_t applicationState_t$create( void );
