@@ -4,6 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <stdbool.h>
 
+#include "camera_t.h"
 #include "settings_t.h"
 
 #define DEFAULT_APPLICATION_STATE   \
@@ -19,6 +20,7 @@ typedef struct {
     SDL_Renderer* renderer;
     settings_t settings;
     size_t totalFramesRendered;
+    camera_t camera;
     // TODO: Refactor
     size_t logicalWidth;
     size_t logicalHeight;

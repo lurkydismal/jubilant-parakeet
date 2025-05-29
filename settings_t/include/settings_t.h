@@ -3,15 +3,23 @@
 #include <stdbool.h>
 
 #include "asset_t.h"
+#include "stdfloat16.h"
 #include "window_t.h"
 
-#define DEFAULT_SETTINGS \
-    { .window = DEFAULT_WINDOW, .limitedLoopDesiredFPS = 60 }
+#define DEFAULT_SETTINGS_VERSION "0.1"
+
+#define DEFAULT_SETTINGS           \
+    { .window = DEFAULT_WINDOW,    \
+      .limitedLoopDesiredFPS = 60, \
+      .version = NULL,             \
+      .identifier = NULL }
 
 // All available customization
 typedef struct {
     window_t window;
     size_t limitedLoopDesiredFPS;
+    char* version;
+    char* identifier;
 } settings_t;
 
 settings_t settings_t$create( void );

@@ -76,16 +76,30 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
                 SDL_IOStream* l_stream =
                     SDL_IOFromConstMem( _asset->data, _asset->size );
 
+                if ( UNLIKELY( !l_stream ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading animation from asset\n" );
+
+                    goto EXIT;
+                }
+
                 SDL_Texture* l_texture =
                     IMG_LoadTexture_IO( _renderer, l_stream, true );
+
+                if ( UNLIKELY( !l_texture ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Creating texture from asset\n" );
+
+                    goto EXIT;
+                }
 
                 insertIntoArray( &( _animation->keyFrames ), l_texture );
             }
 
             // Fill key frame index in frames
             FOR_RANGE( size_t, _startIndex, _endIndex ) {
-                _animation->frames[ _index - 1 ] =
-                    ( arrayLength( _animation->keyFrames ) - 1 );
+                insertIntoArray( &( _animation->frames ),
+                                 ( arrayLength( _animation->keyFrames ) - 1 ) );
             }
         }
 
@@ -223,8 +237,10 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
             }
         }
 
-        log$transaction$query$format( ( logLevel_t )debug, "Loaded %zu files\n",
-                                      arrayLength( _animation->keyFrames ) );
+        log$transaction$query$format( ( logLevel_t )debug,
+                                      "Loaded %zu files and %zu frames\n",
+                                      arrayLength( _animation->keyFrames ),
+                                      arrayLength( _animation->frames ) );
 
         l_returnValue = true;
     }

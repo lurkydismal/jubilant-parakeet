@@ -5,10 +5,6 @@
 camera_t camera_t$create( void ) {
     camera_t l_returnValue = DEFAULT_CAMERA;
 
-    {
-        l_returnValue.object = object_t$create();
-    }
-
     return ( l_returnValue );
 }
 
@@ -20,12 +16,24 @@ bool camera_t$destroy( camera_t* _camera ) {
     }
 
     {
-        l_returnValue = object_t$destroy( &( _camera->object ) );
+        _camera->worldX = 0;
+        _camera->worldY = 0;
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
+        l_returnValue = true;
+    }
 
+EXIT:
+    return ( l_returnValue );
+}
+
+bool camera_t$update( player_t* _player ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        goto EXIT;
+    }
+
+    {
         l_returnValue = true;
     }
 

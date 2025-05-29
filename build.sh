@@ -20,10 +20,10 @@ export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -fprofile-arcs -ftest-cover
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG"
 
 export declare BUILD_DEFINES=(
-    "YYJSON_DISABLE_WRITER"
-    "YYJSON_DISABLE_UTILS"
-    "YYJSON_DISABLE_NON_STANDARD"
-    "YYJSON_DISABLE_UTF8_VALIDATION"
+    "INI_ALLOW_MULTILINE"
+    "INI_INLINE_COMMENT_PREFIXES='#'"
+    "INI_STOP_ON_FIRST_ERROR"
+    "INI_HANDLER_LINENO"
 )
 
 export declare BUILD_DEFINES_DEBUG=(
@@ -47,6 +47,7 @@ export declare BUILD_INCLUDES=(
     "main/applicationState_t/include"
     "FPS/include"
     "camera_t/include"
+    "player_t/include"
     "object_t/include"
     "state_t/include"
     "animation_t/include"
@@ -75,6 +76,7 @@ export declare LIBRARIES_TO_LINK=(
 )
 export declare EXTERNAL_LIBRARIES_TO_LINK=(
     "snappy"
+    "inih"
     "sdl3"
     "sdl3-image"
 )

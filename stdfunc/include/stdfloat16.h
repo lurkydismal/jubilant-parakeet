@@ -40,6 +40,7 @@ typedef float16_t float16x16_t __attribute__( (
 typedef float16_t float16x32_t __attribute__( (
     vector_size( BITS_TO_BYTES( FLOAT16_TYPE_BIT_AMOUNT * 32 ) ) ) );
 
+// TODO: Refactor all functions
 static FORCE_INLINE uint16_t float16_bits( float16_t f ) {
     union {
         float16_t f;

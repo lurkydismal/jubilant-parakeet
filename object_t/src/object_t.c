@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_rect.h>
 
+#include "camera_t.h"
 #include "stdfunc.h"
 
 object_t object_t$create( void ) {
@@ -38,6 +39,11 @@ EXIT:
     return ( l_returnValue );
 }
 
+// First file - boxes
+// fileName_ColorAsHex.extension
+// X Y Width Height StartIndex-EndIndex
+// After - animation
+// fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromFiles( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* const* restrict _files,
@@ -147,7 +153,7 @@ EXIT:
 }
 
 bool object_t$render( const object_t* restrict _object,
-                      const object_t* restrict _camera,
+                      const camera_t* restrict _camera,
                       bool _doDrawBoxes ) {
     bool l_returnValue = false;
 
