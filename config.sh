@@ -1,13 +1,16 @@
 #!/bin/bash
 declare -a partsToBuild=(
+    "controls_t"
+    "input"
     "FPS"
     "player_t"
-    "camera_t"
     "object_t"
+    "camera_t"
     "state_t"
     "animation_t"
     "boxes_t"
     "color_t"
+    "config_t"
     "settings_t"
     "window_t"
     "vsync"
@@ -16,10 +19,11 @@ declare -a partsToBuild=(
     "stdfunc"
 )
 declare -a testsToBuild=(
+    # "input"
     "FPS"
-    # "camera_t"
     # "player_t"
     "object_t"
+    # "camera_t"
     "state_t"
     "animation_t"
     "boxes_t"

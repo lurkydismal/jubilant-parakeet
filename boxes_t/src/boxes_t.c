@@ -58,12 +58,16 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
     }
 
     {
+#if defined( LOG_BOXES )
+
         log$transaction$query$format(
             ( logLevel_t )debug,
             "Box properties: X = %f, Y = %f, Width = %f"
             ", Heigth = %f, Start = %zu, End = %zu\n",
             _targetRectangle->x, _targetRectangle->y, _targetRectangle->w,
             _targetRectangle->h, _startIndex, _endIndex );
+
+#endif
 
         // Key frame
         {
@@ -127,8 +131,12 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
     }
 
     {
+#if defined( LOG_BOXES )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Boxes loading string: '%s'\n", _string );
+
+#endif
 
         char** l_boxProperties = splitStringIntoArrayBySymbol( _string, ' ' );
 
@@ -195,9 +203,13 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
     }
 
     {
+#if defined( LOG_BOXES )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Boxes loading asset: Size = %zu\n",
                                       _asset->size );
+
+#endif
 
         char* l_dataWithNull =
             ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
@@ -206,9 +218,13 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 
         l_dataWithNull[ _asset->size ] = '\0';
 
+#if defined( LOG_BOXES )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Boxes loading asset: Data = '%s'\n",
                                       l_dataWithNull );
+
+#endif
 
         char** l_lines = splitStringIntoArrayBySymbol( l_dataWithNull, '\n' );
 
@@ -247,9 +263,13 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
 
     {
         FOR_ARRAY( char* const*, _files ) {
+#if defined( LOG_BOXES )
+
             log$transaction$query$format( ( logLevel_t )debug,
                                           "Loading file: '%s' as boxes_t\n",
                                           *_element );
+
+#endif
 
             asset_t l_asset = asset_t$create();
 
@@ -300,18 +320,26 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
                 {
                     l_colorAsString = color_t$convert$toString( &l_color );
 
+#if defined( LOG_BOXES )
+
                     log$transaction$query$format( ( logLevel_t )debug,
                                                   "Box color: '%s'\n",
                                                   l_colorAsString );
+
+#endif
 
                     free( l_colorAsString );
                 }
             }
         }
 
+#if defined( LOG_BOXES )
+
         log$transaction$query$format(
             ( logLevel_t )debug, "Loaded %zu boxes and %zu frames\n",
             arrayLength( _boxes->keyFrames ), arrayLength( _boxes->frames ) );
+
+#endif
 
         l_returnValue = true;
     }

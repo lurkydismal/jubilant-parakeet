@@ -66,10 +66,14 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
     {
         {
+#if defined( LOG_ANIMATION )
+
             // Properties will be printed in boxes_t$load$one
             log$transaction$query$format( ( logLevel_t )debug,
                                           "Animation properties: Size = %zu\n",
                                           _asset->size );
+
+#endif
 
             // Key frame
             {
@@ -140,9 +144,13 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
         l_returnValue = true;
 
         FOR_ARRAY( char* const*, _files ) {
+#if defined( LOG_ANIMATION )
+
             log$transaction$query$format( ( logLevel_t )debug,
                                           "Loading file: '%s' as animation_t\n",
                                           *_element );
+
+#endif
 
             char** l_animationProperties =
                 splitStringIntoArrayBySymbol( *_element, '_' );
@@ -237,10 +245,14 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
             }
         }
 
+#if defined( LOG_ANIMATION )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Loaded %zu files and %zu frames\n",
                                       arrayLength( _animation->keyFrames ),
                                       arrayLength( _animation->frames ) );
+
+#endif
 
         l_returnValue = true;
     }
