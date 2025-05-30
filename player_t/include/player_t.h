@@ -4,9 +4,6 @@
 
 #include "object_t.h"
 
-// TODO: Improve
-typedef struct camera_t camera_t;
-
 #define DEFAULT_PLAYER { .object = DEFAULT_OBJECT }
 
 typedef struct {
@@ -32,5 +29,5 @@ bool player_t$step( player_t* restrict _player,
                     float _velocityX,
                     float _velocityY );
 bool player_t$render( const player_t* restrict _player,
-                      const camera_t* restrict _camera,
+                      const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes );

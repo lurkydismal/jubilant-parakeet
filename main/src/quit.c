@@ -38,7 +38,6 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
     }
 
     {
-        // TODO: Improve
         {
             const char* l_SDLErrorMessage = SDL_GetError();
 
@@ -120,8 +119,9 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
         if ( _result != ( result_t )success ) {
             log$transaction$query$format(
-                ( logLevel_t )error, "Application exited with code %u: '%s'\n",
-                _result, SDL_GetError() );
+                ( logLevel_t )error,
+                "Application shutdown with code %u: '%s'\n", _result,
+                SDL_GetError() );
         }
 
         l_returnValue = true;

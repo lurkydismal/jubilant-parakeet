@@ -12,6 +12,7 @@
       .renderer = NULL,             \
       .settings = DEFAULT_SETTINGS, \
       .totalFramesRendered = 0,     \
+      .camera = DEFAULT_CAMERA,     \
       .logicalWidth = 1280,         \
       .logicalHeight = 720 }
 
@@ -21,7 +22,6 @@ typedef struct {
     settings_t settings;
     size_t totalFramesRendered;
     camera_t camera;
-    // TODO: Refactor
     size_t logicalWidth;
     size_t logicalHeight;
 } applicationState_t;

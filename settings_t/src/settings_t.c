@@ -11,7 +11,6 @@ settings_t settings_t$create( void ) {
 
     {
         l_returnValue.window = window_t$create();
-        // TODO: Improve
         l_returnValue.version = duplicateString( DEFAULT_SETTINGS_VERSION );
         l_returnValue.identifier = duplicateString( l_returnValue.window.name );
     }

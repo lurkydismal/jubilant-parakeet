@@ -68,57 +68,10 @@ static FORCE_INLINE bool iterate(
                 }
             }
 
-            {
-                char** files = createArray( char* );
-
-                insertIntoArray( &files, "test2.boxes" );
-                insertIntoArray( &files, "test_1280x720_1-2.png" );
-
-                p2 = player_t$create();
-
-                FREE_ARRAY( files );
-
-                bool ret = true;
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-
-            {
-                char** files = createArray( char* );
-
-                insertIntoArray( &files, "test3.boxes" );
-                insertIntoArray( &files, "test_1280x720_1-2.png" );
-
-                p3 = player_t$create();
-
-                FREE_ARRAY( files );
-
-                bool ret = true;
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-
-            {
-                char** files = createArray( char* );
-
-                insertIntoArray( &files, "test4.boxes" );
-                insertIntoArray( &files, "test_1280x720_1-2.png" );
-
-                p4 = player_t$create();
-
-                FREE_ARRAY( files );
-
-                bool ret = true;
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-
+            _applicationState->camera.rectangle.w =
+                _applicationState->logicalWidth;
+            _applicationState->camera.rectangle.w =
+                _applicationState->logicalHeight;
             _applicationState->camera.logicalWidth =
                 _applicationState->logicalWidth;
             _applicationState->camera.logicalHeight =
@@ -138,15 +91,15 @@ static FORCE_INLINE bool iterate(
             SDL_RenderClear( _applicationState->renderer );
 
             if ( x ) {
-                bool ret = object_t$render( &bg, &( _applicationState->camera ),
-                                            true );
+                bool ret = object_t$render(
+                    &bg, &( _applicationState->camera.rectangle ), true );
 
                 if ( !ret ) {
                     goto EXIT;
                 }
 
-                ret = player_t$render( &p1, &( _applicationState->camera ),
-                                       true );
+                ret = player_t$render(
+                    &p1, &( _applicationState->camera.rectangle ), true );
 
                 if ( !ret ) {
                     goto EXIT;
