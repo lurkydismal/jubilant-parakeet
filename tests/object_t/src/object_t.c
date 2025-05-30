@@ -24,7 +24,7 @@ TEST( object_t$destroy ) {
     }
 }
 
-TEST( object_t$move_fuzzy ) {
+TEST( object_t$move ) {
     // NULL pointer must return false
     bool l_returnValue = object_t$move( NULL, 1.0f, 1.0f );
 
