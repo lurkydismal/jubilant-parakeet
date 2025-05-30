@@ -118,6 +118,11 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
             }
+
+            _applicationState->camera.logicalWidth =
+                _applicationState->logicalWidth;
+            _applicationState->camera.logicalHeight =
+                _applicationState->logicalHeight;
         }
 
         if ( UNLIKELY( !vsync$begin() ) ) {
@@ -141,7 +146,7 @@ static FORCE_INLINE bool iterate(
                 }
 
                 ret = player_t$render( &p1, &( _applicationState->camera ),
-                                       false );
+                                       true );
 
                 if ( !ret ) {
                     goto EXIT;
@@ -153,7 +158,7 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
 
-                ret = camera_t$update( &p1 );
+                ret = camera_t$update( &( _applicationState->camera ), &p1 );
 
                 if ( !ret ) {
                     goto EXIT;

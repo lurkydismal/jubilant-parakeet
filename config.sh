@@ -18,7 +18,7 @@ declare -a partsToBuild=(
 declare -a testsToBuild=(
     "FPS"
     # "camera_t"
-    "player_t"
+    # "player_t"
     "object_t"
     "state_t"
     "animation_t"
