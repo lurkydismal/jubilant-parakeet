@@ -10,16 +10,13 @@
 
 typedef SDL_Event event_t;
 
-static FORCE_INLINE bool windowResize(
+static FORCE_INLINE bool onWindowResize(
     applicationState_t* restrict _applicationState,
-    event_t* restrict _event ) {
+    float _width,
+    float _height ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        goto EXIT;
-    }
-
-    if ( UNLIKELY( !_event ) ) {
         goto EXIT;
     }
 
@@ -29,13 +26,11 @@ static FORCE_INLINE bool windowResize(
             _applicationState->totalFramesRendered;
 
         if ( l_lastResizeFrameIndex < l_totalFramesRendered ) {
-            const float l_newWidth = ( float )( _event->window.data1 );
-            const float l_newHeight = ( float )( _event->window.data2 );
             const float l_logicalWidth = _applicationState->logicalWidth;
             const float l_logicalHeigth = _applicationState->logicalHeight;
 
-            const float l_scaleX = ( l_newWidth / l_logicalWidth );
-            const float l_scaleY = ( l_newHeight / l_logicalHeigth );
+            const float l_scaleX = ( _width / l_logicalWidth );
+            const float l_scaleY = ( _height / l_logicalHeigth );
 
             if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
                                       l_scaleY ) ) {
@@ -58,6 +53,22 @@ EXIT:
     return ( l_returnValue );
 }
 
+static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
+                                SDL_Scancode _scancode ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_applicationState ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 static FORCE_INLINE bool event( applicationState_t* _applicationState,
                                 event_t* _event ) {
     bool l_returnValue = false;
@@ -67,8 +78,6 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
     }
 
     {
-        ( void )( sizeof( _applicationState ) );
-
         switch ( _event->type ) {
             case ( SDL_EVENT_QUIT ): {
                 l_returnValue = false;
@@ -77,7 +86,16 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
             }
 
             case SDL_EVENT_WINDOW_RESIZED: {
-                windowResize( _applicationState, _event );
+                float l_newWidth = _event->window.data1;
+                float l_newHeight = _event->window.data2;
+
+                onWindowResize( _applicationState, l_newHeight, l_newWidth );
+
+                break;
+            }
+
+            case SDL_EVENT_KEY_DOWN: {
+                onKey( _applicationState, _event->key.scancode );
 
                 break;
             }

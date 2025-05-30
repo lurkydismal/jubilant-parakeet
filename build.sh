@@ -45,14 +45,17 @@ export declare BUILD_DEFINES_TESTS=(
 
 export declare BUILD_INCLUDES=(
     "main/applicationState_t/include"
+    "controls_t/include"
+    "input/include"
     "FPS/include"
-    "camera_t/include"
     "player_t/include"
     "object_t/include"
+    "camera_t/include"
     "state_t/include"
     "animation_t/include"
     "boxes_t/include"
     "color_t/include"
+    "config_t/include"
     "settings_t/include"
     "window_t/include"
     "vsync/include"

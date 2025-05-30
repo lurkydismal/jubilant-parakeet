@@ -1,5 +1,6 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_timer.h>
 #include <SDL3/SDL_video.h>
 #include <stdbool.h>
 
@@ -19,25 +20,20 @@ static FORCE_INLINE bool iterate(
 
     {
         static bool x = false;
-        static object_t bg;
-        static player_t p1;
-        static player_t p2;
-        static player_t p3;
-        static player_t p4;
 
         if ( !x ) {
             x = true;
 
+            // bg
             {
-                bg = object_t$create();
-
                 char** files = createArray( char* );
 
                 insertIntoArray( &files, "test.boxes" );
                 insertIntoArray( &files, "test_1280x720_1-2.png" );
 
                 bool ret = object_t$state$add$fromFiles(
-                    &bg, _applicationState->renderer, files, false, false );
+                    &( _applicationState->background ),
+                    _applicationState->renderer, files, false, false );
 
                 FREE_ARRAY( files );
 
@@ -52,13 +48,13 @@ static FORCE_INLINE bool iterate(
                 insertIntoArray( &files, "test1.boxes" );
                 insertIntoArray( &files, "test_100x100_1-2.png" );
 
-                p1 = player_t$create();
-
                 bool ret = player_t$state$add$fromFiles(
-                    &( p1 ), _applicationState->renderer, files, false, false );
+                    &( _applicationState->localPlayer ),
+                    _applicationState->renderer, files, false, false );
 
-                p1.object.worldXMax = ( _applicationState->logicalWidth - 100 );
-                p1.object.worldYMax =
+                _applicationState->localPlayer.object.worldXMax =
+                    ( _applicationState->logicalWidth - 100 );
+                _applicationState->localPlayer.object.worldYMax =
                     ( _applicationState->logicalHeight - 100 );
 
                 FREE_ARRAY( files );
@@ -67,15 +63,6 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
             }
-
-            _applicationState->camera.rectangle.w =
-                _applicationState->logicalWidth;
-            _applicationState->camera.rectangle.w =
-                _applicationState->logicalHeight;
-            _applicationState->camera.logicalWidth =
-                _applicationState->logicalWidth;
-            _applicationState->camera.logicalHeight =
-                _applicationState->logicalHeight;
         }
 
         if ( UNLIKELY( !vsync$begin() ) ) {
@@ -86,32 +73,28 @@ static FORCE_INLINE bool iterate(
             goto EXIT;
         }
 
+        camera_t$update( &( _applicationState->camera ),
+                         &( _applicationState->localPlayer ) );
+
         // Render
         {
             SDL_RenderClear( _applicationState->renderer );
 
+            // Background
+            {
+                l_returnValue = object_t$render(
+                    &( _applicationState->background ),
+                    &( _applicationState->camera.rectangle ), false );
+
+                if ( UNLIKELY(!l_returnValue) ) {
+                    goto EXIT;
+                }
+            }
+
             if ( x ) {
-                bool ret = object_t$render(
-                    &bg, &( _applicationState->camera.rectangle ), true );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-
-                ret = player_t$render(
-                    &p1, &( _applicationState->camera.rectangle ), true );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-
-                ret = player_t$move( &p1, 3, 3 );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-
-                ret = camera_t$update( &( _applicationState->camera ), &p1 );
+                bool ret = player_t$render( &( _applicationState->localPlayer ),
+                                       &( _applicationState->camera.rectangle ),
+                                       true );
 
                 if ( !ret ) {
                     goto EXIT;
@@ -119,6 +102,20 @@ static FORCE_INLINE bool iterate(
             }
 
             SDL_RenderPresent( _applicationState->renderer );
+        }
+
+        // Step
+        {
+            // Background
+            {
+                l_returnValue = object_t$step(
+                    &( _applicationState->background ),
+                    0,0 );
+
+                if ( UNLIKELY(!l_returnValue) ) {
+                    goto EXIT;
+                }
+            }
         }
 
         if ( UNLIKELY( !vsync$end() ) ) {
