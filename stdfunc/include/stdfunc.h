@@ -112,6 +112,13 @@ static FORCE_INLINE bool stringToBool( const char* restrict _string ) {
     }
 }
 
+static FORCE_INLINE float clamp$float( float _value,
+                                       float _valueMin,
+                                       float _valueMax ) {
+    return (
+        __builtin_fminf( __builtin_fmaxf( _value, _valueMin ), _valueMax ) );
+}
+
 static FORCE_INLINE void trim( char** restrict _string,
                                const ssize_t _from,
                                const ssize_t _to ) {

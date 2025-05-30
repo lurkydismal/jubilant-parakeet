@@ -1,6 +1,7 @@
 #include "player_t.h"
 
-#include "camera_t.h"
+#include <SDL3/SDL_rect.h>
+
 #include "stdfunc.h"
 
 player_t player_t$create( void ) {
@@ -125,7 +126,7 @@ EXIT:
 }
 
 bool player_t$render( const player_t* restrict _player,
-                      const camera_t* restrict _camera,
+                      const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes ) {
     bool l_returnValue = false;
 
@@ -133,20 +134,13 @@ bool player_t$render( const player_t* restrict _player,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_camera ) ) {
+    if ( UNLIKELY( !_cameraRectangle ) ) {
         goto EXIT;
     }
 
     {
-        const SDL_FRect l_targetRectangle = {
-            .x = ( _player->object.worldX - _camera->worldX ),
-            .y = ( _player->object.worldY - _camera->worldY ),
-            .w = 0,
-            .h = 0 };
-
-        l_returnValue = state_t$render(
-            _player->object.states[ _player->object.currentState ],
-            &l_targetRectangle, _doDrawBoxes );
+        l_returnValue = object_t$render( &( _player->object ), _cameraRectangle,
+                                         _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;

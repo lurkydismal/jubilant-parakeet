@@ -1,19 +1,18 @@
 #pragma once
 
+#include <SDL3/SDL_rect.h>
 #include <stdbool.h>
 
 #include "player_t.h"
 
-#define DEFAULT_CAMERA { .worldX = 0, .worldY = 0 }
+#define DEFAULT_CAMERA \
+    { .zoom = 1, .zoomMin = 0.1, .zoomMax = 5, .rectangle = { 0, 0, 0, 0 } }
 
 typedef struct camera_t {
     float zoom;
     float zoomMin;
     float zoomMax;
-    float worldX;
-    float worldY;
-    float width;
-    float height;
+    SDL_FRect rectangle;
     float logicalWidth;
     float logicalHeight;
 } camera_t;

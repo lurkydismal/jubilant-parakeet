@@ -2,7 +2,6 @@
 
 #include <SDL3/SDL_rect.h>
 
-#include "camera_t.h"
 #include "stdfunc.h"
 
 object_t object_t$create( void ) {
@@ -105,15 +104,13 @@ bool object_t$move( object_t* restrict _object, float _x, float _y ) {
     {
         _object->worldX += _x;
 
-        _object->worldX = __builtin_fminf(
-            __builtin_fmaxf( _object->worldX, _object->worldXMin ),
-            _object->worldXMax );
+        _object->worldX = clamp$float( _object->worldX, _object->worldXMin,
+                                       _object->worldXMax );
 
         _object->worldY += _y;
 
-        _object->worldY = __builtin_fminf(
-            __builtin_fmaxf( _object->worldY, _object->worldYMin ),
-            _object->worldYMax );
+        _object->worldY = clamp$float( _object->worldY, _object->worldYMin,
+                                       _object->worldYMax );
 
         l_returnValue = true;
     }
@@ -153,7 +150,7 @@ EXIT:
 }
 
 bool object_t$render( const object_t* restrict _object,
-                      const camera_t* restrict _camera,
+                      const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes ) {
     bool l_returnValue = false;
 
@@ -161,14 +158,14 @@ bool object_t$render( const object_t* restrict _object,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_camera ) ) {
+    if ( UNLIKELY( !_cameraRectangle ) ) {
         goto EXIT;
     }
 
     {
         const SDL_FRect l_targetRectangle = {
-            .x = ( _object->worldX - _camera->worldX ),
-            .y = ( _object->worldY - _camera->worldY ),
+            .x = ( _object->worldX - _cameraRectangle->x ),
+            .y = ( _object->worldY - _cameraRectangle->y ),
             .w = 0,
             .h = 0 };
 

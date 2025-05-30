@@ -24,17 +24,18 @@ static FORCE_INLINE bool windowResize(
     }
 
     {
-        static size_t l_lastResize = 0;
+        static size_t l_lastResizeFrameIndex = 0;
+        const size_t l_totalFramesRendered =
+            _applicationState->totalFramesRendered;
 
-        // TODO: Refactor
-        if ( l_lastResize < _applicationState->totalFramesRendered ) {
-            int l_newWidth = _event->window.data1;
-            int l_newHeight = _event->window.data2;
+        if ( l_lastResizeFrameIndex < l_totalFramesRendered ) {
+            const float l_newWidth = ( float )( _event->window.data1 );
+            const float l_newHeight = ( float )( _event->window.data2 );
+            const float l_logicalWidth = _applicationState->logicalWidth;
+            const float l_logicalHeigth = _applicationState->logicalHeight;
 
-            float l_scaleX =
-                ( float )l_newWidth / ( float )_applicationState->logicalWidth;
-            float l_scaleY = ( float )l_newHeight /
-                             ( float )_applicationState->logicalHeight;
+            const float l_scaleX = ( l_newWidth / l_logicalWidth );
+            const float l_scaleY = ( l_newHeight / l_logicalHeigth );
 
             if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
                                       l_scaleY ) ) {
@@ -48,7 +49,7 @@ static FORCE_INLINE bool windowResize(
             }
         }
 
-        l_lastResize = _applicationState->totalFramesRendered;
+        l_lastResizeFrameIndex = l_totalFramesRendered;
 
         l_returnValue = true;
     }
