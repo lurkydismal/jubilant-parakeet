@@ -11,6 +11,7 @@ settings_t settings_t$create( void ) {
 
     {
         l_returnValue.window = window_t$create();
+        l_returnValue.controls = controls_t$create();
         l_returnValue.version = duplicateString( DEFAULT_SETTINGS_VERSION );
         l_returnValue.identifier = duplicateString( l_returnValue.window.name );
     }
@@ -63,14 +64,16 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Settings size: %zu\n", _asset->size );
 
-        char* l_data = ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
+        char* l_dataWithNull =
+            ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
 
-        __builtin_memcpy( l_data, _asset->data, _asset->size );
+        __builtin_memcpy( l_dataWithNull, _asset->data, _asset->size );
 
-        l_data[ _asset->size ] = '\0';
+        l_dataWithNull[ _asset->size ] = '\0';
 
         {
-            char** l_lines = splitStringIntoArrayBySymbol( l_data, '\n' );
+            char** l_lines =
+                splitStringIntoArrayBySymbol( l_dataWithNull, '\n' );
 
             if ( UNLIKELY( !arrayLength( l_lines ) ) ) {
                 goto EXIT_SETTINGS_DATA_LINES;
@@ -92,20 +95,59 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
         insertIntoArray( _array, l_settingsOptionAllocated );           \
     } )
 
-                    INSERT_SETTINGS_OPTION( &l_settingsOptions, "window_name",
-                                            &( _settings->window.name ) );
-                    INSERT_SETTINGS_OPTION( &l_settingsOptions, "window_width",
-                                            &( _settings->window.width ) );
-                    INSERT_SETTINGS_OPTION( &l_settingsOptions, "window_height",
-                                            &( _settings->window.height ) );
-                    INSERT_SETTINGS_OPTION( &l_settingsOptions,
-                                            "window_desired_FPS",
-                                            &( _settings->window.desiredFPS ) );
-                    INSERT_SETTINGS_OPTION( &l_settingsOptions, "window_vsync",
-                                            &( _settings->window.vsync ) );
-                    INSERT_SETTINGS_OPTION(
-                        &l_settingsOptions, "limited_loop_desired_FPS",
-                        &( _settings->limitedLoopDesiredFPS ) );
+                    // Window
+                    {
+                        INSERT_SETTINGS_OPTION( &l_settingsOptions,
+                                                "window_name",
+                                                &( _settings->window.name ) );
+                        INSERT_SETTINGS_OPTION( &l_settingsOptions,
+                                                "window_width",
+                                                &( _settings->window.width ) );
+                        INSERT_SETTINGS_OPTION( &l_settingsOptions,
+                                                "window_height",
+                                                &( _settings->window.height ) );
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "window_desired_FPS",
+                            &( _settings->window.desiredFPS ) );
+                        INSERT_SETTINGS_OPTION( &l_settingsOptions,
+                                                "window_vsync",
+                                                &( _settings->window.vsync ) );
+                    }
+
+                    // Controls
+                    {
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "up",
+                            &( _settings->controls.up.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "down",
+                            &( _settings->controls.down.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "left",
+                            &( _settings->controls.left.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "right",
+                            &( _settings->controls.right.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "A",
+                            &( _settings->controls.A.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "B",
+                            &( _settings->controls.B.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "C",
+                            &( _settings->controls.C.scancode ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "D",
+                            &( _settings->controls.D.scancode ) );
+                    }
 
 #undef INSERT_SETTINGS_OPTION
                 }
@@ -179,7 +221,7 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
             FREE_ARRAY( l_lines );
         }
 
-        free( l_data );
+        free( l_dataWithNull );
 
         l_returnValue = true;
     }

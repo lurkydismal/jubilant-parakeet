@@ -86,15 +86,15 @@ static FORCE_INLINE bool iterate(
                     &( _applicationState->background ),
                     &( _applicationState->camera.rectangle ), false );
 
-                if ( UNLIKELY(!l_returnValue) ) {
+                if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
                 }
             }
 
             if ( x ) {
-                bool ret = player_t$render( &( _applicationState->localPlayer ),
-                                       &( _applicationState->camera.rectangle ),
-                                       true );
+                bool ret = player_t$render(
+                    &( _applicationState->localPlayer ),
+                    &( _applicationState->camera.rectangle ), true );
 
                 if ( !ret ) {
                     goto EXIT;
@@ -108,11 +108,10 @@ static FORCE_INLINE bool iterate(
         {
             // Background
             {
-                l_returnValue = object_t$step(
-                    &( _applicationState->background ),
-                    0,0 );
+                l_returnValue =
+                    object_t$step( &( _applicationState->background ), 0, 0 );
 
-                if ( UNLIKELY(!l_returnValue) ) {
+                if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
                 }
             }

@@ -1,5 +1,7 @@
 #pragma once
 
+#define INPUT_BUTTON_MASK ( A | B | C | D )
+
 typedef enum {
     A = ( 1 << 4 ),
     B = ( 1 << 5 ),

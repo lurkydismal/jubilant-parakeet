@@ -5,6 +5,8 @@
 #include <stddef.h>
 
 #include "applicationState_t.h"
+#include "controls_t.h"
+#include "input.h"
 #include "log.h"
 #include "stdfunc.h"
 
@@ -61,6 +63,10 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
         goto EXIT;
     }
 
+    if ( UNLIKELY( !_scancode ) ) {
+        goto EXIT;
+    }
+
     {
         l_returnValue = true;
     }
@@ -86,16 +92,24 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
             }
 
             case SDL_EVENT_WINDOW_RESIZED: {
-                float l_newWidth = _event->window.data1;
-                float l_newHeight = _event->window.data2;
+                const float l_newWidth = _event->window.data1;
+                const float l_newHeight = _event->window.data2;
 
-                onWindowResize( _applicationState, l_newHeight, l_newWidth );
+                l_returnValue = onWindowResize( _applicationState, l_newWidth, l_newHeight );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
 
                 break;
             }
 
             case SDL_EVENT_KEY_DOWN: {
-                onKey( _applicationState, _event->key.scancode );
+                l_returnValue = onKey( _applicationState, _event->key.scancode );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
 
                 break;
             }

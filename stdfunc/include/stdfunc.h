@@ -23,6 +23,7 @@
 #define HOT __attribute__( ( hot ) )
 #define COLD __attribute__( ( cold ) )
 #define SENTINEL __attribute__( ( sentinel ) )
+#define PACKED __attribute__( ( packed ) )
 
 // Branch prediction hints
 #define LIKELY( _expression ) __builtin_expect( !!( _expression ), 1 )

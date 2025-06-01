@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "controls_t.h"
 #include "log.h"
 #include "stdfloat16.h"
 #include "stdfunc.h"
@@ -10,8 +11,8 @@
 static FORCE_INLINE const char* settingsOptionType_t$convert$toString(
     const settingsOptionType_t _settingsOptionType ) {
     switch ( _settingsOptionType ) {
-        case ( string ): {
-            return ( "string" );
+        case ( boolean ): {
+            return ( "boolean" );
         }
 
         case ( size ): {
@@ -22,8 +23,12 @@ static FORCE_INLINE const char* settingsOptionType_t$convert$toString(
             return ( "float16" );
         }
 
-        case ( boolean ): {
-            return ( "boolean" );
+        case ( string ): {
+            return ( "string" );
+        }
+
+        case ( scancode ): {
+            return ( "scancode" );
         }
 
         case ( vsync ): {
@@ -141,11 +146,9 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
         }
 
         switch ( _settingsOption->type ) {
-            case ( string ): {
-                free( *( _settingsOption->storage ) );
-
-                *( ( char** )( _settingsOption->storage ) ) =
-                    duplicateString( _value );
+            case ( boolean ): {
+                *( ( bool* )( _settingsOption->storage ) ) =
+                    stringToBool( _value );
 
                 break;
             }
@@ -164,9 +167,18 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
                 break;
             }
 
-            case ( boolean ): {
-                *( ( bool* )( _settingsOption->storage ) ) =
-                    stringToBool( _value );
+            case ( scancode ): {
+                *( ( SDL_Scancode* )( _settingsOption->storage ) ) =
+                    control_t$scancode$convert$fromString( _value );
+
+                break;
+            }
+
+            case ( string ): {
+                free( *( _settingsOption->storage ) );
+
+                *( ( char** )( _settingsOption->storage ) ) =
+                    duplicateString( _value );
 
                 break;
             }
@@ -180,9 +192,9 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
 
             default: {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Unkown settings option type '%s'\n",
-                    settingsOptionType_t$convert$toString(
-                        _settingsOption->type ) );
+                    ( logLevel_t )error,
+                    "Unkown settings option type for '%s'\n",
+                    _settingsOption->key );
 
                 l_returnValue = false;
 

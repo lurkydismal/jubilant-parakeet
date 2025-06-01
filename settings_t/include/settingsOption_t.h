@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL3/SDL_scancode.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -8,10 +9,11 @@
 
 #define settingsOptionType_t$getType$fromStorage( _storage ) \
     _Generic( ( _storage ),                                  \
-        char*: ( settingsOptionType_t )( string ),           \
+        bool: ( settingsOptionType_t )( boolean ),           \
         size_t: ( settingsOptionType_t )( size ),            \
         float16_t: ( settingsOptionType_t )( float16 ),      \
-        bool: ( settingsOptionType_t )( boolean ),           \
+        SDL_Scancode: ( settingsOptionType_t )( scancode ),  \
+        char*: ( settingsOptionType_t )( string ),           \
         vsync_t: ( settingsOptionType_t )( vsync ),          \
         default: ( settingsOptionType_t )( unknownSettingsOptionType ) )
 
@@ -27,6 +29,7 @@ typedef enum {
     string,
     size,
     float16,
+    scancode,
     boolean,
     vsync,
     unknownSettingsOptionType

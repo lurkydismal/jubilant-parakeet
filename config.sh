@@ -19,6 +19,7 @@ declare -a partsToBuild=(
     "stdfunc"
 )
 declare -a testsToBuild=(
+    # "controls_t"
     # "input"
     "FPS"
     # "player_t"

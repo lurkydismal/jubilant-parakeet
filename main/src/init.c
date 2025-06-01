@@ -84,24 +84,24 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             }
         }
 
-        // Settings
-        {
-            if ( UNLIKELY( !settings_t$load$fromPath(
-                     &( _applicationState->settings ), SETTINGS_FILE_NAME,
-                     SETTINGS_FILE_EXTENSION ) ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Loading settings\n" );
-
-                log$transaction$query( ( logLevel_t )info,
-                                       "Loading default settings\n" );
-
-                _applicationState->settings = settings_t$create();
-            }
-        }
-
         // Generate application state
         {
             *_applicationState = applicationState_t$create();
+
+            // Settings
+            {
+                if ( UNLIKELY( !settings_t$load$fromPath(
+                         &( _applicationState->settings ), SETTINGS_FILE_NAME,
+                         SETTINGS_FILE_EXTENSION ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading settings\n" );
+
+                    log$transaction$query( ( logLevel_t )info,
+                                           "Loading default settings\n" );
+
+                    _applicationState->settings = settings_t$create();
+                }
+            }
 
             // Metadata
             {
