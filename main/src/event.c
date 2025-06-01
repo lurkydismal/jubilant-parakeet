@@ -95,7 +95,8 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
                 const float l_newWidth = _event->window.data1;
                 const float l_newHeight = _event->window.data2;
 
-                l_returnValue = onWindowResize( _applicationState, l_newWidth, l_newHeight );
+                l_returnValue = onWindowResize( _applicationState, l_newWidth,
+                                                l_newHeight );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
@@ -105,7 +106,8 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
             }
 
             case SDL_EVENT_KEY_DOWN: {
-                l_returnValue = onKey( _applicationState, _event->key.scancode );
+                l_returnValue =
+                    onKey( _applicationState, _event->key.scancode );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;

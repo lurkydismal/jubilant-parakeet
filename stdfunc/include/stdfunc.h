@@ -81,10 +81,14 @@
 // Range iteration FOR
 #define FOR_RANGE( _type, _start, _end ) \
     for ( _type _index = ( _start ); _index < ( _end ); _index++ )
+#define FOR_RANGE_REVERSE( _type, _start, _end ) \
+    for ( _type _index = ( _start ); _index > ( _end ); _index-- )
 
 // Range iteration FOR with increase BY amount
 #define FOR_RANGE_BY( _type, _start, _end, _amount ) \
     for ( _type _index = ( _start ); _index < ( _end ); _index += ( _amount ) )
+#define FOR_RANGE_BY_REVERSE( _type, _start, _end, _amount ) \
+    for ( _type _index = ( _start ); _index > ( _end ); _index -= ( _amount ) )
 
 // Non-native array free every element
 #define FREE_ARRAY_ELEMENTS( _array )               \
