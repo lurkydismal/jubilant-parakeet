@@ -6,7 +6,7 @@
 
 #include "applicationState_t.h"
 #include "controls_t.h"
-#include "input.h"
+#include "inputBuffer_t.h"
 #include "log.h"
 #include "stdfunc.h"
 

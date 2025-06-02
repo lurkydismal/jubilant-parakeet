@@ -20,11 +20,11 @@ declare -a partsToBuild=(
 )
 declare -a testsToBuild=(
     # "controls_t"
-    # "input"
+    "input"
     "FPS"
     # "player_t"
     "object_t"
-    # "camera_t"
+    "camera_t"
     "state_t"
     "animation_t"
     "boxes_t"

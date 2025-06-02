@@ -3,7 +3,7 @@
 #include <SDL3/SDL_scancode.h>
 #include <stdbool.h>
 
-#include "input.h"
+#include "input_t.h"
 
 #define CONTROL_AS_STRING_UNKNOWN "UNKNOWN"
 

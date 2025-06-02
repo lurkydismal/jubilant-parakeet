@@ -4,21 +4,19 @@
 #include <stdbool.h>
 
 #include "player_t.h"
+#include "stdfloat16.h"
 
 #define DEFAULT_CAMERA \
     { .zoom = 1, .zoomMin = 0.1, .zoomMax = 5, .rectangle = { 0, 0, 0, 0 } }
 
 typedef struct {
-    float zoom;
-    float zoomMin;
-    float zoomMax;
+    float16_t zoom;
+    float16_t zoomMin;
+    float16_t zoomMax;
     SDL_FRect rectangle;
 } camera_t;
 
 camera_t camera_t$create( void );
 bool camera_t$destroy( camera_t* _camera );
 
-bool camera_t$load( camera_t* _camera, const SDL_FRect* _targetRectangle );
-bool camera_t$unload( camera_t* _camera );
-
-bool camera_t$update( camera_t* _camera, player_t* _player );
+bool camera_t$update( camera_t* _camera, const player_t* _player );

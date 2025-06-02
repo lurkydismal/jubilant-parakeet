@@ -1,6 +1,6 @@
 #include "controls_t.h"
 
-#include "input.h"
+#include "input_t.h"
 #include "stdfunc.h"
 
 controls_t controls_t$create( void ) {

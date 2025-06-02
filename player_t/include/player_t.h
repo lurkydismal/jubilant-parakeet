@@ -24,7 +24,6 @@ bool player_t$state$add$fromFiles( player_t* restrict _player,
                                    bool _isActionable,
                                    bool _canLoop );
 
-bool player_t$move( player_t* restrict _player, float _x, float _y );
 bool player_t$step( player_t* restrict _player,
                     float _velocityX,
                     float _velocityY );

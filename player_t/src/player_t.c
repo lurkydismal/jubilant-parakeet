@@ -74,33 +74,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool player_t$move( player_t* restrict _player, float _x, float _y ) {
-    bool l_returnValue = false;
-
-    if ( UNLIKELY( !_player ) ) {
-        goto EXIT;
-    }
-
-    if ( UNLIKELY( ( _x == 0 ) && ( _y == 0 ) ) ) {
-        l_returnValue = true;
-
-        goto EXIT;
-    }
-
-    {
-        l_returnValue = object_t$move( &( _player->object ), _x, _y );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
 bool player_t$step( player_t* restrict _player,
                     float _velocityX,
                     float _velocityY ) {

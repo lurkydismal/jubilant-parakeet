@@ -15,7 +15,7 @@
 typedef struct {
     input_t inputs[ INPUT_BUFFER_LENGTH ];
     size_t frames[ INPUT_BUFFER_LENGTH ];
-    uint8_t currentBufferIndex;
+    size_t currentBufferIndex;
 } inputBuffer_t;
 
 inputBuffer_t inputBuffer_t$create( void );

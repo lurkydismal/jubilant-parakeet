@@ -4,6 +4,18 @@
 
 #define INPUT_DIRECTION_MASK ( UP | RIGHT | DOWN | LEFT )
 
+#define DIRECTION_TYPE_CHAR_UP '8'
+#define DIRECTION_TYPE_CHAR_DOWN '2'
+#define DIRECTION_TYPE_CHAR_LEFT '4'
+#define DIRECTION_TYPE_CHAR_RIGHT '6'
+#define DIRECTION_TYPE_CHAR_UP_LEFT '7'
+#define DIRECTION_TYPE_CHAR_UP_RIGHT '9'
+#define DIRECTION_TYPE_CHAR_DOWN_LEFT '1'
+#define DIRECTION_TYPE_CHAR_DOWN_RIGHT '3'
+
+#define DIRECTION_TYPE_TO_CHAR( _directionType ) \
+    DIRECTION_TYPE_CHAR_##_directionType
+
 typedef enum {
     UP = ( 1 << 0 ),
     DOWN = ( 1 << 1 ),
@@ -12,46 +24,61 @@ typedef enum {
     UP_LEFT = ( UP | LEFT ),
     UP_RIGHT = ( UP | RIGHT ),
     DOWN_LEFT = ( DOWN | LEFT ),
-    DOWN_RIGHT = ( DOWN | RIGHT )
+    DOWN_RIGHT = ( DOWN | RIGHT ),
+    DIRECITONS_COUNT = 8
 } direction_t;
 
-static FORCE_INLINE char direction_t$convert$toCharacter(
+static FORCE_INLINE const char* direction_t$convert$toStaticString(
     direction_t _direction ) {
-    switch ( _direction ) {
-        case UP: {
-            return ( '8' );
-        }
+    static char l_returnValue[ DIRECITONS_COUNT + 1 ];
 
-        case DOWN: {
-            return ( '2' );
-        }
+    if ( !_direction ) {
+        l_returnValue[ 0 ] = '5';
+        l_returnValue[ 1 ] = '\0';
 
-        case LEFT: {
-            return ( '4' );
-        }
-
-        case RIGHT: {
-            return ( '6' );
-        }
-
-        case UP_LEFT: {
-            return ( '7' );
-        }
-
-        case UP_RIGHT: {
-            return ( '9' );
-        }
-
-        case DOWN_LEFT: {
-            return ( '1' );
-        }
-
-        case DOWN_RIGHT: {
-            return ( '3' );
-        }
-
-        default: {
-            return ( '5' );
-        }
+        goto EXIT;
     }
+
+    {
+#define APPEND_IF_DIRECTION_MATCH( _buffer, _bufferLength, _direction,        \
+                                   _directionType, _matchExactly )            \
+    do {                                                                      \
+        if ( ( _matchExactly ) ? ( ( ( _direction ) & ( _directionType ) ) == \
+                                   ( _directionType ) )                       \
+                               : ( ( _direction ) & ( _directionType ) ) ) {  \
+            ( _buffer )[ ( _bufferLength ) ] =                                \
+                DIRECTION_TYPE_TO_CHAR( _directionType );                     \
+            ( _direction ) &= ~( _directionType );                            \
+            ( _bufferLength )++;                                              \
+        }                                                                     \
+    } while ( 0 )
+
+        size_t l_length = 0;
+
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction, UP_LEFT,
+                                   true );
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction,
+                                   UP_RIGHT, true );
+
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction,
+                                   DOWN_LEFT, true );
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction,
+                                   DOWN_RIGHT, true );
+
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction, UP,
+                                   false );
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction, DOWN,
+                                   false );
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction, LEFT,
+                                   false );
+        APPEND_IF_DIRECTION_MATCH( l_returnValue, l_length, _direction, RIGHT,
+                                   false );
+
+#undef APPEND_IF_DIRECTION_MATCH
+
+        l_returnValue[ l_length ] = '\0';
+    }
+
+EXIT:
+    return ( l_returnValue );
 }
