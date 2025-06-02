@@ -206,6 +206,18 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             }
         }
 
+        // Gamepad
+        {
+            l_returnValue = !(SDL_HasGamepad() );
+
+            if ( !l_returnValue ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Initializing Gamepad\n" );
+
+                goto EXIT;
+            }
+        }
+
         l_returnValue = true;
     }
 

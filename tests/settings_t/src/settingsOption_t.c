@@ -1,5 +1,7 @@
 #include "settingsOption_t.h"
 
+#include <SDL3/SDL_scancode.h>
+
 #include "stdfloat16.h"
 #include "test.h"
 #include "vsync.h"
@@ -76,6 +78,19 @@ TEST( settingsOption_t$map ) {
 
             bool l_returnValue = settingsOption_t$map( &l_settingsOption,
                                                        "has_key", &l_storage );
+
+            ASSERT_TRUE( l_returnValue );
+
+            l_returnValue = settingsOption_t$unmap( &l_settingsOption );
+
+            ASSERT_TRUE( l_returnValue );
+        }
+
+        {
+            SDL_Scancode l_storage = 0;
+
+            bool l_returnValue = settingsOption_t$map( &l_settingsOption,
+                                                       "scancode", &l_storage );
 
             ASSERT_TRUE( l_returnValue );
 
@@ -262,6 +277,33 @@ TEST( settingsOption_t$bind ) {
             ASSERT_TRUE( l_returnValue );
 
             ASSERT_TRUE( l_storage );
+
+            l_returnValue = settingsOption_t$unmap( &l_settingsOption );
+
+            ASSERT_TRUE( l_returnValue );
+        }
+
+        {
+            SDL_Scancode l_storage = 0;
+
+            bool l_returnValue = settingsOption_t$map( &l_settingsOption,
+                                                       "scancode", &l_storage );
+
+            ASSERT_TRUE( l_returnValue );
+
+            l_returnValue =
+                settingsOption_t$bind( &l_settingsOption, "scancode", "123" );
+
+            ASSERT_TRUE( l_returnValue );
+
+            ASSERT_EQ( "%u", l_storage, 0 );
+
+            l_returnValue =
+                settingsOption_t$bind( &l_settingsOption, "scancode", "R.Alt" );
+
+            ASSERT_TRUE( l_returnValue );
+
+            ASSERT_EQ( "%u", l_storage, SDL_SCANCODE_RALT );
 
             l_returnValue = settingsOption_t$unmap( &l_settingsOption );
 
