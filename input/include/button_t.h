@@ -1,5 +1,7 @@
 #pragma once
 
+#include "stdfunc.h"
+
 #define INPUT_BUTTON_MASK ( A | B | C | D )
 
 typedef enum {
@@ -10,3 +12,35 @@ typedef enum {
     AB = ( A | B ),
     ABC = ( A | B | C )
 } button_t;
+
+static FORCE_INLINE const char* button_t$convert$toString( button_t _button ) {
+    switch ( _button ) {
+        case A: {
+            return ( "A" );
+        }
+
+        case B: {
+            return ( "B" );
+        }
+
+        case C: {
+            return ( "C" );
+        }
+
+        case D: {
+            return ( "D" );
+        }
+
+        case AB: {
+            return ( "AB" );
+        }
+
+        case ABC: {
+            return ( "ABC" );
+        }
+
+        default: {
+            return ( "" );
+        }
+    }
+}
