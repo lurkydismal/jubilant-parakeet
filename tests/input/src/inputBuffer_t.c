@@ -100,6 +100,7 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     inputBuffer_t$inputsSequence$get( &l_inputBuffer );
 
                 ASSERT_NOT_EQ( "%p", l_inputs, NULL );
+
                 ASSERT_EQ( "%zu", arrayLength( l_inputs ), ( size_t )0 );
             }
 
@@ -249,7 +250,7 @@ TEST( inputBuffer_t$inputsSequence$get ) {
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%u", l_inputBuffer.inputs[ 0 ], l_inputDummy1 );
+                ASSERT_EQ( "%#b", l_inputBuffer.inputs[ 0 ], l_inputDummy1 );
                 ASSERT_EQ( "%zu", l_inputBuffer.frames[ 0 ], l_frame );
                 ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex,
                            ( size_t )1 );
@@ -257,11 +258,9 @@ TEST( inputBuffer_t$inputsSequence$get ) {
 
             // Up to limit
             {
-                size_t l_count = 0;
-
-                FOR_RANGE(
-                    size_t, MAX_DELAY_BETWEEN_INPUTS,
-                    ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS ) ) {
+                FOR_RANGE( size_t, MAX_DELAY_BETWEEN_INPUTS,
+                           ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS -
+                             1 - 1 ) ) {
                     const size_t l_frame = _index;
 
                     bool l_returnValue = inputBuffer_t$insert(
@@ -269,12 +268,65 @@ TEST( inputBuffer_t$inputsSequence$get ) {
 
                     ASSERT_TRUE( l_returnValue );
 
-                    ASSERT_EQ( "%u", arrayLastElement( l_inputBuffer.inputs ),
+                    const size_t l_indexInBuffer =
+                        ( _index - MAX_DELAY_BETWEEN_INPUTS + 1 );
+
+                    ASSERT_EQ( "%#b", l_inputBuffer.inputs[ l_indexInBuffer ],
                                l_inputDummy1 );
-                    ASSERT_EQ( "%zu", arrayLastElement( l_inputBuffer.frames ),
+                    ASSERT_EQ( "%zu", l_inputBuffer.frames[ l_indexInBuffer ],
                                l_frame );
                     ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex,
-                               l_count );
+                               ( l_indexInBuffer + 1 ) );
+                }
+            }
+
+            // Over limit
+            {
+                {
+                    const size_t l_frame =
+                        ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS - 1 );
+
+                    bool l_returnValue = inputBuffer_t$insert(
+                        &l_inputBuffer, l_inputDummy1, l_frame );
+
+                    ASSERT_TRUE( l_returnValue );
+
+                    const size_t l_indexInBuffer = ( INPUT_BUFFER_LENGTH - 1 );
+
+                    ASSERT_EQ( "%#b", l_inputBuffer.inputs[ l_indexInBuffer ],
+                               l_inputDummy1 );
+                    ASSERT_EQ( "%zu", l_inputBuffer.frames[ l_indexInBuffer ],
+                               l_frame );
+                    ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex,
+                               ( size_t )0 );
+                }
+
+                {
+                    input_t** l_inputs =
+                        inputBuffer_t$inputsSequence$get( &l_inputBuffer );
+
+                    ASSERT_NOT_EQ( "%p", l_inputs, NULL );
+
+                    ASSERT_EQ( "%zu", arrayLength( l_inputs ), ( size_t )100 );
+                }
+
+                {
+                    const size_t l_frame =
+                        ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS - 1 );
+
+                    bool l_returnValue = inputBuffer_t$insert(
+                        &l_inputBuffer, l_inputDummy1, l_frame );
+
+                    ASSERT_TRUE( l_returnValue );
+
+                    const size_t l_indexInBuffer = ( 0 );
+
+                    ASSERT_EQ( "%#b", l_inputBuffer.inputs[ l_indexInBuffer ],
+                               l_inputDummy1 );
+                    ASSERT_EQ( "%zu", l_inputBuffer.frames[ l_indexInBuffer ],
+                               l_frame );
+                    ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex,
+                               ( size_t )1 );
                 }
             }
         }
