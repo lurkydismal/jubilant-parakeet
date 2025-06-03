@@ -26,9 +26,11 @@ TEST( object_t$destroy ) {
 
 TEST( object_t$move ) {
     // NULL pointer must return false
-    bool l_returnValue = object_t$move( NULL, 1.0f, 1.0f );
+    {
+        bool l_returnValue = object_t$move( NULL, 1.0f, 1.0f );
 
-    ASSERT_FALSE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
+    }
 
     // Set up a single object for all fuzz iterations
     object_t l_object = object_t$create();
@@ -88,7 +90,7 @@ TEST( object_t$move ) {
         }
 
         // Call and verify
-        l_returnValue =
+        bool l_returnValue =
             object_t$move( &l_object, l_destinationX, l_destinationY );
 
         ASSERT_TRUE( l_returnValue );
@@ -97,13 +99,19 @@ TEST( object_t$move ) {
         ASSERT_TRUE( __builtin_fabsf( l_object.worldX - l_expectedX ) < 1e-6f );
         ASSERT_TRUE( __builtin_fabsf( l_object.worldY - l_expectedY ) < 1e-6f );
     }
+
+    bool l_returnValue = object_t$destroy( &l_object );
+
+    ASSERT_TRUE( l_returnValue );
 }
 
 TEST( object_t$step ) {
     // NULL pointer must return false
-    bool l_returnValue = object_t$step( NULL, 1.0f, 1.0f );
+    {
+        bool l_returnValue = object_t$step( NULL, 1.0f, 1.0f );
 
-    ASSERT_FALSE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
+    }
 
     // Set up a single object for all fuzz iterations
     object_t l_object = object_t$create();
@@ -146,7 +154,8 @@ TEST( object_t$step ) {
         float l_velocityY = ( l_oldY + l_destinationY );
 
         // Call and verify
-        l_returnValue = object_t$step( &l_object, l_velocityX, l_velocityY );
+        bool l_returnValue =
+            object_t$step( &l_object, l_velocityX, l_velocityY );
 
         ASSERT_FALSE( l_returnValue );
 
@@ -154,6 +163,10 @@ TEST( object_t$step ) {
         ASSERT_EQ( "%f", l_object.worldX, l_oldX );
         ASSERT_EQ( "%f", l_object.worldY, l_oldY );
     }
+
+    bool l_returnValue = object_t$destroy( &l_object );
+
+    ASSERT_TRUE( l_returnValue );
 }
 
 TEST( object_t$render ) {

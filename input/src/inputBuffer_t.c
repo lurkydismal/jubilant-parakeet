@@ -2,6 +2,23 @@
 
 #include "stdfunc.h"
 
+static FORCE_INLINE input_t* inputBuffer_t$inputsSequence$get$last(
+    inputBuffer_t* _inputBuffer ) {
+    input_t* l_returnValue = NULL;
+
+    if ( UNLIKELY( !_inputBuffer ) ) {
+        goto EXIT;
+    }
+
+    {
+        const size_t l_currentBufferIndex =
+            ( _inputBuffer->currentBufferIndex - 1 );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 inputBuffer_t inputBuffer_t$create( void ) {
     inputBuffer_t l_returnValue = DEFAULT_INPUT_BUFFER;
 
@@ -81,23 +98,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE input_t* inputBuffer_t$inputsSequence$get$last(
-    inputBuffer_t* _inputBuffer ) {
-    input_t* l_returnValue = NULL;
-
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        goto EXIT;
-    }
-
-    {
-        const size_t l_currentBufferIndex =
-            ( _inputBuffer->currentBufferIndex - 1 );
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
 // TODO: Implement current frame
 input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer ) {
     input_t** l_returnValue = NULL;
@@ -108,59 +108,6 @@ input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer ) {
 
     {
         input_t** l_buffer = createArray( input_t* );
-
-        const size_t l_currentBufferIndex =
-            ( ( _inputBuffer->currentBufferIndex )
-                  ? ( _inputBuffer->currentBufferIndex - 1 )
-                  : ( 0 ) );
-
-        if ( LIKELY( l_currentBufferIndex > 0 ) ) {
-            size_t l_frame = _inputBuffer->frames[ l_currentBufferIndex ];
-
-            FOR_RANGE_REVERSE( ssize_t, ( l_currentBufferIndex - 1 ), -1 ) {
-                size_t l_frameNext = _inputBuffer->frames[ _index ];
-
-                if ( ( l_frameNext + MAX_DELAY_BETWEEN_INPUTS ) < l_frame ) {
-                    const size_t l_index = _index;
-
-                    FOR_RANGE( size_t, ( l_index + 1 ),
-                               ( l_currentBufferIndex + 1 ) ) {
-                        insertIntoArray( &l_buffer,
-                                         &( _inputBuffer->inputs[ _index ] ) );
-                    }
-
-                    break;
-                }
-
-                l_frame = l_frameNext;
-            }
-        }
-
-        if ( LIKELY( l_currentBufferIndex <
-                     arrayLengthNative( _inputBuffer->inputs ) ) &&
-             ( LIKELY( arrayLastElementNative( _inputBuffer->inputs ) ) ) ) {
-            size_t l_frame = _inputBuffer->frames[ l_currentBufferIndex ];
-
-            FOR_RANGE_REVERSE( size_t,
-                               arrayLengthNative( _inputBuffer->inputs ),
-                               l_currentBufferIndex ) {
-                size_t l_frameNext = _inputBuffer->frames[ _index ];
-
-                if ( ( l_frameNext + MAX_DELAY_BETWEEN_INPUTS ) < l_frame ) {
-                    const size_t l_index = _index;
-
-                    FOR_RANGE( size_t, ( l_index + 1 ),
-                               ( l_currentBufferIndex + 1 ) ) {
-                        insertIntoArray( &l_buffer,
-                                         &( _inputBuffer->inputs[ _index ] ) );
-                    }
-
-                    break;
-                }
-
-                l_frame = l_frameNext;
-            }
-        }
 
         l_returnValue = l_buffer;
     }
@@ -188,8 +135,6 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 
     {
         input_t** l_buffer = createArray( input_t* );
-
-        const size_t l_currentBufferIndex = _inputBuffer->currentBufferIndex;
 
         l_returnValue = l_buffer;
     }

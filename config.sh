@@ -20,7 +20,7 @@ declare -a partsToBuild=(
 )
 declare -a testsToBuild=(
     "controls_t"
-    # "input"
+    "input"
     "FPS"
     "player_t"
     "object_t"
@@ -42,9 +42,10 @@ declare -a staticParts=(
 export executableMainPackage='main'
 export testsMainPackage='test'
 
+if [ -z "${DISABLE_SANITIZERS+x}" ]; then
+    BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+    BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
 
-if [ $BUILD_TYPE -ne 1 ]; then
-    C_COMPILER="ccache clang"
-
-    BUILD_C_FLAGS+=" -Wno-c23-extensions"
+    LINK_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+    LINK_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
 fi

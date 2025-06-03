@@ -1,4 +1,5 @@
 #include "inputBuffer_t.h"
+
 #include "test.h"
 
 TEST( inputBuffer_t$create ) {
@@ -102,6 +103,8 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                 ASSERT_NOT_EQ( "%p", l_inputs, NULL );
 
                 ASSERT_EQ( "%zu", arrayLength( l_inputs ), ( size_t )0 );
+
+                FREE_ARRAY( l_inputs );
             }
 
             const input_t l_inputDummy1 = MAKE_INPUT( UP, A );
@@ -308,6 +311,8 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     ASSERT_NOT_EQ( "%p", l_inputs, NULL );
 
                     ASSERT_EQ( "%zu", arrayLength( l_inputs ), ( size_t )100 );
+
+                    FREE_ARRAY( l_inputs );
                 }
 
                 {
@@ -336,62 +341,3 @@ TEST( inputBuffer_t$inputsSequence$get ) {
         ASSERT_TRUE( l_returnValue );
     }
 }
-
-#if 0
-TEST(InputBufferTest) {
-    {
-        SCOPED_TRACE("Contiguous inputs within MAX delay");
-
-        inputBuffer_t buffer = inputBuffer_t$create();
-
-        for (size_t i = 0; i < 5; ++i) {
-            inputBuffer_t$insert(&buffer, (uint8_t)i, i * 2);  // spacing = 2
-        }
-
-        input_t** sequence = inputBuffer_t$inputsSequence$get(&buffer);
-
-        ASSERT_NE(sequence, nullptr);
-        ASSERT_EQ(arrayLength(sequence), 5u);
-
-        FOR_RANGE(size_t, 0, 5) {
-            ASSERT_EQ(*sequence[_index], _index);
-        }
-
-        freeInputSequence(sequence);
-    }
-
-    {
-        SCOPED_TRACE("Skips old inputs after large frame gap");
-
-        inputBuffer_t buffer = inputBuffer_t$create();
-
-        inputBuffer_t$insert(&buffer, 1, 0);   // Frame 0
-        inputBuffer_t$insert(&buffer, 2, 1);   // Frame 1
-        inputBuffer_t$insert(&buffer, 3, 2);   // Frame 2
-        inputBuffer_t$insert(&buffer, 4, 20);  // Frame 20
-        inputBuffer_t$insert(&buffer, 5, 21);  // Frame 21
-
-        input_t** sequence = inputBuffer_t$inputsSequence$get(&buffer);
-
-        ASSERT_NE(sequence, nullptr);
-        ASSERT_EQ(arrayLength(sequence), 2u);
-        ASSERT_EQ(*sequence[0], 4);
-        ASSERT_EQ(*sequence[1], 5);
-
-        freeInputSequence(sequence);
-    }
-
-    {
-        SCOPED_TRACE("No inputs returns empty array");
-
-        inputBuffer_t buffer = inputBuffer_t$create();
-
-        input_t** sequence = inputBuffer_t$inputsSequence$get(&buffer);
-
-        ASSERT_NE(sequence, nullptr);
-        ASSERT_EQ(arrayLength(sequence), 0u);
-
-        freeInputSequence(sequence);
-    }
-}
-#endif

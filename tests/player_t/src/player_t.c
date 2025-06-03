@@ -30,9 +30,11 @@ TEST( player_t$destroy ) {
 
 TEST( player_t$step ) {
     // NULL pointer must return false
-    bool l_returnValue = player_t$step( NULL, 1.0f, 1.0f );
+    {
+        bool l_returnValue = player_t$step( NULL, 1.0f, 1.0f );
 
-    ASSERT_FALSE( l_returnValue );
+        ASSERT_FALSE( l_returnValue );
+    }
 
     // Set up a single object for all fuzz iterations
     player_t l_player = player_t$create();
@@ -75,7 +77,8 @@ TEST( player_t$step ) {
         float l_velocityY = ( l_oldY + l_destinationY );
 
         // Call and verify
-        l_returnValue = player_t$step( &l_player, l_velocityX, l_velocityY );
+        bool l_returnValue =
+            player_t$step( &l_player, l_velocityX, l_velocityY );
 
         ASSERT_FALSE( l_returnValue );
 
@@ -83,6 +86,10 @@ TEST( player_t$step ) {
         ASSERT_EQ( "%f", l_player.object.worldX, l_oldX );
         ASSERT_EQ( "%f", l_player.object.worldY, l_oldY );
     }
+
+    bool l_returnValue = player_t$destroy( &l_player );
+
+    ASSERT_TRUE( l_returnValue );
 }
 
 TEST( player_t$render ) {

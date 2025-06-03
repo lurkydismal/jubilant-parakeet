@@ -5,19 +5,19 @@
 
 #include "state_t.h"
 
-#define DEFAULT_OBJECT   \
-    { .states = NULL,    \
-      .currentState = 0, \
-      .worldX = 0,       \
-      .worldY = 0,       \
-      .worldXMin = 0,    \
-      .worldYMin = 0,    \
-      .worldXMax = 0,    \
+#define DEFAULT_OBJECT      \
+    { .states = NULL,       \
+      .currentState = NULL, \
+      .worldX = 0,          \
+      .worldY = 0,          \
+      .worldXMin = 0,       \
+      .worldYMin = 0,       \
+      .worldXMax = 0,       \
       .worldYMax = 0 }
 
 typedef struct {
     state_t** states;
-    size_t currentState;
+    state_t* currentState;
     float worldX;
     float worldY;
     float worldXMin;

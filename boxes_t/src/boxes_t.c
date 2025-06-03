@@ -315,8 +315,6 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
                 const color_t l_color =
                     color_t$convert$fromString( l_colorAsString );
 
-                free( l_colorAsString );
-
                 _boxes->color = l_color;
 
 #if defined( LOG_BOXES )

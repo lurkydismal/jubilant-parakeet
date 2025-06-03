@@ -21,13 +21,17 @@ bool object_t$destroy( object_t* restrict _object ) {
 
     {
         FOR_ARRAY( state_t* const*, _object->states ) {
-            state_t$destroy( *_element );
+            l_returnValue = state_t$destroy( *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
         }
 
         FREE_ARRAY_ELEMENTS( _object->states );
         FREE_ARRAY( _object->states );
 
-        _object->currentState = 0;
+        _object->currentState = NULL;
         _object->worldX = 0;
         _object->worldY = 0;
 
@@ -128,9 +132,12 @@ bool object_t$step( object_t* restrict _object,
         goto EXIT;
     }
 
+    if ( UNLIKELY( !_object->currentState ) ) {
+        goto EXIT;
+    }
+
     {
-        l_returnValue =
-            state_t$step( _object->states[ _object->currentState ] );
+        l_returnValue = state_t$step( _object->currentState );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
@@ -169,9 +176,8 @@ bool object_t$render( const object_t* restrict _object,
             .w = 0,
             .h = 0 };
 
-        l_returnValue =
-            state_t$render( _object->states[ _object->currentState ],
-                            &l_targetRectangle, _doDrawBoxes );
+        l_returnValue = state_t$render( _object->currentState,
+                                        &l_targetRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
