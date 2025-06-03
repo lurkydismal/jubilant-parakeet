@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 shopt -s nullglob
 
 export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -207,6 +208,8 @@ if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     unset externalLibrariesAsString
 fi
 
+wait
+
 if [ ${#partsToBuild[@]} -ne 0 ]; then
     printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s.a " "${partsToBuild[@]}"
     echo -e "$PARTS_TO_BUILD_COLOR""$partsToBuildAsString""$RESET_COLOR"
@@ -214,19 +217,20 @@ fi
 
 for partToBuild in "${partsToBuild[@]}"; do
     source "$partToBuild/config.sh" && {
-        export OUTPUT_FILE='lib'"$partToBuild"'.a'
-
-        './build_general.sh' "$partToBuild" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString"
-
-        BUILD_STATUS=$?
+        OUTPUT_FILE='lib'"$partToBuild"'.a' \
+            './build_general.sh' \
+                "$partToBuild" \
+                "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                "$definesAsString" \
+                "$includesAsString" &
 
         unset FILES_TO_INCLUDE FILES_TO_COMPILE
     }
-
-    if [ $BUILD_STATUS -ne 0 ]; then
-        break
-    fi
 done
+
+wait
+
+BUILD_STATUS=$?
 
 if [ $BUILD_STATUS -eq 0 ]; then
     if [ ${#staticParts[@]} -ne 0 ]; then
@@ -236,7 +240,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
     for staticPart in "${staticParts[@]}"; do
         source "$staticPart/config.sh" && {
-            export OUTPUT_FILE='lib'"$staticPart"'.a'
+            OUTPUT_FILE='lib'"$staticPart"'.a'
 
             if [ -z "${NEED_REBUILD_STATIC_PARTS+x}" ]; then
                 if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
@@ -246,18 +250,16 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 fi
             fi
 
-            './build_general.sh' "$staticPart" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString"
-
-            BUILD_STATUS=$?
+            OUTPUT_FILE='lib'"$staticPart"'.a' './build_general.sh' "$staticPart" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString" &
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
-
-        if [ $BUILD_STATUS -ne 0 ]; then
-            break
-        fi
     done
 fi
+
+wait
+
+BUILD_STATUS=$?
 
 # Build main executable
 if [ $BUILD_STATUS -eq 0 ]; then
@@ -308,19 +310,15 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
         for testToBuild in "${testsToBuild[@]}"; do
             source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
-                export OUTPUT_FILE='lib'"$testToBuild"'_test.a'
-
-                './build_general.sh' "$TESTS_DIRECTORY/$testToBuild" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString""$testIncludesAsString"
-
-                BUILD_STATUS=$?
+                OUTPUT_FILE='lib'"$testToBuild"'_test.a' './build_general.sh' "$TESTS_DIRECTORY/$testToBuild" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString""$testIncludesAsString" &
 
                 unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
-
-            if [ $BUILD_STATUS -ne 0 ]; then
-                break
-            fi
         done
+
+        wait
+
+        BUILD_STATUS=$?
 
         # Build tests main package
         if [ $BUILD_STATUS -eq 0 ]; then

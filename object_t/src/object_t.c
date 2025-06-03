@@ -129,14 +129,14 @@ bool object_t$step( object_t* restrict _object,
     }
 
     {
-        l_returnValue = object_t$move( _object, _velocityX, _velocityY );
+        l_returnValue =
+            state_t$step( _object->states[ _object->currentState ] );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
 
-        l_returnValue =
-            state_t$step( _object->states[ _object->currentState ] );
+        l_returnValue = object_t$move( _object, _velocityX, _velocityY );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;

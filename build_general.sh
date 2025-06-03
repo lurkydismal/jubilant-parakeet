@@ -6,7 +6,7 @@ COMPILE_PATHS=$(echo $FILES_TO_COMPILE | sed "s~[^ ]*~$TARGET_DIRECTORY/&~g")
 
 source "$SCRIPT_DIRECTORY/config.sh" && \
     make clean && \
-    make -j $(( `nproc` - 1 )) \
+    make \
         "C_FLAGS=$2" \
         "DEFINES=$3" \
         "INCLUDES=$4" \
