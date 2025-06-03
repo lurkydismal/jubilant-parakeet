@@ -250,7 +250,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 fi
             fi
 
-            OUTPUT_FILE='lib'"$staticPart"'.a' './build_general.sh' "$staticPart" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString" &
+            OUTPUT_FILE="$OUTPUT_FILE" \
+                './build_general.sh' \
+                    "$staticPart" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                    "$definesAsString" \
+                    "$includesAsString" &
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
@@ -266,9 +271,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
     # Build executable main package
     if [ $BUILD_STATUS -eq 0 ]; then
         source "$executableMainPackage/config.sh" && {
-            export OUTPUT_FILE='lib'"$executableMainPackage"'.a'
-
-            './build_general.sh' "$executableMainPackage" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString"
+            OUTPUT_FILE='lib'"$executableMainPackage"'.a' \
+                './build_general.sh' \
+                    "$executableMainPackage" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                    "$definesAsString" \
+                    "$includesAsString"
 
             BUILD_STATUS=$?
 
@@ -310,7 +318,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
         for testToBuild in "${testsToBuild[@]}"; do
             source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
-                OUTPUT_FILE='lib'"$testToBuild"'_test.a' './build_general.sh' "$TESTS_DIRECTORY/$testToBuild" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString""$testIncludesAsString" &
+                OUTPUT_FILE='lib'"$testToBuild"'_test.a' \
+                    './build_general.sh' \
+                        "$TESTS_DIRECTORY/$testToBuild" \
+                        "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                        "$definesAsString" \
+                        "$includesAsString""$testIncludesAsString" &
 
                 unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
@@ -323,9 +336,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
         # Build tests main package
         if [ $BUILD_STATUS -eq 0 ]; then
             source "$testsMainPackage/config.sh" && {
-                export OUTPUT_FILE='lib'"$testsMainPackage"'.a'
-
-                './build_general.sh' "$testsMainPackage" "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" "$definesAsString" "$includesAsString""$testIncludesAsString"
+                OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
+                    './build_general.sh' \
+                        "$testsMainPackage" \
+                        "$BUILD_C_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                        "$definesAsString" \
+                        "$includesAsString""$testIncludesAsString"
 
                 BUILD_STATUS=$?
 
