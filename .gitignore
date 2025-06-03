@@ -10,6 +10,8 @@ glad
 # Profiling
 **/*.gc*
 **/*.info
+**/*coverage*
+**/*.prof*
 
 # Binary
 **/*.o

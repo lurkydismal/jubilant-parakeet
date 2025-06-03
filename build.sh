@@ -16,8 +16,8 @@ export BUILD_TYPE=${BUILD_TYPE:-0}
 export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb"
 export BUILD_C_FLAGS_RELEASE="-fprofile-use -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -fprofile-arcs -ftest-coverage -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_TESTS="-fopenmp $BUILD_C_FLAGS_DEBUG"
+export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -fprofile-instr-generate -fcoverage-mapping -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
+export BUILD_C_FLAGS_TESTS="-fopenmp -fprofile-instr-generate -fcoverage-mapping $BUILD_C_FLAGS_DEBUG"
 
 export declare BUILD_DEFINES=(
     "INI_ALLOW_MULTILINE"
@@ -70,10 +70,10 @@ export declare BUILD_INCLUDES_TESTS=(
 )
 
 export LINK_FLAGS="-fopenmp -flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
-export LINK_FLAGS_DEBUG="-ggdb"
+export LINK_FLAGS_DEBUG=""
 export LINK_FLAGS_RELEASE="-s"
-export LINK_FLAGS_PROFILE="-lgcov $LINK_FLAGS_DEBUG"
-export LINK_FLAGS_TESTS="$LINK_FLAGS_DEBUG"
+export LINK_FLAGS_PROFILE="-fprofile-instr-generate -fcoverage-mapping $LINK_FLAGS_DEBUG"
+export LINK_FLAGS_TESTS="-fprofile-instr-generate -fcoverage-mapping $LINK_FLAGS_DEBUG"
 
 export declare LIBRARIES_TO_LINK=(
     "mimalloc"
@@ -426,12 +426,6 @@ if [ $BUILD_STATUS -eq 0 ]; then
             fi
         fi
     fi
-fi
-
-# TODO: Improve
-# Clang-tidy bug
-if [ $BUILD_STATUS -ne 0 ]; then
-    echo
 fi
 
 }

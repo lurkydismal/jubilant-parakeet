@@ -315,21 +315,22 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
                 const color_t l_color =
                     color_t$convert$fromString( l_colorAsString );
 
+                free( l_colorAsString );
+
                 _boxes->color = l_color;
 
-                {
-                    l_colorAsString = color_t$convert$toString( &l_color );
-
 #if defined( LOG_BOXES )
+
+                {
+                    const char* l_colorAsString =
+                        color_t$convert$toStaticString( &l_color );
 
                     log$transaction$query$format( ( logLevel_t )debug,
                                                   "Box color: '%s'\n",
                                                   l_colorAsString );
+                }
 
 #endif
-
-                    free( l_colorAsString );
-                }
             }
         }
 

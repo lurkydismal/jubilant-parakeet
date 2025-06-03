@@ -46,25 +46,22 @@ TEST( color_t$convert$fromString ) {
     }
 }
 
-TEST( color_t$convert$toString ) {
+TEST( color_t$convert$toStaticString ) {
     // Valid color - 8-digit hex string
     {
         const color_t l_color = { 0xAB, 0xCD, 0xEF, 0x12 };
 
-        char* l_colorAsString = color_t$convert$toString( &l_color );
+        const char* l_colorAsString =
+            color_t$convert$toStaticString( &l_color );
 
         ASSERT_NOT_EQ( "%p", l_colorAsString, NULL );
         ASSERT_STRING_EQ( l_colorAsString, "ABCDEF12" );
-
-        free( l_colorAsString );
     }
 
     // NULL input - returns NULL
     {
-        char* l_colorAsString = color_t$convert$toString( NULL );
+        const char* l_colorAsString = color_t$convert$toStaticString( NULL );
 
-        ASSERT_EQ( "%p", l_colorAsString, NULL );
-
-        free( l_colorAsString );
+        ASSERT_STRING_EQ( l_colorAsString, "" );
     }
 }

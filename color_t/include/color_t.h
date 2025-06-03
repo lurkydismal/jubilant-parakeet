@@ -26,7 +26,7 @@ typedef struct {
     uint8_t alpha;
 } color_t;
 
-// TODO: Improve
+// TODO: Add alpha
 // Hex string
 static FORCE_INLINE color_t
 color_t$convert$fromString( const char* restrict _string ) {
@@ -43,9 +43,19 @@ color_t$convert$fromString( const char* restrict _string ) {
             goto EXIT;
         }
 
-        l_returnValue.red = ( ( l_colorAsNumber & 0xFF0000 ) >> ( 8 * 2 ) );
-        l_returnValue.green = ( ( l_colorAsNumber & 0x00FF00 ) >> ( 8 * 1 ) );
-        l_returnValue.blue = ( ( l_colorAsNumber & 0x0000FF ) >> ( 8 * 0 ) );
+        typedef enum { red = 2, green = 1, blue = 0 } colorChannel_t;
+
+#define GET_COLOR_FROM_NUMBER( _number, _colorChannel ) \
+    ( ( ( _number ) >> ( 8 * _colorChannel ) ) & 0xFF )
+
+        l_returnValue.red =
+            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )red );
+        l_returnValue.green =
+            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )green );
+        l_returnValue.blue =
+            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )blue );
+
+#undef GET_COLOR_FROM_NUMBER
     }
 
 EXIT:
@@ -53,15 +63,15 @@ EXIT:
 }
 
 // TODO: Improve
-static FORCE_INLINE char* color_t$convert$toString(
+static FORCE_INLINE const char* color_t$convert$toStaticString(
     const color_t* restrict _color ) {
-    char* l_returnValue = NULL;
+    static char l_returnValue[ 8 + 1 ];
 
     if ( UNLIKELY( !_color ) ) {
+        l_returnValue[ 0 ] = '\0';
+
         goto EXIT;
     }
-
-    l_returnValue = ( char* )malloc( 9 * sizeof( char ) );
 
     {
         const char l_hexDigits[] = "0123456789ABCDEF";
