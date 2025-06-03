@@ -10,6 +10,8 @@
 
 #define MAX_TESTS 1000
 
+#if defined( TESTS )
+
 typedef int ( *testFunction_t )( void );
 
 typedef struct {
@@ -20,7 +22,11 @@ typedef struct {
 extern testEntry_t g_testRegistry[ MAX_TESTS ];
 extern size_t g_testCount;
 
+#endif
+
 __attribute__( ( used ) ) static int g_status = 0;
+
+#if defined( TESTS )
 
 #define TEST( _name )                                                          \
     static void _name##_test_implementation( void ) __attribute__( ( used ) ); \
@@ -37,6 +43,8 @@ __attribute__( ( used ) ) static int g_status = 0;
         }                                                                      \
     }                                                                          \
     static void _name##_test_implementation( void )
+
+#endif
 
 #define ASSERT_TRUE( _actual )                         \
     do {                                               \

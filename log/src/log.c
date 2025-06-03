@@ -184,10 +184,8 @@ bool log$init( const char* restrict _fileName,
             // 6 - Read & Write for owner
             // 4 - Read for group members
             // 4 - Read for others
-            // NOLINTBEGIN
             g_fileDescriptor =
                 open( l_filePath, O_WRONLY | O_TRUNC | O_CREAT, 0644 );
-            // NOLINTEND
 
         EXIT_FILE_PATH_CONCAT:
             free( l_filePath );

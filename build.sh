@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 shopt -s nullglob
 
 export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -14,11 +13,11 @@ export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
 # 3 - Tests
 export BUILD_TYPE=${BUILD_TYPE:-0}
 
-export BUILD_C_FLAGS="-fopenmp -flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra"
+export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb"
 export BUILD_C_FLAGS_RELEASE="-fprofile-use -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -fprofile-arcs -ftest-coverage -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG"
+export BUILD_C_FLAGS_TESTS="-fopenmp $BUILD_C_FLAGS_DEBUG"
 
 export declare BUILD_DEFINES=(
     "INI_ALLOW_MULTILINE"
@@ -208,7 +207,8 @@ if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     unset externalLibrariesAsString
 fi
 
-wait
+processIDs=()
+processStatuses=()
 
 if [ ${#partsToBuild[@]} -ne 0 ]; then
     printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s.a " "${partsToBuild[@]}"
@@ -224,13 +224,30 @@ for partToBuild in "${partsToBuild[@]}"; do
                 "$definesAsString" \
                 "$includesAsString" &
 
+        processIDs+=($!)
+
         unset FILES_TO_INCLUDE FILES_TO_COMPILE
     }
 done
 
-wait
+for processID in "${processIDs[@]}"; do
+    wait "$processID"
 
-BUILD_STATUS=$?
+    processStatuses+=($?)
+done
+
+BUILD_STATUS=0
+
+for processStatus in "${processStatuses[@]}"; do
+    if [[ "$processStatus" -ne 0 ]]; then
+        BUILD_STATUS=$processStatus
+
+        break
+    fi
+done
+
+processIDs=()
+processStatuses=()
 
 if [ $BUILD_STATUS -eq 0 ]; then
     if [ ${#staticParts[@]} -ne 0 ]; then
@@ -257,14 +274,31 @@ if [ $BUILD_STATUS -eq 0 ]; then
                     "$definesAsString" \
                     "$includesAsString" &
 
+            processIDs+=($!)
+
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
     done
 fi
 
-wait
+for processID in "${processIDs[@]}"; do
+    wait "$processID"
 
-BUILD_STATUS=$?
+    processStatuses+=($?)
+done
+
+BUILD_STATUS=0
+
+for processStatus in "${processStatuses[@]}"; do
+    if [[ "$processStatus" -ne 0 ]]; then
+        BUILD_STATUS=$processStatus
+
+        break
+    fi
+done
+
+processIDs=()
+processStatuses=()
 
 # Build main executable
 if [ $BUILD_STATUS -eq 0 ]; then
@@ -325,13 +359,30 @@ if [ $BUILD_STATUS -eq 0 ]; then
                         "$definesAsString" \
                         "$includesAsString""$testIncludesAsString" &
 
+                processIDs+=($!)
+
                 unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
         done
 
-        wait
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
 
-        BUILD_STATUS=$?
+            processStatuses+=($?)
+        done
+
+        BUILD_STATUS=0
+
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        processIDs=()
+        processStatuses=()
 
         # Build tests main package
         if [ $BUILD_STATUS -eq 0 ]; then
@@ -375,6 +426,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
             fi
         fi
     fi
+fi
+
+# TODO: Improve
+# Clang-tidy bug
+if [ $BUILD_STATUS -ne 0 ]; then
+    echo
 fi
 
 }

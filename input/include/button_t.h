@@ -37,7 +37,7 @@ static FORCE_INLINE const char* button_t$convert$toStaticString(
         if ( ( _button ) & ( _buttonType ) ) {                               \
             ( _buffer )[ ( _bufferLength ) ] =                               \
                 BUTTON_TYPE_TO_CHAR( _buttonType );                          \
-            _button &= ~( _buttonType );                                     \
+            ( _button ) &= ~( _buttonType );                                 \
             ( _bufferLength )++;                                             \
         }                                                                    \
     } while ( 0 )

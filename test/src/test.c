@@ -2,6 +2,8 @@
 
 #include "stdfunc.h"
 
+#if defined( TESTS )
+
 testEntry_t g_testRegistry[ MAX_TESTS ];
 size_t g_testCount = 0;
 
@@ -57,3 +59,5 @@ int main( int _argumentCount, char** _argumentsVector ) {
 
     return ( l_testsFailed > 0 );
 }
+
+#endif

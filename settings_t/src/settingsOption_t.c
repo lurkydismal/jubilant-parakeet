@@ -4,42 +4,6 @@
 
 #include "controls_t.h"
 #include "log.h"
-#include "stdfloat16.h"
-#include "stdfunc.h"
-#include "vsync.h"
-
-static FORCE_INLINE const char* settingsOptionType_t$convert$toString(
-    const settingsOptionType_t _settingsOptionType ) {
-    switch ( _settingsOptionType ) {
-        case ( boolean ): {
-            return ( "boolean" );
-        }
-
-        case ( size ): {
-            return ( "size" );
-        }
-
-        case ( float16 ): {
-            return ( "float16" );
-        }
-
-        case ( string ): {
-            return ( "string" );
-        }
-
-        case ( scancode ): {
-            return ( "scancode" );
-        }
-
-        case ( vsync ): {
-            return ( "vsync" );
-        }
-
-        default: {
-            return ( "unknownSettingsOptionType" );
-        }
-    }
-}
 
 settingsOption_t settingsOption_t$create( void ) {
     settingsOption_t l_returnValue = DEFAULT_SETTINGS_OPTION;

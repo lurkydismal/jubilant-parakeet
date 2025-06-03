@@ -26,6 +26,7 @@ typedef struct {
     uint8_t alpha;
 } color_t;
 
+// TODO: Improve
 // Hex string
 static FORCE_INLINE color_t
 color_t$convert$fromString( const char* restrict _string ) {
@@ -51,6 +52,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Improve
 static FORCE_INLINE char* color_t$convert$toString(
     const color_t* restrict _color ) {
     char* l_returnValue = NULL;

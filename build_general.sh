@@ -17,12 +17,6 @@ source "$SCRIPT_DIRECTORY/config.sh" && \
     mv "$OUTPUT_FILE" "$BUILD_DIRECTORY" && \
     cd $TARGET_DIRECTORY && \
     clang-format --style="file:$SCRIPT_DIRECTORY/.clang-format" \
-    -i \
-    $(echo $FILES_TO_INCLUDE $FILES_TO_COMPILE) && \
+        -i \
+        $(echo $FILES_TO_INCLUDE $FILES_TO_COMPILE) && \
     cd "$SCRIPT_DIRECTORY"
-
-# clang-tidy \
-    # -quiet \
-    # $(echo $FILES_TO_INCLUDE $FILES_TO_COMPILE) \
-    # -- \
-    # $2 $4 $INCLUDE_PATHS $3 && \

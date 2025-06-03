@@ -41,3 +41,10 @@ declare -a staticParts=(
 
 export executableMainPackage='main'
 export testsMainPackage='test'
+
+
+if [ $BUILD_TYPE -ne 1 ]; then
+    C_COMPILER="ccache clang"
+
+    BUILD_C_FLAGS+=" -Wno-c23-extensions"
+fi

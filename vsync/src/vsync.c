@@ -24,7 +24,7 @@ bool vsync$init( const vsync_t _vsync,
         g_desiredFPS = _desiredFPS;
         g_vsync = _vsync;
 
-        if ( ( _vsync == ( vsync_t )off ) ) {
+        if ( _vsync == ( vsync_t )off ) {
             g_sleepTime.tv_sec = 0;
             g_sleepTime.tv_nsec = MILLISECONDS_TO_NANOSECONDS(
                 ONE_SECOND_IN_MILLISECONDS / _desiredFPS );
@@ -54,7 +54,7 @@ bool vsync$quit( void ) {
     {
         g_desiredFPS = 0;
 
-        if ( ( g_vsync == ( vsync_t )off ) ) {
+        if ( g_vsync == ( vsync_t )off ) {
             g_sleepTime.tv_nsec = 0;
         }
 

@@ -1,5 +1,6 @@
 #include "stdfunc.h"
 
+#include <ctype.h>
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
@@ -25,7 +26,6 @@ size_t randomNumber$seed$get( void ) {
 size_t randomNumber( void ) {
     size_t l_returnValue = 0;
 
-    // NOLINTBEGIN
     {
         g_seed ^= ( g_seed << 13 );
         g_seed ^= ( g_seed >> 17 );
@@ -33,7 +33,6 @@ size_t randomNumber( void ) {
 
         l_returnValue = g_seed;
     }
-    // NOLINTEND
 
     return ( l_returnValue );
 }
@@ -123,7 +122,7 @@ char* sanitizeString( const char* restrict _string ) {
 
         for ( const char* _symbol = _string;
               _symbol < ( _string + l_stringLength ); _symbol++ ) {
-            if ( __builtin_isspace( *_symbol ) ) {
+            if ( isspace( *_symbol ) ) {
                 continue;
 
             } else if ( *_symbol == COMMENT_SYMBOL ) {

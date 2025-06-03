@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "stdfloat16.h"
+#include "stdfunc.h"
 #include "vsync.h"
 
 #define settingsOptionType_t$getType$fromStorage( _storage ) \
@@ -53,3 +54,36 @@ bool settingsOption_t$unmap( settingsOption_t* restrict _settingsOption );
 bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
                             const char* restrict _key,
                             const char* restrict _value );
+
+static FORCE_INLINE const char* settingsOptionType_t$convert$toString(
+    const settingsOptionType_t _settingsOptionType ) {
+    switch ( _settingsOptionType ) {
+        case ( boolean ): {
+            return ( "boolean" );
+        }
+
+        case ( size ): {
+            return ( "size" );
+        }
+
+        case ( float16 ): {
+            return ( "float16" );
+        }
+
+        case ( string ): {
+            return ( "string" );
+        }
+
+        case ( scancode ): {
+            return ( "scancode" );
+        }
+
+        case ( vsync ): {
+            return ( "vsync" );
+        }
+
+        default: {
+            return ( "unknownSettingsOptionType" );
+        }
+    }
+}

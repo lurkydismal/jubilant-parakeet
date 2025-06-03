@@ -13,7 +13,7 @@ glad
 
 # Binary
 **/*.o
-**/out
+**/**out**
 **/*vgcore*
 **/*.data
 
