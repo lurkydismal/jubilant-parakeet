@@ -22,7 +22,11 @@ bool boxes_t$destroy( boxes_t* restrict _boxes ) {
     {
         FREE_ARRAY( _boxes->keyFrames );
 
+        _boxes->keyFrames = NULL;
+
         FREE_ARRAY( _boxes->frames );
+
+        _boxes->frames = NULL;
 
         l_returnValue = true;
     }
@@ -85,7 +89,8 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
         {
             // Allocate frames
             {
-                const size_t l_framesLength = arrayLength( _boxes->frames );
+                const arrayLength_t l_framesLength =
+                    arrayLength( _boxes->frames );
 
                 if ( _endIndex > l_framesLength ) {
                     preallocateArray( &( _boxes->frames ),

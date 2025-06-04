@@ -69,11 +69,11 @@ export declare BUILD_INCLUDES_TESTS=(
     "test/include"
 )
 
-export LINK_FLAGS="-fopenmp -flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
+export LINK_FLAGS="-flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
 export LINK_FLAGS_DEBUG=""
 export LINK_FLAGS_RELEASE="-s"
 export LINK_FLAGS_PROFILE=""
-export LINK_FLAGS_TESTS="$LINK_FLAGS_DEBUG"
+export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
 
 export declare LIBRARIES_TO_LINK=(
     "mimalloc"
@@ -89,17 +89,41 @@ export declare LIBRARIES_TO_LINK_TESTS=(
 )
 export C_COMPILER="ccache gcc"
 
-# Not Release
-if [ $BUILD_TYPE -ne 1 ]; then
-    C_COMPILER="ccache clang"
+if [ ! -z "${ENABLE_MUSL+x}" ]; then
+    # Release
+        # Musl does not work with Clang
+        export DISABLE_CLANG=1
 
-    BUILD_C_FLAGS+=" -Wno-c23-extensions"
+        C_COMPILER="ccache musl-gcc"
 
-    BUILD_C_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
-    BUILD_C_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
+        LINK_FLAGS="${LINK_FLAGS/-fuse-ld=mold/}"
 
-    LINK_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
-    LINK_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
+        if [ -z "${ENABLE_MUSL_STATIC+x}" ]; then
+            LINK_FLAGS_RELEASE+=" -static"
+        fi
+fi
+
+if [ -z "${DISABLE_CLANG+x}" ]; then
+    # Not Release
+    if [ $BUILD_TYPE -ne 1 ]; then
+        C_COMPILER="ccache clang"
+
+        BUILD_C_FLAGS+=" -Wno-c23-extensions"
+
+        BUILD_C_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
+        BUILD_C_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
+
+        LINK_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
+        LINK_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
+
+        if [ -z "${DISABLE_SANITIZERS+x}" ]; then
+            BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+            BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
+
+            LINK_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+            LINK_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
+        fi
+    fi
 fi
 
 export EXECUTABLE_NAME="main.out"
@@ -139,6 +163,7 @@ mkdir -p "$BUILD_DIRECTORY"
 
 # Remove all object files
 {
+    # Release
     if [ $BUILD_TYPE -eq 1 ]; then
         fd -I '\.o$' -x rm {}
 
@@ -156,6 +181,7 @@ mkdir -p "$BUILD_DIRECTORY"
     fi
 }
 
+# Debug
 if [ $BUILD_TYPE -eq 0 ]; then
     echo -e "$BUILD_TYPE_COLOR"'Debug build'"$RESET_COLOR"
 
@@ -163,6 +189,7 @@ if [ $BUILD_TYPE -eq 0 ]; then
     LINK_FLAGS="$LINK_FLAGS $LINK_FLAGS_DEBUG"
     BUILD_DEFINES+=( "${BUILD_DEFINES_DEBUG[@]}" )
 
+# Release
 elif [ $BUILD_TYPE -eq 1 ]; then
     echo -e "$BUILD_TYPE_COLOR"'Release build'"$RESET_COLOR"
 
@@ -170,6 +197,7 @@ elif [ $BUILD_TYPE -eq 1 ]; then
     LINK_FLAGS="$LINK_FLAGS $LINK_FLAGS_RELEASE"
     BUILD_DEFINES+=( "${BUILD_DEFINES_RELEASE[@]}" )
 
+# Profile
 elif [ $BUILD_TYPE -eq 2 ]; then
     echo -e "$BUILD_TYPE_COLOR"'Profile build'"$RESET_COLOR"
 
@@ -177,6 +205,7 @@ elif [ $BUILD_TYPE -eq 2 ]; then
     LINK_FLAGS="$LINK_FLAGS $LINK_FLAGS_PROFILE"
     BUILD_DEFINES+=( "${BUILD_DEFINES_PROFILE[@]}" )
 
+# Tests
 elif [ $BUILD_TYPE -eq 3 ]; then
     echo -e "$BUILD_TYPE_COLOR"'Building tests'"$RESET_COLOR"
 
@@ -332,6 +361,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
         }
     fi
 
+    # Not Tests
     if [ $BUILD_TYPE -ne 3 ]; then
         if [ $BUILD_STATUS -eq 0 ]; then
             if [ ${#LIBRARIES_TO_LINK[@]} -ne 0 ]; then
@@ -358,6 +388,7 @@ fi
 
 # Build tests
 if [ $BUILD_STATUS -eq 0 ]; then
+    # Tests
     if [ $BUILD_TYPE -eq 3 ]; then
         if [ ${#BUILD_INCLUDES_TESTS[@]} -ne 0 ]; then
             printf -v testIncludesAsString -- "-I $SCRIPT_DIRECTORY/%s " "${BUILD_INCLUDES_TESTS[@]}"

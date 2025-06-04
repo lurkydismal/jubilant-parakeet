@@ -70,8 +70,8 @@ size_t concatBeforeAndAfterString( char* restrict* restrict _string,
                     *_string, ( l_totalLength + 1 ) * sizeof( char ) );
 
                 if ( l_stringLength && l_beforeStringLength ) {
-                    __builtin_memcpy( ( l_beforeStringLength + *_string ),
-                                      *_string, l_stringLength );
+                    __builtin_memmove( ( l_beforeStringLength + *_string ),
+                                       *_string, l_stringLength );
                 }
             }
 

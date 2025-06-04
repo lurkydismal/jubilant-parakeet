@@ -25,7 +25,12 @@ bool animation_t$destroy( animation_t* restrict _animation ) {
 
     {
         FREE_ARRAY( _animation->keyFrames );
+
+        _animation->keyFrames = NULL;
+
         FREE_ARRAY( _animation->frames );
+
+        _animation->frames = NULL;
 
         l_returnValue = boxes_t$destroy( &( _animation->targetBoxes ) );
 
@@ -272,8 +277,6 @@ bool animation_t$unload( animation_t* restrict _animation ) {
         FOR_ARRAY( SDL_Texture**, _animation->keyFrames ) {
             SDL_DestroyTexture( *_element );
         }
-
-        FREE_ARRAY( *_animation->frames );
 
         l_returnValue = boxes_t$unload( &( _animation->targetBoxes ) );
 

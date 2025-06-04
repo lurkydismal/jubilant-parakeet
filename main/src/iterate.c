@@ -35,6 +35,9 @@ static FORCE_INLINE bool iterate(
                     &( _applicationState->background ),
                     _applicationState->renderer, files, false, false );
 
+                _applicationState->background.currentState =
+                    arrayFirstElement( _applicationState->background.states );
+
                 FREE_ARRAY( files );
 
                 if ( !ret ) {
@@ -42,6 +45,7 @@ static FORCE_INLINE bool iterate(
                 }
             }
 
+#if 0
             {
                 char** files = createArray( char* );
 
@@ -63,6 +67,7 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
             }
+#endif
         }
 
         if ( UNLIKELY( !vsync$begin() ) ) {
@@ -91,6 +96,7 @@ static FORCE_INLINE bool iterate(
                 }
             }
 
+#if 0
             if ( x ) {
                 bool ret = player_t$render(
                     &( _applicationState->localPlayer ),
@@ -100,6 +106,7 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
             }
+#endif
 
             SDL_RenderPresent( _applicationState->renderer );
         }

@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_rect.h>
 
+#include "log.h"
 #include "stdfunc.h"
 
 object_t object_t$create( void ) {
@@ -29,7 +30,10 @@ bool object_t$destroy( object_t* restrict _object ) {
         }
 
         FREE_ARRAY_ELEMENTS( _object->states );
+
         FREE_ARRAY( _object->states );
+
+        _object->states = NULL;
 
         _object->currentState = NULL;
         _object->worldX = 0;
@@ -84,6 +88,44 @@ bool object_t$state$add$fromFiles( object_t* restrict _object,
         __builtin_memcpy( l_stateAllocated, &l_state, sizeof( state_t ) );
 
         insertIntoArray( &( _object->states ), l_stateAllocated );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$state$remove( object_t* restrict _object,
+                            state_t* restrict _state ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = state_t$unload( _state );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = state_t$destroy( _state );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = pluckArray( &( _object->states ), _state );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
 
         l_returnValue = true;
     }

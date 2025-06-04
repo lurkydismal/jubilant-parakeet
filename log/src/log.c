@@ -220,6 +220,8 @@ bool log$quit( void ) {
     {
         free( g_transactionString );
 
+        g_transactionString = NULL;
+
         if ( UNLIKELY( close( g_fileDescriptor ) == -1 ) ) {
             goto EXIT;
         }

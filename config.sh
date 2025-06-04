@@ -41,11 +41,3 @@ declare -a staticParts=(
 
 export executableMainPackage='main'
 export testsMainPackage='test'
-
-if [ -z "${DISABLE_SANITIZERS+x}" ]; then
-    BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
-    BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
-
-    LINK_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
-    LINK_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
-fi

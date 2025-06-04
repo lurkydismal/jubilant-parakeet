@@ -1,6 +1,13 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+
+#if defined( __SANITIZE_LEAK__ )
+
+#include <sanitizer/lsan_interface.h>
+
+#endif
+
 #include <stdlib.h>
 
 #include "FPS.h"
@@ -46,6 +53,22 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
                     ( logLevel_t )error,
                     "Application exited with code %u: '%s'\n", _result,
                     l_SDLErrorMessage );
+            }
+        }
+
+        // Unload resources
+        {
+            // Background
+            {
+                // TODO: Improve
+                if ( UNLIKELY( !object_t$state$remove(
+                         &( _applicationState->background ),
+                         _applicationState->background.currentState ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Removing background state\n" );
+
+                    goto EXIT;
+                }
             }
         }
 
@@ -139,4 +162,12 @@ void SDL_AppQuit( void* _applicationState, SDL_AppResult _appRunResult ) {
         result_t$convert$fromSDL_AppResult( _appRunResult );
 
     quit( l_applicationState, l_result );
+
+    SDL_Quit();
+
+#if defined( __SANITIZE_LEAK__ )
+
+    __lsan_do_leak_check();
+
+#endif
 }
