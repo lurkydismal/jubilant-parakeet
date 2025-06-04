@@ -127,6 +127,8 @@ bool object_t$state$remove( object_t* restrict _object,
             goto EXIT;
         }
 
+        free( _state );
+
         l_returnValue = true;
     }
 
