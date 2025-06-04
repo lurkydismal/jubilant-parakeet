@@ -1,5 +1,6 @@
 #include "stdfunc.h"
 
+#include <ctype.h>
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
