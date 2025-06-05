@@ -273,25 +273,6 @@ for partToBuild in "${partsToBuild[@]}"; do
     }
 done
 
-for processID in "${processIDs[@]}"; do
-    wait "$processID"
-
-    processStatuses+=($?)
-done
-
-BUILD_STATUS=0
-
-for processStatus in "${processStatuses[@]}"; do
-    if [[ "$processStatus" -ne 0 ]]; then
-        BUILD_STATUS=$processStatus
-
-        break
-    fi
-done
-
-processIDs=()
-processStatuses=()
-
 if [ $BUILD_STATUS -eq 0 ]; then
     if [ ${#staticParts[@]} -ne 0 ]; then
         printf -v staticPartsAsString -- "$BUILD_DIRECTORY/lib%s.a " "${staticParts[@]}"

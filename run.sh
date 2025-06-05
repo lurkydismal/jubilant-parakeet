@@ -1,16 +1,16 @@
 #!/bin/bash
 set -e
 
-SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-BUILD_DIRECTORY_NAME='out'
-BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
+export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+export BUILD_DIRECTORY_NAME='out'
+export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
 
-ASAN_SYMBOLIZER_PATH=
-UBSAN_SYMBOLIZER_PATH= 
-ASAN_OPTIONS='verbosity=2'
-LSAN_OPTIONS='suppressions='"$SCRIPT_DIRECTORY/"'lsan.suppress:verbosity=2'
-EXECUTABLE_NAME="main.out""$1"
-EXECUTABLE="$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+export ASAN_SYMBOLIZER_PATH=
+export UBSAN_SYMBOLIZER_PATH= 
+export ASAN_OPTIONS='verbosity=2'
+export LSAN_OPTIONS='suppressions='"$SCRIPT_DIRECTORY/"'lsan.suppress:verbosity=2:log_threads=1'
+export EXECUTABLE_NAME="main.out""$1"
+export EXECUTABLE="$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
 clear
 
@@ -22,7 +22,7 @@ cmd = "llvm-symbolizer -e " executable " <<< " "0x"matches[ 1 ]
 
 sub( path, "", $0 )
 
-sub( /\ \(BuildId:[^)]*\)/, "", $0 )
+sub( / \(BuildId:[^)]*\)/, "", $0 )
 
 first = 0
 
