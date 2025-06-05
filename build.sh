@@ -14,10 +14,10 @@ export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
 export BUILD_TYPE=${BUILD_TYPE:-0}
 
 export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra"
-export BUILD_C_FLAGS_DEBUG="-Og -ggdb"
+export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-fprofile-use -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_TESTS="-fopenmp $BUILD_C_FLAGS_DEBUG"
+export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
 export declare BUILD_DEFINES=(
     "INI_ALLOW_MULTILINE"

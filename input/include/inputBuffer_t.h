@@ -21,11 +21,16 @@ typedef struct {
 inputBuffer_t inputBuffer_t$create( void );
 bool inputBuffer_t$destroy( inputBuffer_t* _inputBuffer );
 
+size_t inputBuffer_t$inputsSequence$getFrame$last(
+    inputBuffer_t* _inputBuffer );
+
 bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
                            input_t _input,
                            size_t _frame );
 
-input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer );
+input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,
+                                            const size_t _currentFrame );
 input_t** inputBuffer_t$inputsSequence$get$withLimit(
     inputBuffer_t* _inputBuffer,
+    const size_t _currentFrame,
     const size_t _limitAmount );

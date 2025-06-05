@@ -46,28 +46,28 @@ __attribute__( ( used ) ) static int g_status = 0;
 
 #endif
 
-#define ASSERT_TRUE( _actual )                         \
-    do {                                               \
-        if ( !( _actual ) ) {                          \
-            printf( RED "[FAILED]" RESET               \
-                        " %s:%d: Not true %u"          \
-                        "\n",                          \
-                    __FILE__, __LINE__, ( _actual ) ); \
-            g_status = 1;                              \
-            return;                                    \
-        }                                              \
+#define ASSERT_TRUE( _actual )             \
+    do {                                   \
+        if ( !( _actual ) ) {              \
+            printf( RED "[FAILED]" RESET   \
+                        " %s:%d: Not true" \
+                        "\n",              \
+                    __FILE__, __LINE__ );  \
+            g_status = 1;                  \
+            return;                        \
+        }                                  \
     } while ( 0 )
 
-#define ASSERT_FALSE( _actual )                        \
-    do {                                               \
-        if ( _actual ) {                               \
-            printf( RED "[FAILED]" RESET               \
-                        " %s:%d: Not false %u"         \
-                        "\n",                          \
-                    __FILE__, __LINE__, ( _actual ) ); \
-            g_status = 1;                              \
-            return;                                    \
-        }                                              \
+#define ASSERT_FALSE( _actual )             \
+    do {                                    \
+        if ( _actual ) {                    \
+            printf( RED "[FAILED]" RESET    \
+                        " %s:%d: Not false" \
+                        "\n",               \
+                    __FILE__, __LINE__ );   \
+            g_status = 1;                   \
+            return;                         \
+        }                                   \
     } while ( 0 )
 
 #define ASSERT_EQ( _format, _actual, _expected )                      \
