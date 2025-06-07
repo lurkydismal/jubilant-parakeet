@@ -54,9 +54,8 @@
 
 #define arrayAllocationPointer( _array ) ( arrayLengthPointer( _array ) )
 #define arrayFirstElementPointer( _array ) ( _array )
-#define arrayLastElementPointer( _array )                                \
-    ( arrayLength( _array ) ? ( ( _array ) + arrayLength( _array ) - 1 ) \
-                            : ( _array ) )
+#define arrayLastElementPointer( _array ) \
+    ( ( _array ) + arrayLength( _array ) - 1 )
 
 #define arrayFirstElement( _array ) ( *arrayFirstElementPointer( _array ) )
 #define arrayLastElement( _array ) ( *arrayLastElementPointer( _array ) )
@@ -71,10 +70,8 @@
     ( sizeof( ( _array ) ) / sizeof( ( _array )[ 0 ] ) )
 
 #define arrayFirstElementPointerNative( _array ) ( _array )
-#define arrayLastElementPointerNative( _array )              \
-    ( ( arrayLengthNative( _array ) )                        \
-          ? ( ( _array ) + arrayLengthNative( _array ) - 1 ) \
-          : ( _array ) )
+#define arrayLastElementPointerNative( _array ) \
+    ( ( _array ) + arrayLengthNative( _array ) - 1 )
 
 #define arrayFirstElementNative( _array ) \
     ( *arrayFirstElementPointerNative( _array ) )
@@ -89,22 +86,23 @@
     ( ( _array )[ randomNumber() % arrayLengthNative( ( _array ) ) ] )
 
 // Native array iteration FOR
-#define FOR( _type, _array )           \
-    for ( _type _element = ( _array ); \
-          _element < arrayLastElementPointerNative( _array ); _element++ )
+#define FOR( _type, _array )                                       \
+    for ( _type _element = ( _array );                             \
+          _element < ( ( _array ) + arrayLengthNative( _array ) ); \
+          _element++ )
 
-#define FOR_REVERSE( _type, _array )                                \
-    for ( _type _element = arrayLastElementPointerNative( _array ); \
+#define FOR_REVERSE( _type, _array )                                         \
+    for ( _type _element = ( ( _array ) + arrayLengthNative( _array ) - 1 ); \
           _element > ( _array ); _element-- )
 
 // Non-native array iteration FOR
 #define FOR_ARRAY( _type, _array )                             \
     for ( _type _element = arrayFirstElementPointer( _array ); \
-          _element < arrayLastElementPointer( _array ); _element++ )
+          _element != ( arrayLastElementPointer( _array ) + 1 ); _element++ )
 
 #define FOR_ARRAY_REVERSE( _type, _array )                    \
     for ( _type _element = arrayLastElementPointer( _array ); \
-          _element > arrayFirstElementPointer( _array ); _element-- )
+          _element != ( arrayFirstElementPointer( _array ) - 1 ); _element-- )
 
 // Range iteration FOR
 #define FOR_RANGE( _type, _start, _end ) \

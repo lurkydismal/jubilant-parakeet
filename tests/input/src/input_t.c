@@ -53,4 +53,8 @@ TEST( input_t$convert$toStaticString ) {
     ASSERT_STRING_EQ( input_t$convert$toStaticString(
                           MAKE_INPUT( ( LEFT | RIGHT ), ( A | B | D ) ) ),
                       "46ABD" );
+
+    ASSERT_STRING_EQ(
+        input_t$convert$toStaticString( MAKE_INPUT( ( DOWN | RIGHT ), ( A ) ) ),
+        "3A" );
 }

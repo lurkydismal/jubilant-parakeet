@@ -116,7 +116,7 @@ if [ -z "${DISABLE_CLANG+x}" ]; then
         LINK_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
         LINK_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
 
-        if [ -z "${DISABLE_SANITIZERS+x}" ]; then
+        if [ ! -z "${ENABLE_SANITIZERS+x}" ]; then
             BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
             BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
 

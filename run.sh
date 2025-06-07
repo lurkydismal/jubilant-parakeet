@@ -7,8 +7,9 @@ export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
 
 export ASAN_SYMBOLIZER_PATH=
 export UBSAN_SYMBOLIZER_PATH= 
-export ASAN_OPTIONS='verbosity=2'
-export LSAN_OPTIONS='suppressions='"$SCRIPT_DIRECTORY/"'lsan.suppress:verbosity=2:log_threads=1'
+# export ASAN_OPTIONS='verbosity=1'
+export LSAN_OPTIONS='suppressions='"$SCRIPT_DIRECTORY/"'lsan.suppress' \
+    # ':verbosity=2:log_threads=1'
 export EXECUTABLE_NAME="main.out""$1"
 export EXECUTABLE="$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 

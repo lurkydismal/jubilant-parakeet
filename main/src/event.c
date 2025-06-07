@@ -23,11 +23,11 @@ static FORCE_INLINE bool onWindowResize(
     }
 
     {
-        static size_t l_lastResizeFrameIndex = 0;
+        static size_t l_lastResizeFrame = 0;
         const size_t l_totalFramesRendered =
             _applicationState->totalFramesRendered;
 
-        if ( l_lastResizeFrameIndex < l_totalFramesRendered ) {
+        if ( l_lastResizeFrame < l_totalFramesRendered ) {
             const float l_logicalWidth = _applicationState->logicalWidth;
             const float l_logicalHeigth = _applicationState->logicalHeight;
 
@@ -46,7 +46,7 @@ static FORCE_INLINE bool onWindowResize(
             }
         }
 
-        l_lastResizeFrameIndex = l_totalFramesRendered;
+        l_lastResizeFrame = l_totalFramesRendered;
 
         l_returnValue = true;
     }
@@ -68,6 +68,30 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
     }
 
     {
+        static size_t l_lastInputFrame = 0;
+        const size_t l_totalFramesRendered =
+            _applicationState->totalFramesRendered;
+
+        if ( l_lastInputFrame < l_totalFramesRendered ) {
+            const control_t* l_control =
+                controls_t$control_t$convert$fromScancode(
+                    &( _applicationState->settings.controls ), _scancode );
+
+            if ( l_control ) {
+                const input_t l_input = l_control->input;
+
+                l_returnValue =
+                    player_t$input$add( &( _applicationState->localPlayer ),
+                                        l_input, l_totalFramesRendered );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
+            }
+        }
+
+        l_lastInputFrame = l_totalFramesRendered;
+
         l_returnValue = true;
     }
 

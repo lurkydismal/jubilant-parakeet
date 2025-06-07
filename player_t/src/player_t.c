@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_rect.h>
 
+#include "log.h"
 #include "stdfunc.h"
 
 player_t player_t$create( void ) {
@@ -9,12 +10,13 @@ player_t player_t$create( void ) {
 
     {
         l_returnValue.object = object_t$create();
+        l_returnValue.inputBuffer = inputBuffer_t$create();
     }
 
     return ( l_returnValue );
 }
 
-bool player_t$destroy( player_t* _player ) {
+bool player_t$destroy( player_t* restrict _player ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
@@ -23,6 +25,12 @@ bool player_t$destroy( player_t* _player ) {
 
     {
         l_returnValue = object_t$destroy( &( _player->object ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = inputBuffer_t$destroy( &( _player->inputBuffer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
@@ -120,6 +128,63 @@ bool player_t$render( const player_t* restrict _player,
         }
 
         l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool player_t$input$add( player_t* restrict _player,
+                         const input_t _input,
+                         const size_t _frame ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_input ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue =
+            inputBuffer_t$insert( &( _player->inputBuffer ), _input, _frame );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+input_t** player_t$inputs$get$withLimit( player_t* restrict _player,
+                                         const size_t _currentFrame,
+                                         const size_t _limitAmount ) {
+    input_t** l_returnValue = NULL;
+
+    if ( UNLIKELY( !_player ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_limitAmount ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = inputBuffer_t$inputsSequence$get$withLimit(
+            &( _player->inputBuffer ), _currentFrame, _limitAmount );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Getting player inputs\n" );
+
+            goto EXIT;
+        }
     }
 
 EXIT:
