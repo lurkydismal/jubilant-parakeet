@@ -129,70 +129,14 @@ input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,
     }
 
     {
-        l_returnValue = createArray( input_t* );
-
-        // No inputs in sequence
-        if ( UNLIKELY( _inputBuffer->previousBufferIndex ==
-                       _inputBuffer->currentBufferIndex ) ) {
-            goto EXIT;
-        }
-
-        // Check last frame greater than current frame
-        {
-            const size_t l_lastInputFrame =
-                inputBuffer_t$inputsSequence$getFrame$last( _inputBuffer );
-
-            if ( UNLIKELY( l_lastInputFrame >= _currentFrame ) ) {
-                goto EXIT;
-            }
-        }
-
-        const size_t l_previousBufferIndex = _inputBuffer->previousBufferIndex;
-
-        size_t l_previousFrame = _currentFrame;
-
-        // Previous to begin
-        {
-            FOR_RANGE_REVERSE( ssize_t, l_previousBufferIndex, ( 0 - 1 ) ) {
-                input_t* l_input = &( _inputBuffer->inputs[ _index ] );
-                const size_t l_frame = _inputBuffer->frames[ _index ];
-
-                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS ) <
-                     l_previousFrame ) {
-                    goto EXIT;
-                }
-
-                insertIntoArray( &l_returnValue, l_input );
-
-                l_previousFrame = l_frame;
-            }
-        }
-
-        // End to previous
-        {
-            FOR_RANGE_REVERSE(
-                size_t, ( arrayLengthNative( _inputBuffer->inputs ) - 1 ),
-                l_previousBufferIndex ) {
-                input_t* l_input = &( _inputBuffer->inputs[ _index ] );
-                const size_t l_frame = _inputBuffer->frames[ _index ];
-
-                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS ) <
-                     l_previousFrame ) {
-                    goto EXIT;
-                }
-
-                insertIntoArray( &l_returnValue, l_input );
-
-                l_previousFrame = l_frame;
-            }
-        }
+        l_returnValue = inputBuffer_t$inputsSequence$get$withLimit(
+            _inputBuffer, _currentFrame, SIZE_MAX );
     }
 
 EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 input_t** inputBuffer_t$inputsSequence$get$withLimit(
     inputBuffer_t* _inputBuffer,
     const size_t _currentFrame,

@@ -26,7 +26,6 @@ typedef struct {
     uint8_t alpha;
 } color_t;
 
-// TODO: Add alpha
 // Hex string
 static FORCE_INLINE color_t
 color_t$convert$fromString( const char* restrict _string ) {
@@ -37,23 +36,50 @@ color_t$convert$fromString( const char* restrict _string ) {
     }
 
     {
-        const size_t l_colorAsNumber = strtoul( _string, NULL, 16 );
+        char* l_end;
+
+        const size_t l_colorAsNumber = strtoul( _string, &l_end, 16 );
 
         if ( UNLIKELY( !l_colorAsNumber ) || UNLIKELY( errno == ERANGE ) ) {
             goto EXIT;
         }
 
-        typedef enum { red = 2, green = 1, blue = 0 } colorChannel_t;
+        const size_t l_stringLength = ( l_end - _string );
+
+        if ( UNLIKELY( ( l_stringLength != 6 ) && ( l_stringLength != 8 ) ) ) {
+            goto EXIT;
+        }
 
 #define GET_COLOR_FROM_NUMBER( _number, _colorChannel ) \
     ( ( ( _number ) >> ( 8 * _colorChannel ) ) & 0xFF )
 
-        l_returnValue.red =
-            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )red );
-        l_returnValue.green =
-            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )green );
-        l_returnValue.blue =
-            GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )blue );
+        if ( l_stringLength == 6 ) {
+            typedef enum { red = 2, green = 1, blue = 0 } colorChannel_t;
+
+            l_returnValue.red =
+                GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )red );
+            l_returnValue.green = GET_COLOR_FROM_NUMBER(
+                l_colorAsNumber, ( colorChannel_t )green );
+            l_returnValue.blue = GET_COLOR_FROM_NUMBER(
+                l_colorAsNumber, ( colorChannel_t )blue );
+
+        } else if ( l_stringLength == 8 ) {
+            typedef enum {
+                red = 3,
+                green = 2,
+                blue = 1,
+                alpha = 0
+            } colorChannel_t;
+
+            l_returnValue.red =
+                GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )red );
+            l_returnValue.green = GET_COLOR_FROM_NUMBER(
+                l_colorAsNumber, ( colorChannel_t )green );
+            l_returnValue.blue = GET_COLOR_FROM_NUMBER(
+                l_colorAsNumber, ( colorChannel_t )blue );
+            l_returnValue.alpha = GET_COLOR_FROM_NUMBER(
+                l_colorAsNumber, ( colorChannel_t )alpha );
+        }
 
 #undef GET_COLOR_FROM_NUMBER
     }
@@ -62,7 +88,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Improve
+// RRGGBBAA
 static FORCE_INLINE const char* color_t$convert$toStaticString(
     const color_t* restrict _color ) {
     static char l_returnValue[ 8 + 1 ];
@@ -85,7 +111,14 @@ static FORCE_INLINE const char* color_t$convert$toStaticString(
         l_returnValue[ 6 ] = l_hexDigits[ ( _color->alpha >> 4 ) & 0xF ];
         l_returnValue[ 7 ] = l_hexDigits[ _color->alpha & 0xF ];
 
-        l_returnValue[ 8 ] = '\0';
+#if 0
+        // TODO: Decide
+        snprintf(l_returnValue, arrayLengthNative( l_returnValue ), "%02X%02X%02X%02X",
+             _color->red,
+             _color->green,
+             _color->blue,
+             _color->alpha);
+#endif
     }
 
 EXIT:

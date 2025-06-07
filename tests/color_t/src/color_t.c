@@ -9,40 +9,40 @@ TEST( color_t$convert$fromString ) {
     {
         const color_t l_color = color_t$convert$fromString( "ABCDEF" );
 
-        ASSERT_EQ( "%u", l_color.red, 0xAB );
-        ASSERT_EQ( "%u", l_color.green, 0xCD );
-        ASSERT_EQ( "%u", l_color.blue, 0xEF );
-        ASSERT_EQ( "%u", l_color.alpha, l_colorDefault.alpha );
+        ASSERT_EQ( "%x", l_color.red, 0xAB );
+        ASSERT_EQ( "%x", l_color.green, 0xCD );
+        ASSERT_EQ( "%x", l_color.blue, 0xEF );
+        ASSERT_EQ( "%x", l_color.alpha, l_colorDefault.alpha );
     }
 
     // Empty string - all channels zero ( alpha stays DEFAULT_COLOR.alpha )
     {
         const color_t l_color = color_t$convert$fromString( "" );
 
-        ASSERT_EQ( "%u", l_color.red, l_colorDefault.red );
-        ASSERT_EQ( "%u", l_color.green, l_colorDefault.green );
-        ASSERT_EQ( "%u", l_color.blue, l_colorDefault.blue );
-        ASSERT_EQ( "%u", l_color.alpha, l_colorDefault.alpha );
+        ASSERT_EQ( "%x", l_color.red, l_colorDefault.red );
+        ASSERT_EQ( "%x", l_color.green, l_colorDefault.green );
+        ASSERT_EQ( "%x", l_color.blue, l_colorDefault.blue );
+        ASSERT_EQ( "%x", l_color.alpha, l_colorDefault.alpha );
     }
 
     // Invalid hex - all channels zero ( alpha stays DEFAULT_COLOR.alpha )
     {
         const color_t l_color = color_t$convert$fromString( "ZZZZ" );
 
-        ASSERT_EQ( "%u", l_color.red, l_colorDefault.red );
-        ASSERT_EQ( "%u", l_color.green, l_colorDefault.green );
-        ASSERT_EQ( "%u", l_color.blue, l_colorDefault.blue );
-        ASSERT_EQ( "%u", l_color.alpha, l_colorDefault.alpha );
+        ASSERT_EQ( "%x", l_color.red, l_colorDefault.red );
+        ASSERT_EQ( "%x", l_color.green, l_colorDefault.green );
+        ASSERT_EQ( "%x", l_color.blue, l_colorDefault.blue );
+        ASSERT_EQ( "%x", l_color.alpha, l_colorDefault.alpha );
     }
 
     // NULL input - DEFAULT_COLOR entirely
     {
         const color_t l_color = color_t$convert$fromString( NULL );
 
-        ASSERT_EQ( "%u", l_color.red, l_colorDefault.red );
-        ASSERT_EQ( "%u", l_color.green, l_colorDefault.green );
-        ASSERT_EQ( "%u", l_color.blue, l_colorDefault.blue );
-        ASSERT_EQ( "%u", l_color.alpha, l_colorDefault.alpha );
+        ASSERT_EQ( "%x", l_color.red, l_colorDefault.red );
+        ASSERT_EQ( "%x", l_color.green, l_colorDefault.green );
+        ASSERT_EQ( "%x", l_color.blue, l_colorDefault.blue );
+        ASSERT_EQ( "%x", l_color.alpha, l_colorDefault.alpha );
     }
 }
 

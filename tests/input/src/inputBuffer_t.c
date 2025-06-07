@@ -28,7 +28,6 @@ TEST( inputBuffer_t$destroy ) {
     }
 }
 
-// TODO: Wrap test
 TEST( inputBuffer_t$insert ) {
     inputBuffer_t l_inputBuffer = inputBuffer_t$create();
 
@@ -43,7 +42,10 @@ TEST( inputBuffer_t$insert ) {
 
             ASSERT_TRUE( l_returnValue );
 
-            ASSERT_EQ( "%u", l_inputBuffer.inputs[ 0 ], l_input );
+            ASSERT_EQ(
+                "%u",
+                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer ),
+                l_input );
             ASSERT_EQ(
                 "%zu",
                 inputBuffer_t$inputsSequence$getFrame$last( &l_inputBuffer ),
@@ -51,7 +53,35 @@ TEST( inputBuffer_t$insert ) {
             ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex, ( size_t )1 );
         }
 
+        // Wrap
+        {
+            const input_t l_inputDummy1 = MAKE_INPUT( UP, A );
+
+            FOR_RANGE(
+                size_t, MAX_DELAY_BETWEEN_INPUTS,
+                ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS - 1 - 1 ) ) {
+                const size_t l_frame = _index;
+
+                bool l_returnValue = inputBuffer_t$insert(
+                    &l_inputBuffer, l_inputDummy1, l_frame );
+
+                ASSERT_TRUE( l_returnValue );
+
+                ASSERT_EQ( "%#b",
+                           inputBuffer_t$inputsSequence$getInput$last(
+                               &l_inputBuffer ),
+                           l_inputDummy1 );
+                ASSERT_EQ( "%zu",
+                           inputBuffer_t$inputsSequence$getFrame$last(
+                               &l_inputBuffer ),
+                           l_frame );
+                ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex,
+                           ( _index - MAX_DELAY_BETWEEN_INPUTS + 1 + 1 ) );
+            }
+        }
+
         // Size max frame
+        // and Over limit
         {
             const input_t l_input =
                 MAKE_INPUT( ( LEFT | RIGHT ), ( A | B | D ) );
@@ -62,12 +92,15 @@ TEST( inputBuffer_t$insert ) {
 
             ASSERT_TRUE( l_returnValue );
 
-            ASSERT_EQ( "%u", l_inputBuffer.inputs[ 1 ], l_input );
+            ASSERT_EQ(
+                "%u",
+                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer ),
+                l_input );
             ASSERT_EQ(
                 "%zu",
                 inputBuffer_t$inputsSequence$getFrame$last( &l_inputBuffer ),
                 l_frame );
-            ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex, ( size_t )2 );
+            ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex, ( size_t )0 );
         }
     }
 
