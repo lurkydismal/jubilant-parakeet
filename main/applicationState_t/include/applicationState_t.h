@@ -7,15 +7,14 @@
 #include "camera_t.h"
 #include "object_t.h"
 #include "settings_t.h"
-
-#define DEFAULT_APPLICATION_STATE_BACKGROUND DEFAULT_OBJECT
+#include "background_t.h"
 
 #define DEFAULT_APPLICATION_STATE                         \
     { .window = NULL,                                     \
       .renderer = NULL,                                   \
       .settings = DEFAULT_SETTINGS,                       \
       .totalFramesRendered = 0,                           \
-      .background = DEFAULT_APPLICATION_STATE_BACKGROUND, \
+      .background = DEFAULT_BACKGROUND, \
       .camera = DEFAULT_CAMERA,                           \
       .logicalWidth = 1280,                               \
       .logicalHeight = 720,                               \
@@ -26,13 +25,13 @@ typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
     settings_t settings;
-    size_t totalFramesRendered;
-    object_t background;
+    background_t* background;
     camera_t camera;
-    size_t logicalWidth;
-    size_t logicalHeight;
     player_t localPlayer;
     player_t** remotePlayers;
+    size_t logicalWidth;
+    size_t logicalHeight;
+    size_t totalFramesRendered;
 } applicationState_t;
 
 applicationState_t applicationState_t$create( void );

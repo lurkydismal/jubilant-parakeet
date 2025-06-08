@@ -20,6 +20,8 @@ export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -Ofast -funroll-loops -fno-
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
 export declare BUILD_DEFINES=(
+    "INI_ALLOW_NO_VALUE"
+    "INI_CALL_HANDLER_ON_NEW_SECTION"
     "INI_ALLOW_MULTILINE"
     "INI_INLINE_COMMENT_PREFIXES='#'"
     "INI_START_COMMENT_PREFIXES='#'"
@@ -56,10 +58,11 @@ export declare BUILD_INCLUDES=(
     "animation_t/include"
     "boxes_t/include"
     "color_t/include"
-    "config_t/include"
     "settings_t/include"
     "window_t/include"
     "vsync/include"
+    "config_t/include"
+    "background_t/include"
     "asset_t/include"
     "log/include"
     "stdfunc/include"

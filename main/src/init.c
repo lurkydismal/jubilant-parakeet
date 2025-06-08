@@ -20,6 +20,9 @@
 #define SETTINGS_FILE_NAME "settings"
 #define SETTINGS_FILE_EXTENSION "ini"
 
+#define CONFIG_FILE_NAME "config"
+#define CONFIG_FILE_EXTENSION "ini"
+
 static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                                int _argumentCount,
                                char** restrict _argumentVector ) {
@@ -38,9 +41,6 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
     }
 
     {
-        ( void )( sizeof( _argumentCount ) );
-        ( void )( sizeof( _argumentVector ) );
-
         // Log
         {
             if ( UNLIKELY( !log$init( LOG_FILE_NAME_DEFAULT,
@@ -82,6 +82,29 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
                 goto EXIT;
             }
+        }
+
+        // Configuration
+        {
+            // Background
+            // UI
+            // Characters
+            if ( UNLIKELY( !config_t$load$fromPath( CONFIG_FILE_NAME, CONFIG_FILE_EXTENSION ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Loading config\n" );
+
+                goto EXIT;
+            }
+        }
+
+        // TODO: Implement
+        // Application arguments
+        // -h - help
+        // -p - print available configuration
+        // -s - save to settings file and not run application
+        {
+            ( void )( sizeof( _argumentCount ) );
+            ( void )( sizeof( _argumentVector ) );
         }
 
         // Generate application state

@@ -6,8 +6,10 @@
 boxes_t boxes_t$create( void ) {
     boxes_t l_returnValue = DEFAULT_BOXES;
 
-    l_returnValue.keyFrames = createArray( SDL_FRect* );
-    l_returnValue.frames = createArray( size_t* );
+    {
+        l_returnValue.keyFrames = createArray( SDL_FRect* );
+        l_returnValue.frames = createArray( size_t* );
+    }
 
     return ( l_returnValue );
 }

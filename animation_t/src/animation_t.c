@@ -9,9 +9,11 @@
 animation_t animation_t$create( void ) {
     animation_t l_returnValue = DEFAULT_ANIMATION;
 
-    l_returnValue.keyFrames = createArray( SDL_Texture* );
-    l_returnValue.frames = createArray( size_t );
-    l_returnValue.targetBoxes = boxes_t$create();
+    {
+        l_returnValue.keyFrames = createArray( SDL_Texture* );
+        l_returnValue.frames = createArray( size_t );
+        l_returnValue.targetBoxes = boxes_t$create();
+    }
 
     return ( l_returnValue );
 }

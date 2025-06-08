@@ -7,13 +7,9 @@ applicationState_t applicationState_t$create( void ) {
 
     {
         l_returnValue.settings = settings_t$create();
-
         l_returnValue.background = object_t$create();
-
         l_returnValue.camera = camera_t$create();
-
         l_returnValue.localPlayer = player_t$create();
-
         l_returnValue.remotePlayers = createArray( player_t* );
     }
 
@@ -46,6 +42,24 @@ bool applicationState_t$destroy(
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
+
+        l_returnValue = camera_t$destroy( &( _applicationState->localPlayer ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        FOR_ARRAY( player_t* const*, &( _applicationState->remotePlayers ) ) {
+            l_returnValue = camera_t$destroy( *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        FREE_ARRAY( &(_applicationState->remotePlayers ) );
+
+        _applicationState->remotePlayers = NULL;
 
         l_returnValue = true;
     }
