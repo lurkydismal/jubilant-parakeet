@@ -14,6 +14,10 @@ settings_t settings_t$create( void ) {
         l_returnValue.controls = controls_t$create();
         l_returnValue.version = duplicateString( DEFAULT_SETTINGS_VERSION );
         l_returnValue.identifier = duplicateString( l_returnValue.window.name );
+        l_returnValue.description =
+            duplicateString( DEFAULT_SETTINGS_DESCRIPTION );
+        l_returnValue.contactAddress =
+            duplicateString( DEFAULT_SETTINGS_CONTACT_ADDRESS );
     }
 
     return ( l_returnValue );
@@ -40,6 +44,14 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
         free( _settings->identifier );
 
         _settings->identifier = NULL;
+
+        free( _settings->description );
+
+        _settings->description = NULL;
+
+        free( _settings->contactAddress );
+
+        _settings->contactAddress = NULL;
 
         l_returnValue = true;
     }

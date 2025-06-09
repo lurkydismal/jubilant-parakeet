@@ -24,27 +24,6 @@ static FORCE_INLINE bool iterate(
         if ( !x ) {
             x = true;
 
-            // bg
-            {
-                char** files = createArray( char* );
-
-                insertIntoArray( &files, "test.boxes" );
-                insertIntoArray( &files, "test_1280x720_1-2.png" );
-
-                bool ret = object_t$state$add$fromFiles(
-                    &( _applicationState->background ),
-                    _applicationState->renderer, files, false, false );
-
-                _applicationState->background.currentState =
-                    arrayFirstElement( _applicationState->background.states );
-
-                FREE_ARRAY( files );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-
 #if 0
             {
                 char** files = createArray( char* );
@@ -87,8 +66,8 @@ static FORCE_INLINE bool iterate(
 
             // Background
             {
-                l_returnValue = object_t$render(
-                    &( _applicationState->background ),
+                l_returnValue = background_t$render(
+                    _applicationState->background,
                     &( _applicationState->camera.rectangle ), false );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
@@ -116,7 +95,7 @@ static FORCE_INLINE bool iterate(
             // Background
             {
                 l_returnValue =
-                    object_t$step( &( _applicationState->background ), 0, 0 );
+                    background_t$step( _applicationState->background );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
@@ -132,6 +111,7 @@ static FORCE_INLINE bool iterate(
             goto EXIT;
         }
 
+        // TODO: Fix
         input_t** l_inputs = player_t$inputs$get$withLimit(
             &( _applicationState->localPlayer ),
             _applicationState->totalFramesRendered, 8 );

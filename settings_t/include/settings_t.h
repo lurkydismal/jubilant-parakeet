@@ -7,12 +7,16 @@
 #include "window_t.h"
 
 #define DEFAULT_SETTINGS_VERSION "0.1"
+#define DEFAULT_SETTINGS_DESCRIPTION "brrr gamuingu"
+#define DEFAULT_SETTINGS_CONTACT_ADDRESS "<lurkydismal@duck.com>"
 
 #define DEFAULT_SETTINGS            \
     { .window = DEFAULT_WINDOW,     \
       .controls = DEFAULT_CONTROLS, \
       .version = NULL,              \
-      .identifier = NULL }
+      .identifier = NULL,           \
+      .description = NULL,          \
+      .contactAddress = NULL }
 
 // All available customization
 typedef struct {
@@ -20,6 +24,8 @@ typedef struct {
     controls_t controls;
     char* version;
     char* identifier;
+    char* description;
+    char* contactAddress;
 } settings_t;
 
 settings_t settings_t$create( void );

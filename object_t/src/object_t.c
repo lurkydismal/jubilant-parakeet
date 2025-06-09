@@ -136,7 +136,32 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool object_t$move( object_t* restrict _object, float _x, float _y ) {
+bool object_t$states$remove( object_t* restrict _object ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    {
+        FOR_ARRAY( state_t* const*, _object->states ) {
+            l_returnValue = object_t$state$remove( _object, *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$move( object_t* restrict _object,
+                    const float _x,
+                    const float _y ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {

@@ -56,22 +56,6 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             }
         }
 
-        // Unload resources
-        {
-            // Background
-            {
-                // TODO: Improve
-                if ( UNLIKELY( !object_t$state$remove(
-                         &( _applicationState->background ),
-                         _applicationState->background.currentState ) ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Removing background state\n" );
-
-                    goto EXIT;
-                }
-            }
-        }
-
         // FPS
         {
             if ( UNLIKELY( !FPS$quit() ) ) {

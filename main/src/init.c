@@ -1,16 +1,16 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
+#include <argp.h>
 #include <stdlib.h>
 
 #include "FPS.h"
 #include "applicationState_t.h"
 #include "asset_t.h"
+#include "config_t.h"
 #include "log.h"
 #include "stdfunc.h"
 #include "vsync.h"
-
-#define REQUIRED_ARGUMENT_COUNT 1
 
 #define LOG_FILE_NAME_DEFAULT "log"
 #define LOG_FILE_EXTENSION_DEFAULT "txt"
@@ -23,16 +23,157 @@
 #define CONFIG_FILE_NAME "config"
 #define CONFIG_FILE_EXTENSION "ini"
 
-static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
-                               int _argumentCount,
-                               char** restrict _argumentVector ) {
+#define REQUIRED_ARGUMENT_COUNT 1
+#define MAX_ARGUMENT_COUNT 1
+
+const char* argp_program_version;
+const char* argp_program_bug_address;
+
+struct arguments {
+    char* filename;
+    char* output_file;
+};
+
+static error_t parse_opt( int key, char* arg, struct argp_state* state ) {
+    error_t l_returnValue = 0;
+
+    struct arguments* arguments = state->input;
+
+    switch ( key ) {
+        case 'o': {
+            arguments->output_file = arg;
+
+            break;
+        }
+
+        case 'v': {
+            const logLevel_t l_logLevel = info;
+
+            if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Setting log level to %s\n",
+                    log$level$convert$toString( l_logLevel ) );
+
+                l_returnValue = EPERM;
+
+                goto EXIT;
+            }
+
+            break;
+        }
+
+        case 'q': {
+            const logLevel_t l_logLevel = unknownLogLevel;
+
+            if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Setting log level to %s\n",
+                    log$level$convert$toString( l_logLevel ) );
+
+                l_returnValue = EPERM;
+
+                goto EXIT;
+            }
+
+            break;
+        }
+
+        case ARGP_KEY_ARG: {
+            if ( state->arg_num >= MAX_ARGUMENT_COUNT ) {
+                argp_usage( state ); // too many args
+            }
+
+            arguments->filename = arg;
+
+            break;
+        }
+
+        case ARGP_KEY_END: {
+            if ( state->arg_num < REQUIRED_ARGUMENT_COUNT ) {
+                argp_usage( state ); // missing filename
+            }
+
+            break;
+        }
+
+        default: {
+            return ( ARGP_ERR_UNKNOWN );
+        }
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool parseArguments(
+    applicationState_t* restrict _applicationState,
+    int _argumentCount,
+    char** restrict _argumentVector ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( _argumentCount < REQUIRED_ARGUMENT_COUNT ) ) {
+    if ( UNLIKELY( !_argumentVector ) ) {
+        goto EXIT;
+    }
+
+    {
+        // Application name and version
+        {
+            char* l_nameAndVersion = duplicateString( " " );
+
+            concatBeforeAndAfterString( &l_nameAndVersion,
+                                        _applicationState->settings.identifier,
+                                        _applicationState->settings.version );
+
+            argp_program_version = l_nameAndVersion;
+        }
+
+        argp_program_bug_address = _applicationState->settings.contactAddress;
+
+        char* l_description = NULL;
+
+        {
+            l_description = duplicateString( " - " );
+
+            concatBeforeAndAfterString(
+                &l_description, _applicationState->settings.identifier,
+                _applicationState->settings.description );
+        }
+
+        // Command-line options
+        struct argp_option options[] = {
+            { "output", 'o', "FILE", 0, "Output to FILE", 0 },
+            { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
+            { "quiet", 'q', 0, 0, "Don not produce any output", 0 },
+            { 0 } };
+
+        // [NAME] - optional
+        // NAME - required
+        // NAME... - at least one and more
+        const char l_arguments[] = "";
+
+        struct argp argp = { options, parse_opt, l_arguments, l_description };
+
+        struct arguments arguments = { 0 };
+
+        argp_parse( &argp, _argumentCount, _argumentVector, 0, 0, &arguments );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
+                               int _argumentCount,
+                               char** restrict _argumentVector ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_applicationState ) ) {
         goto EXIT;
     }
 
@@ -84,29 +225,6 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             }
         }
 
-        // Configuration
-        {
-            // Background
-            // UI
-            // Characters
-            if ( UNLIKELY( !config_t$load$fromPath( CONFIG_FILE_NAME, CONFIG_FILE_EXTENSION ) ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Loading config\n" );
-
-                goto EXIT;
-            }
-        }
-
-        // TODO: Implement
-        // Application arguments
-        // -h - help
-        // -p - print available configuration
-        // -s - save to settings file and not run application
-        {
-            ( void )( sizeof( _argumentCount ) );
-            ( void )( sizeof( _argumentVector ) );
-        }
-
         // Generate application state
         {
             *_applicationState = applicationState_t$create();
@@ -144,6 +262,46 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                     log$transaction$query$format(
                         ( logLevel_t )error, "Setting render scale: '%s'\n",
                         SDL_GetError() );
+
+                    goto EXIT;
+                }
+            }
+
+            // Configuration
+            {
+                // Backgrounds
+                // TODO: Implement
+                // UI
+                // Characters
+                if ( UNLIKELY( !config_t$load$fromPath(
+                         &( _applicationState->config ), CONFIG_FILE_NAME,
+                         CONFIG_FILE_EXTENSION ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading config\n" );
+
+                    goto EXIT;
+                }
+            }
+
+            // Application arguments
+            // Setup recources to load
+            {
+                if ( UNLIKELY( !parseArguments( _applicationState,
+                                                _argumentCount,
+                                                _argumentVector ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Parsing arguments\n" );
+
+                    goto EXIT;
+                }
+            }
+
+            // Load resources
+            {
+                if ( UNLIKELY(
+                         !applicationState_t$load( _applicationState ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading application state\n" );
 
                     goto EXIT;
                 }

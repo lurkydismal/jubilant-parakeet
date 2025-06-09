@@ -20,13 +20,9 @@ export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -Ofast -funroll-loops -fno-
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
 export declare BUILD_DEFINES=(
-    "INI_ALLOW_NO_VALUE"
-    "INI_CALL_HANDLER_ON_NEW_SECTION"
-    "INI_ALLOW_MULTILINE"
-    "INI_INLINE_COMMENT_PREFIXES='#'"
-    "INI_START_COMMENT_PREFIXES='#'"
-    "INI_STOP_ON_FIRST_ERROR"
-    "INI_HANDLER_LINENO"
+    "INI_ALLOW_INLINE_COMMENTS=1"
+    "INI_STOP_ON_FIRST_ERROR=1"
+    "INI_CALL_HANDLER_ON_NEW_SECTION=1"
 )
 
 export declare BUILD_DEFINES_DEBUG=(
@@ -83,7 +79,6 @@ export declare LIBRARIES_TO_LINK=(
 )
 export declare EXTERNAL_LIBRARIES_TO_LINK=(
     "snappy"
-    "inih"
     "sdl3"
     "sdl3-image"
 )
@@ -255,6 +250,7 @@ fi
 
 processIDs=()
 processStatuses=()
+BUILD_STATUS=0
 
 if [ ${#partsToBuild[@]} -ne 0 ]; then
     printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s.a " "${partsToBuild[@]}"

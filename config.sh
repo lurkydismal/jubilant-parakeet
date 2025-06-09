@@ -4,6 +4,7 @@ declare -a partsToBuild=(
     "input"
     "FPS"
     "player_t"
+    "background_t"
     "object_t"
     "camera_t"
     "state_t"
@@ -23,6 +24,7 @@ declare -a testsToBuild=(
     "input"
     "FPS"
     "player_t"
+    # "background_t"
     "object_t"
     "camera_t"
     "state_t"
@@ -38,6 +40,7 @@ declare -a testsToBuild=(
     "stdfunc"
 )
 declare -a staticParts=(
+    "inih"
 )
 
 export executableMainPackage='main'

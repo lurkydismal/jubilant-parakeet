@@ -41,8 +41,11 @@ bool object_t$state$add$fromFiles( object_t* restrict _object,
                                    bool _canLoop );
 bool object_t$state$remove( object_t* restrict _object,
                             state_t* restrict _state );
+bool object_t$states$remove( object_t* restrict _object );
 
-bool object_t$move( object_t* restrict _object, float _x, float _y );
+bool object_t$move( object_t* restrict _object,
+                    const float _x,
+                    const float _y );
 bool object_t$step( object_t* restrict _object,
                     float _velocityX,
                     float _velocityY );
