@@ -7,7 +7,6 @@ background_t background_t$create( void ) {
 
     {
         l_returnValue.object = object_t$create();
-        l_returnValue.name = duplicateString( DEFAULT_BACKGROUND_NAME );
     }
 
     return ( l_returnValue );
@@ -29,6 +28,7 @@ bool background_t$destroy( background_t* restrict _background ) {
 
         free( _background->name );
         free( _background->folder );
+        free( _background->extension );
 
         l_returnValue = true;
     }
@@ -42,21 +42,57 @@ bool background_t$load( background_t* restrict _background,
                         SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) ) {
+    if ( UNLIKELY( !_background ) || UNLIKELY( !_background->name ) ||
+         UNLIKELY( !_background->folder ) ||
+         UNLIKELY( !_background->extension ) ) {
         goto EXIT;
     }
 
     {
+        // TODO: Improve
         {
-            char** l_boxes = getPathsByGlob( folder"*".boxes );
-            char** l_animation = getPathsByGlob( folder"*"extension );
+            const char* l_folder = _background->folder;
+
+            char* l_boxesPath = NULL;
+
+            // Boxes
+            {
+                l_boxesPath = duplicateString( l_folder );
+
+                concatBeforeAndAfterString( &l_boxesPath, "/", ".boxes" );
+                concatBeforeAndAfterString( &l_boxesPath, l_folder, NULL );
+            }
+
+            char** l_animation = NULL;
+
+            // Animation
+            {
+                char* l_glob = duplicateString( "*." );
+
+                concatBeforeAndAfterString( &l_glob, l_folder,
+                                            _background->extension );
+
+                char* l_directory = duplicateString( l_folder );
+
+                concatBeforeAndAfterString(
+                    &l_directory, asset_t$loader$assetsDirectory$get(), "/" );
+
+                l_animation = getPathsByGlob( l_glob, l_directory );
+
+                free( l_glob );
+                free( l_directory );
+
+                FOR_ARRAY( char**, l_animation ) {
+                    concatBeforeAndAfterString( _element, "/", NULL );
+                    concatBeforeAndAfterString( _element, l_folder, NULL );
+                }
+            }
 
             l_returnValue = object_t$state$add$fromFiles(
-                &( _background->object ), _renderer, l_boxes[ 0 ], l_animation,
+                &( _background->object ), _renderer, l_boxesPath, l_animation,
                 false, true );
 
-            FREE_ARRAY_ELEMENTS( l_boxes );
-            FREE_ARRAY( l_boxes );
+            free( l_boxesPath );
 
             FREE_ARRAY_ELEMENTS( l_animation );
             FREE_ARRAY( l_animation );

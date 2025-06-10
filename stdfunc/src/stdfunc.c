@@ -366,8 +366,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
-char** getPathsByGlob( const char* _glob ) {
+char** getPathsByGlob( const char* restrict _glob,
+                       const char* restrict _directory ) {
     char** l_returnValue = NULL;
 
     if ( UNLIKELY( !_glob ) ) {
@@ -377,14 +377,68 @@ char** getPathsByGlob( const char* _glob ) {
     {
         l_returnValue = createArray( char* );
 
-        // Get files
         {
-        }
+            glob_t l_globBuffer;
 
-        FOR_RANGE() {
+            // Get files
+            {
+                char* l_glob = duplicateString( _glob );
+
+                concatBeforeAndAfterString( &l_glob, _directory, NULL );
+
+                int l_result = glob(
+                    l_glob,
+                    ( GLOB_NOSORT |
+                      GLOB_TILDE_CHECK // Carry out tilde expansion. If a tilde
+                                       // '~' is the only character in the
+                                       // pattern, or an initial tilde is
+                                       // followed immediately by a slash '/',
+                                       // then the home directory of the caller
+                                       // is substituted for the tilde. If an
+                                       // initial tilde is followed by a
+                                       // username '~andrea/bin', then the tilde
+                                       // and username are substituted by the
+                                       // home directory of that user. If the
+                                       // username is invalid, or the home
+                                       // directory cannot be determined, then
+                                       // no substitution is performed If the
+                                       // username is invalid, or the home
+                                       // directory cannot be determined, then
+                                       // glob() returns GLOB_NOMATCH to
+                                       // indicate an error
+                      ),
+                    NULL, &l_globBuffer );
+
+                free( l_glob );
+
+                if ( UNLIKELY( l_result == GLOB_ABORTED ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Glob failed\n" );
+
+                    goto EXIT;
+                }
+            }
+
+            FOR_RANGE( size_t, 0, ( l_globBuffer.gl_pathc ) ) {
+                const char* l_fullPath = l_globBuffer.gl_pathv[ _index ];
+                const size_t l_fullPathLength = __builtin_strlen( l_fullPath );
+                const size_t l_directoryLength = __builtin_strlen( _directory );
+                const size_t l_fileNameLength =
+                    ( l_fullPathLength - l_directoryLength );
+
+                char* l_path = ( char* )malloc( ( l_fileNameLength + 1 ) *
+                                                sizeof( char ) );
+                __builtin_memcpy( l_path, ( l_fullPath + l_directoryLength ),
+                                  l_fileNameLength );
+                l_path[ l_fileNameLength ] = '\0';
+
+                insertIntoArray( &l_returnValue, l_path );
+            }
+
+            globfree( &l_globBuffer );
         }
     }
 
 EXIT:
-    return (l_returnValue );
+    return ( l_returnValue );
 }

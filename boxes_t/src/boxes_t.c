@@ -227,6 +227,8 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 
         char** l_lines = splitStringIntoArrayBySymbol( l_dataWithNull, '\n' );
 
+        free( l_dataWithNull );
+
         FOR_ARRAY( char* const*, l_lines ) {
             l_returnValue = boxes_t$load$one$fromString( _boxes, *_element );
 
@@ -237,8 +239,6 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 
         FREE_ARRAY_ELEMENTS( l_lines );
         FREE_ARRAY( l_lines );
-
-        free( l_dataWithNull );
 
         l_returnValue = true;
     }

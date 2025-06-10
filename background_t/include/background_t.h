@@ -5,15 +5,17 @@
 
 #include "object_t.h"
 
-#define DEFAULT_BACKGROUND_NAME "Background"
-
-#define DEFAULT_BACKGROUND \
-    { .object = DEFAULT_OBJECT, .name = NULL, .folder = NULL }
+#define DEFAULT_BACKGROUND      \
+    { .object = DEFAULT_OBJECT, \
+      .name = NULL,             \
+      .folder = NULL,           \
+      .extension = NULL }
 
 typedef struct {
     object_t object;
     char* name;
     char* folder;
+    char* extension;
 } background_t;
 
 background_t background_t$create( void );

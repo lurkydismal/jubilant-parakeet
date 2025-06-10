@@ -87,6 +87,8 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
             char** l_lines =
                 splitStringIntoArrayBySymbol( l_dataWithNull, '\n' );
 
+            free( l_dataWithNull );
+
             if ( UNLIKELY( !arrayLength( l_lines ) ) ) {
                 goto EXIT_SETTINGS_DATA_LINES;
             }
@@ -276,8 +278,6 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
             FREE_ARRAY_ELEMENTS( l_lines );
             FREE_ARRAY( l_lines );
         }
-
-        free( l_dataWithNull );
 
         l_returnValue = true;
     }

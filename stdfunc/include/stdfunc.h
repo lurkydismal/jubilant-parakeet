@@ -418,4 +418,5 @@ static FORCE_INLINE bool _contains( const size_t* restrict _array,
 
 // Utility OS specific functions ( no side-effects )
 char* getApplicationDirectoryAbsolutePath( void );
-char** getPathsByGlob( const char* _glob );
+char** getPathsByGlob( const char* restrict _glob,
+                       const char* restrict _directory );

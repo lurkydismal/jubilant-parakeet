@@ -426,3 +426,7 @@ bool asset_t$save$async$toPath$submit( asset_t* restrict _asset,
 EXIT:
     return ( l_returnValue );
 }
+
+const char* asset_t$loader$assetsDirectory$get( void ) {
+    return ( g_assetsDirectory );
+}

@@ -84,12 +84,14 @@ static int lineHandler( void* _config,
 
 #endif
 
-                if ( l_background.name && l_background.folder ) {
+                if ( l_background.name && l_background.folder &&
+                     l_background.extension ) {
 #if defined( LOG_CONFIG )
 
                     log$transaction$query$format(
-                        ( logLevel_t )info, "[ '%s' : '%s' ]\n",
-                        l_background.name, l_background.folder );
+                        ( logLevel_t )info, "[ '%s' : '%s' ]: '%s'\n",
+                        l_background.name, l_background.folder,
+                        l_background.extension );
 
 #endif
 
@@ -103,6 +105,11 @@ static int lineHandler( void* _config,
 
                 } else if ( l_background.folder ) {
                     free( l_background.folder );
+
+                    l_background.folder = NULL;
+
+                } else if ( l_background.extension ) {
+                    free( l_background.extension );
 
                     l_background.folder = NULL;
                 }
@@ -126,6 +133,11 @@ static int lineHandler( void* _config,
                     free( l_background.folder );
 
                     l_background.folder = duplicateString( _value );
+
+                } else if ( MATCH_STRING( _key, "extension" ) ) {
+                    free( l_background.extension );
+
+                    l_background.extension = duplicateString( _value );
                 }
             }
         }
@@ -181,6 +193,15 @@ bool config_t$load$fromString( config_t* restrict _config,
             }
         }
 
+        if ( UNLIKELY( !( _config->backgrounds ) ) ) {
+            l_returnValue = false;
+
+            log$transaction$query( ( logLevel_t )error,
+                                   "Config loaded no backgrounds\n" );
+
+            goto EXIT;
+        }
+
         l_returnValue = true;
     }
 
@@ -218,11 +239,11 @@ bool config_t$load$fromAsset( config_t* restrict _config,
 
         l_returnValue = config_t$load$fromString( _config, l_dataWithNull );
 
+        free( l_dataWithNull );
+
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
-
-        free( l_dataWithNull );
 
         l_returnValue = true;
     }
@@ -273,23 +294,26 @@ bool config_t$load$fromPath( config_t* restrict _config,
                 free( l_filePath );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto EXIT_CONFIG_LOAD;
                 }
             }
 
             l_returnValue = config_t$load$fromAsset( _config, &l_configAsset );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
+                goto EXIT_CONFIG_LOAD;
             }
 
             l_returnValue = asset_t$unload( &l_configAsset );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
+                goto EXIT_CONFIG_LOAD;
             }
 
-            l_returnValue = asset_t$destroy( &l_configAsset );
+        EXIT_CONFIG_LOAD:
+            if ( UNLIKELY( !asset_t$destroy( &l_configAsset ) ) ) {
+                goto EXIT;
+            }
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;
