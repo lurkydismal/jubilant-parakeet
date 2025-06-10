@@ -23,29 +23,15 @@
 #define CONFIG_FILE_NAME "config"
 #define CONFIG_FILE_EXTENSION "ini"
 
-#define REQUIRED_ARGUMENT_COUNT 1
-#define MAX_ARGUMENT_COUNT 1
-
 const char* argp_program_version;
 const char* argp_program_bug_address;
 
-struct arguments {
-    char* filename;
-    char* output_file;
-};
-
-static error_t parse_opt( int key, char* arg, struct argp_state* state ) {
+static error_t parse_opt( int _key, char* _value, struct argp_state* _state ) {
     error_t l_returnValue = 0;
 
-    struct arguments* arguments = state->input;
+    applicationState_t* l_applicationState = _state->input;
 
-    switch ( key ) {
-        case 'o': {
-            arguments->output_file = arg;
-
-            break;
-        }
-
+    switch ( _key ) {
         case 'v': {
             const logLevel_t l_logLevel = info;
 
@@ -78,26 +64,43 @@ static error_t parse_opt( int key, char* arg, struct argp_state* state ) {
             break;
         }
 
-        case ARGP_KEY_ARG: {
-            if ( state->arg_num >= MAX_ARGUMENT_COUNT ) {
-                argp_usage( state ); // too many args
+            /*
+             * TODO: cmps
+             */
+        case 'b': {
+            const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
+
+            if ( UNLIKELY(
+                     l_backgroundIndex >=
+                     arrayLength( l_applicationState->config.backgrounds ) ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Background index: %s\n", _value );
+
+                argp_error( _state, "Background index '%s' is out of range",
+                            _value );
+
+                break;
             }
 
-            arguments->filename = arg;
+            l_applicationState->background =
+                l_applicationState->config.backgrounds[ l_backgroundIndex ];
 
             break;
         }
 
         case ARGP_KEY_END: {
-            if ( state->arg_num < REQUIRED_ARGUMENT_COUNT ) {
-                argp_usage( state ); // missing filename
+            if ( UNLIKELY( !( l_applicationState->background ) ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "No background specified\n", _value );
+
+                l_returnValue = ARGP_ERR_UNKNOWN;
             }
 
             break;
         }
 
         default: {
-            return ( ARGP_ERR_UNKNOWN );
+            l_returnValue = ARGP_ERR_UNKNOWN;
         }
     }
 
@@ -105,6 +108,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Improve
 static FORCE_INLINE bool parseArguments(
     applicationState_t* restrict _applicationState,
     int _argumentCount,
@@ -145,9 +149,13 @@ static FORCE_INLINE bool parseArguments(
 
         // Command-line options
         struct argp_option options[] = {
-            { "output", 'o', "FILE", 0, "Output to FILE", 0 },
             { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
-            { "quiet", 'q', 0, 0, "Don not produce any output", 0 },
+            { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
+            { "background", 'b', "INDEX", 0, "Select background by index", 0 },
+            { "character", 'c', "INDEX", 0, "Select character by index", 0 },
+            { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
+            { "print", 'p', 0, 0, "Print available configuration", 0 },
+            { "save", 's', 0, 0, "Save without running", 0 },
             { 0 } };
 
         // [NAME] - optional
@@ -155,11 +163,16 @@ static FORCE_INLINE bool parseArguments(
         // NAME... - at least one and more
         const char l_arguments[] = "";
 
-        struct argp argp = { options, parse_opt, l_arguments, l_description };
+        struct argp l_argumentParser = { options, parse_opt, l_arguments,
+                                         l_description };
 
-        struct arguments arguments = { 0 };
+        if ( UNLIKELY( !argp_parse( &l_argumentParser, _argumentCount,
+                                    _argumentVector, 0, 0,
+                                    _applicationState ) ) ) {
+            l_returnValue = false;
 
-        argp_parse( &argp, _argumentCount, _argumentVector, 0, 0, &arguments );
+            goto EXIT;
+        }
 
         l_returnValue = true;
     }
@@ -286,22 +299,11 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             // Application arguments
             // Setup recources to load
             {
-                if ( UNLIKELY( !parseArguments( _applicationState,
-                                                _argumentCount,
-                                                _argumentVector ) ) ) {
+                if ( UNLIKELY( parseArguments( _applicationState,
+                                               _argumentCount,
+                                               _argumentVector ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
                                            "Parsing arguments\n" );
-
-                    goto EXIT;
-                }
-            }
-
-            // Load resources
-            {
-                if ( UNLIKELY(
-                         !applicationState_t$load( _applicationState ) ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Loading application state\n" );
 
                     goto EXIT;
                 }
@@ -324,6 +326,17 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                     log$transaction$query$format(
                         ( logLevel_t )error,
                         "Window or Renderer creation: '%s'\n", SDL_GetError() );
+
+                    goto EXIT;
+                }
+            }
+
+            // Load resources
+            {
+                if ( UNLIKELY(
+                         !applicationState_t$load( _applicationState ) ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading application state\n" );
 
                     goto EXIT;
                 }

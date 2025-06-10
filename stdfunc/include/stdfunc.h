@@ -324,7 +324,7 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
     } while ( 0 )
 
 #define insertIntoArray( _array, _value )                                      \
-    do {                                                                       \
+    ( {                                                                        \
         arrayLength_t* l_arrayAllocationCurrent =                              \
             arrayAllocationPointer( *( _array ) );                             \
         const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
@@ -337,7 +337,8 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
         ( *( _array ) )[ l_arrayLengthCurrent ] =                              \
             ( typeof( **( _array ) ) )( _value );                              \
-    } while ( 0 )
+        ( ( arrayLength_t )l_arrayLengthCurrent );                             \
+    } )
 
 #define pluckArray( _array, _value )                                           \
     ( {                                                                        \
