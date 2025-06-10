@@ -9,6 +9,7 @@
 #include "asset_t.h"
 #include "config_t.h"
 #include "log.h"
+#include "settings_t.h"
 #include "stdfunc.h"
 #include "vsync.h"
 
@@ -23,10 +24,47 @@
 #define CONFIG_FILE_NAME "config"
 #define CONFIG_FILE_EXTENSION "ini"
 
+// Keys should match keys for settings options
+#define SETTINGS_FORMAT_STRING \
+    "window_width = %zu\n"     \
+    "window_height = %zu\n"    \
+    "up = %s\n"                \
+    "down = %s\n"              \
+    "left = %s\n"              \
+    "right = %s\n"             \
+    "light_attack = %s\n"      \
+    "medium_attack = %s\n"     \
+    "heavy_attack = %s\n"      \
+    "shield = %s\n"            \
+    "background_index = %zu\n"
+
+#define SETTINGS_FORMAT_ARGUMENTS( _settings )               \
+    ( _settings ).window.width, ( _settings ).window.height, \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.up.scancode ),            \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.down.scancode ),          \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.left.scancode ),          \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.right.scancode ),         \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.A.scancode ),             \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.B.scancode ),             \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.C.scancode ),             \
+        control_t$scancode$convert$toString(                 \
+            ( _settings ).controls.D.scancode ),             \
+        ( _settings ).backgroundIndex
+
 const char* argp_program_version;
 const char* argp_program_bug_address;
 
-static error_t parse_opt( int _key, char* _value, struct argp_state* _state ) {
+// TODO: Implement options c m p
+static error_t parserForOption( int _key,
+                                char* _value,
+                                struct argp_state* _state ) {
     error_t l_returnValue = 0;
 
     applicationState_t* l_applicationState = _state->input;
@@ -65,7 +103,7 @@ static error_t parse_opt( int _key, char* _value, struct argp_state* _state ) {
         }
 
             /*
-             * TODO: cmps
+             * TODO: cmp
              */
         case 'b': {
             const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
@@ -82,18 +120,104 @@ static error_t parse_opt( int _key, char* _value, struct argp_state* _state ) {
                 break;
             }
 
+            l_applicationState->settings.backgroundIndex = l_backgroundIndex;
+
             l_applicationState->background =
                 l_applicationState->config.backgrounds[ l_backgroundIndex ];
 
             break;
         }
 
-        case ARGP_KEY_END: {
-            if ( UNLIKELY( !( l_applicationState->background ) ) ) {
-                log$transaction$query$format(
-                    ( logLevel_t )error, "No background specified\n", _value );
+        case 's': {
+            // Will not be cleaned or free'd
+            asset_t l_settingsAsAsset = asset_t$create();
 
-                l_returnValue = ARGP_ERR_UNKNOWN;
+            // Generate settings asset
+            {
+                size_t l_length = 0;
+
+                // Generate settings as string
+                l_length = snprintf(
+                    NULL, 0, SETTINGS_FORMAT_STRING,
+                    SETTINGS_FORMAT_ARGUMENTS( l_applicationState->settings ) );
+
+                // Allocate asset
+                {
+                    l_length++;
+
+                    l_settingsAsAsset.size = ( l_length * sizeof( uint8_t ) );
+                    l_settingsAsAsset.data =
+                        ( uint8_t* )malloc( l_settingsAsAsset.size );
+                }
+
+                // Fill asset
+                {
+                    l_length = snprintf( ( char* )( l_settingsAsAsset.data ),
+                                         l_settingsAsAsset.size,
+                                         SETTINGS_FORMAT_STRING,
+                                         SETTINGS_FORMAT_ARGUMENTS(
+                                             l_applicationState->settings ) );
+
+                    if ( l_length != ( l_settingsAsAsset.size - 1 ) ) {
+                        log$transaction$query$format(
+                            ( logLevel_t )error,
+                            "Generating settings %zu %zu\n", l_length,
+                            l_settingsAsAsset.size );
+
+                        argp_error( _state, "Failed to generate settings" );
+                    }
+
+                    // Exclude NULL
+                    l_settingsAsAsset.size--;
+                }
+            }
+
+            // Save to path
+            {
+                const char* l_filePath =
+                    ( SETTINGS_FILE_NAME "." SETTINGS_FILE_EXTENSION );
+
+                const bool l_result = asset_t$save$sync$toPath(
+                    &l_settingsAsAsset, l_filePath, true // Need truncate
+                );
+
+                if ( UNLIKELY( !l_result ) ) {
+                    log$transaction$query$format(
+                        ( logLevel_t )error, "Saving settings file: '%s'\n",
+                        l_filePath );
+
+                    argp_error( _state, "Failed to save settings file: '%s'",
+                                l_filePath );
+                }
+
+                log$transaction$query$format( ( logLevel_t )info,
+                                              "Saved settings file: '%s'\n",
+                                              l_filePath );
+
+                log$transaction$commit();
+            }
+
+            // Exit process
+            _exit( l_returnValue );
+        }
+
+        case ARGP_KEY_END: {
+            // Pick background if no
+            if ( !( l_applicationState->background ) ) {
+                size_t l_index = l_applicationState->settings.backgroundIndex;
+                const size_t l_backgroundsAmount =
+                    arrayLength( l_applicationState->config.backgrounds );
+
+                if ( l_index >= l_backgroundsAmount ) {
+                    l_index = ( randomNumber() % l_backgroundsAmount );
+
+                    log$transaction$query$format(
+                        ( logLevel_t )info,
+                        "Selecting random background: [ %zu ]\n", l_index );
+                }
+
+                l_applicationState->background =
+                    l_applicationState->config.backgrounds[ l_index ];
             }
 
             break;
@@ -147,8 +271,7 @@ static FORCE_INLINE bool parseArguments(
                 _applicationState->settings.description );
         }
 
-        // Command-line options
-        struct argp_option options[] = {
+        struct argp_option l_options[] = {
             { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
             { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
             { "background", 'b', "INDEX", 0, "Select background by index", 0 },
@@ -163,8 +286,8 @@ static FORCE_INLINE bool parseArguments(
         // NAME... - at least one and more
         const char l_arguments[] = "";
 
-        struct argp l_argumentParser = { options, parse_opt, l_arguments,
-                                         l_description };
+        struct argp l_argumentParser = { l_options, parserForOption,
+                                         l_arguments, l_description };
 
         if ( UNLIKELY( !argp_parse( &l_argumentParser, _argumentCount,
                                     _argumentVector, 0, 0,
@@ -253,6 +376,8 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                     log$transaction$query( ( logLevel_t )info,
                                            "Loading default settings\n" );
 
+                    log$transaction$commit();
+
                     _applicationState->settings = settings_t$create();
                 }
             }
@@ -270,6 +395,8 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                     _applicationState->settings.window.name,
                     _applicationState->settings.version,
                     _applicationState->settings.identifier );
+
+                log$transaction$commit();
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query$format(

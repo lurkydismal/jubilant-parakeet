@@ -36,7 +36,8 @@ bool object_t$destroy( object_t* restrict _object );
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromFiles( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
-                                   char* const* restrict _files,
+                                   char* restrict _boxes,
+                                   char* const* restrict _animation,
                                    bool _isActionable,
                                    bool _canLoop );
 bool object_t$state$remove( object_t* restrict _object,

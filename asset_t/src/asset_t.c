@@ -132,7 +132,7 @@ bool asset_t$load( asset_t* restrict _asset, const char* restrict _path ) {
             log$transaction$query$format( ( logLevel_t )error,
                                           "Opening asset: '%s'\n", _path );
 
-            goto EXIT;
+            goto FILE_EXIT;
         }
 
         {
@@ -165,6 +165,12 @@ bool asset_t$load( asset_t* restrict _asset, const char* restrict _path ) {
         }
 
     FILE_EXIT:
+        if ( l_fileDescriptor == -1 ) {
+            l_returnValue = false;
+
+            goto EXIT;
+        }
+
         close( l_fileDescriptor );
     }
 
@@ -319,6 +325,101 @@ bool asset_t$uncompress( asset_t* restrict _asset ) {
         _asset->data = l_data;
         _asset->size = ( l_uncompressedLength * sizeof( uint8_t ) );
 
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool asset_t$save$sync$toPath( asset_t* restrict _asset,
+                               const char* restrict _path,
+                               const bool _needTruncate ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_asset ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
+        int l_fileDescriptor = -1;
+
+        // TODO: Improve
+        {
+            {
+                char* l_path = duplicateString( _path );
+
+                l_returnValue = !!( concatBeforeAndAfterString(
+                    &l_path, g_assetsDirectory, NULL ) );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT_ASSET_PATH_CONCAT;
+                }
+
+                // Open file descriptor
+                {
+                    size_t l_openFlags = ( O_WRONLY | O_CREAT );
+
+                    if ( _needTruncate ) {
+                        l_openFlags |= O_TRUNC;
+                    }
+
+                    // 0 - No special bits
+                    // 6 - Read & Write for owner
+                    // 4 - Read for group members
+                    // 4 - Read for others
+                    l_fileDescriptor = open( l_path, l_openFlags, 0644 );
+                }
+
+            EXIT_ASSET_PATH_CONCAT:
+                free( l_path );
+            }
+
+            if ( l_fileDescriptor == -1 ) {
+                l_returnValue = false;
+
+                goto EXIT;
+            }
+
+            const ssize_t l_writtenCount =
+                write( l_fileDescriptor, _asset->data, _asset->size );
+
+            l_returnValue = ( l_writtenCount == ( ssize_t )( _asset->size ) );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT_SAVE;
+            }
+        }
+
+        l_returnValue = true;
+
+    EXIT_SAVE:
+        close( l_fileDescriptor );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+// TODO: Implement
+bool asset_t$save$async$toPath$submit( asset_t* restrict _asset,
+                                       const char* restrict _path,
+                                       const bool _needTruncate ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_asset ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
         l_returnValue = true;
     }
 

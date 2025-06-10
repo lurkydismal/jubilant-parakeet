@@ -13,6 +13,7 @@
 #define DEFAULT_SETTINGS            \
     { .window = DEFAULT_WINDOW,     \
       .controls = DEFAULT_CONTROLS, \
+      .backgroundIndex = SIZE_MAX,  \
       .version = NULL,              \
       .identifier = NULL,           \
       .description = NULL,          \
@@ -22,6 +23,7 @@
 typedef struct {
     window_t window;
     controls_t controls;
+    size_t backgroundIndex;
     char* version;
     char* identifier;
     char* description;

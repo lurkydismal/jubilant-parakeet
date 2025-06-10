@@ -76,16 +76,8 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
 #endif
 
         // Key frame
-        {
-            SDL_FRect* l_targetRectanbleAllocated =
-                ( SDL_FRect* )malloc( sizeof( SDL_FRect ) );
-
-            __builtin_memcpy( l_targetRectanbleAllocated, _targetRectangle,
-                              sizeof( SDL_FRect ) );
-
-            insertIntoArray( &( _boxes->keyFrames ),
-                             l_targetRectanbleAllocated );
-        }
+        insertIntoArray( &( _boxes->keyFrames ),
+                         clone( ( SDL_FRect* )_targetRectangle ) );
 
         // Fill key frame index in frames
         {

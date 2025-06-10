@@ -46,6 +46,7 @@ close( cmd )
 next
 }
 {
+    # TODO: Color line if ERROR
     sub( path, "", symbolized )
 
     print $0

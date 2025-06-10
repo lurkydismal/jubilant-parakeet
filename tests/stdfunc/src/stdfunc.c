@@ -533,7 +533,6 @@ TEST( createArray ) {
         ASSERT_EQ( "%zu", arrayLength( l_array ), ( size_t )0 );
 
         // Free allocated memory
-        // FREE_ARRAY for Allocated elements, safe if length is 0
         FREE_ARRAY( l_array );
     }
 

@@ -17,7 +17,7 @@
 
 #define DEBUG_INFORMATION_FORMAT \
     "Thread %zu: File '%s': line %u in function '%s' | Message: "
-#define DEBUG_INFORMATION_TO_PRINT \
+#define DEBUG_INFORMATION_ARGUMENTS \
     syscall( SYS_gettid ), __FILE__, __LINE__, __func__
 
 #define log$transaction$query( _logLevel, _string ) \
@@ -29,7 +29,7 @@
                         "Missing variadic arguments" );         \
         _log$transaction$query$format(                          \
             ( _logLevel ), DEBUG_INFORMATION_FORMAT _format,    \
-            DEBUG_INFORMATION_TO_PRINT, ##__VA_ARGS__ );        \
+            DEBUG_INFORMATION_ARGUMENTS, ##__VA_ARGS__ );       \
     } )
 
 #else

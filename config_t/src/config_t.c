@@ -171,7 +171,7 @@ bool config_t$load$fromString( config_t* restrict _config,
             const int l_result =
                 lineHandler( _config, "background", NULL, NULL );
 
-            l_returnValue = ( l_result );
+            l_returnValue = !!( l_result );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,

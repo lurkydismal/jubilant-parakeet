@@ -48,15 +48,18 @@ bool background_t$load( background_t* restrict _background,
 
     {
         {
-            char** l_files = createArray( char* );
-
-            insertIntoArray( &l_files, "test.boxes" );
-            insertIntoArray( &l_files, "test_1280x720_1-2.png" );
+            char** l_boxes = getPathsByGlob( folder"*".boxes );
+            char** l_animation = getPathsByGlob( folder"*"extension );
 
             l_returnValue = object_t$state$add$fromFiles(
-                &( _background->object ), _renderer, l_files, false, true );
+                &( _background->object ), _renderer, l_boxes[ 0 ], l_animation,
+                false, true );
 
-            FREE_ARRAY( l_files );
+            FREE_ARRAY_ELEMENTS( l_boxes );
+            FREE_ARRAY( l_boxes );
+
+            FREE_ARRAY_ELEMENTS( l_animation );
+            FREE_ARRAY( l_animation );
         }
 
         if ( UNLIKELY( !l_returnValue ) ) {

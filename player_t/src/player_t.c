@@ -50,7 +50,8 @@ EXIT:
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool player_t$state$add$fromFiles( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
-                                   char* const* restrict _files,
+                                   char* restrict _boxes,
+                                   char* const* restrict _animation,
                                    bool _isActionable,
                                    bool _canLoop ) {
     bool l_returnValue = false;
@@ -63,13 +64,18 @@ bool player_t$state$add$fromFiles( player_t* restrict _player,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_files ) ) {
+    if ( UNLIKELY( !_boxes ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
         goto EXIT;
     }
 
     {
         l_returnValue = object_t$state$add$fromFiles(
-            &( _player->object ), _renderer, _files, _isActionable, _canLoop );
+            &( _player->object ), _renderer, _boxes, _animation, _isActionable,
+            _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;

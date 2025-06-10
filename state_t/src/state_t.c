@@ -42,35 +42,27 @@ EXIT:
 
 // First file - boxes
 bool state_t$load$fromFiles( state_t* restrict _state,
-                             char* const* restrict _files ) {
+                             char* restrict _boxes,
+                             char* const* restrict _animation ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+    if ( UNLIKELY( !_boxes ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
         goto EXIT;
     }
 
     {
         // Animation
         {
-            char** l_animation = createArray( char* );
-
-            FOR_ARRAY( char* const*, _files ) {
-                // Skip first element
-                if ( UNLIKELY( _files == _element ) ) {
-                    continue;
-                }
-
-                insertIntoArray( &l_animation, *_element );
-            }
-
             l_returnValue = animation_t$load$fromFiles(
-                &( _state->animation ), _state->renderer, l_animation );
-
-            FREE_ARRAY( l_animation );
+                &( _state->animation ), _state->renderer, _animation );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;
@@ -81,7 +73,7 @@ bool state_t$load$fromFiles( state_t* restrict _state,
         {
             char** l_boxes = createArray( char* );
 
-            insertIntoArray( &l_boxes, arrayFirstElement( _files ) );
+            insertIntoArray( &l_boxes, _boxes );
 
             l_returnValue =
                 boxes_t$load$fromFiles( &( _state->boxes ), l_boxes );

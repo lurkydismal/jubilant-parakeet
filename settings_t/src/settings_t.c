@@ -96,15 +96,11 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                     createArray( settingsOption_t* );
 
                 {
-#define INSERT_SETTINGS_OPTION( _array, _key, _storage )                \
-    ( {                                                                 \
-        settingsOption_t l_settingsOption = settingsOption_t$create();  \
-        settingsOption_t$map( &l_settingsOption, _key, _storage );      \
-        settingsOption_t* l_settingsOptionAllocated =                   \
-            ( settingsOption_t* )malloc( sizeof( settingsOption_t ) );  \
-        __builtin_memcpy( l_settingsOptionAllocated, &l_settingsOption, \
-                          sizeof( settingsOption_t ) );                 \
-        insertIntoArray( _array, l_settingsOptionAllocated );           \
+#define INSERT_SETTINGS_OPTION( _array, _key, _storage )               \
+    ( {                                                                \
+        settingsOption_t l_settingsOption = settingsOption_t$create(); \
+        settingsOption_t$map( &l_settingsOption, _key, _storage );     \
+        insertIntoArray( _array, clone( &l_settingsOption ) );         \
     } )
 
                     // Window
@@ -128,37 +124,85 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
 
                     // Controls
                     {
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "up",
-                            &( _settings->controls.up.scancode ) );
+                        // Directions by names
+                        {
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "up",
+                                &( _settings->controls.up.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "down",
+                                &( _settings->controls.down.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "left",
+                                &( _settings->controls.left.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "right",
+                                &( _settings->controls.right.scancode ) );
+                        }
+
+                        // Directions by notation
+                        {
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "8",
+                                &( _settings->controls.up.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "2",
+                                &( _settings->controls.down.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "4",
+                                &( _settings->controls.left.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "6",
+                                &( _settings->controls.right.scancode ) );
+                        }
+
+                        // Buttons by names
+                        {
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "light_attack",
+                                &( _settings->controls.A.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "medium_attack",
+                                &( _settings->controls.B.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "heavy_attack",
+                                &( _settings->controls.C.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "shield",
+                                &( _settings->controls.D.scancode ) );
+                        }
+
+                        // Buttons by notation
+                        {
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "A",
+                                &( _settings->controls.A.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "B",
+                                &( _settings->controls.B.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "C",
+                                &( _settings->controls.C.scancode ) );
+
+                            INSERT_SETTINGS_OPTION(
+                                &l_settingsOptions, "D",
+                                &( _settings->controls.D.scancode ) );
+                        }
 
                         INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "down",
-                            &( _settings->controls.down.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "left",
-                            &( _settings->controls.left.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "right",
-                            &( _settings->controls.right.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "A",
-                            &( _settings->controls.A.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "B",
-                            &( _settings->controls.B.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "C",
-                            &( _settings->controls.C.scancode ) );
-
-                        INSERT_SETTINGS_OPTION(
-                            &l_settingsOptions, "D",
-                            &( _settings->controls.D.scancode ) );
+                            &l_settingsOptions, "background_index",
+                            &( _settings->backgroundIndex ) );
                     }
 
 #undef INSERT_SETTINGS_OPTION
@@ -269,39 +313,47 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
             asset_t l_settingsAsset = asset_t$create();
 
             {
-                char* l_filePath = duplicateString( "." );
+                {
+                    char* l_filePath = duplicateString( "." );
 
-                l_returnValue = !!( concatBeforeAndAfterString(
-                    &l_filePath, _fileName, _fileExtension ) );
+                    l_returnValue = !!( concatBeforeAndAfterString(
+                        &l_filePath, _fileName, _fileExtension ) );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT_FILE_PATH_CONCAT;
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        goto EXIT_PATH_LOAD;
+                    }
+
+                    l_returnValue =
+                        asset_t$load( &l_settingsAsset, l_filePath );
+
+                EXIT_PATH_LOAD:
+                    free( l_filePath );
+
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        goto EXIT_SETTINGS_LOAD;
+                    }
                 }
 
-                l_returnValue = asset_t$load( &l_settingsAsset, l_filePath );
-
-            EXIT_FILE_PATH_CONCAT:
-                free( l_filePath );
+                l_returnValue =
+                    settings_t$load$fromAsset( _settings, &l_settingsAsset );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto EXIT_SETTINGS_LOAD;
+                }
+
+                l_returnValue = asset_t$unload( &l_settingsAsset );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT_SETTINGS_LOAD;
                 }
             }
 
-            l_returnValue =
-                settings_t$load$fromAsset( _settings, &l_settingsAsset );
+        EXIT_SETTINGS_LOAD:
+            if ( UNLIKELY( !asset_t$destroy( &l_settingsAsset ) ) ) {
+                l_returnValue = false;
 
-            if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;
             }
-
-            l_returnValue = asset_t$unload( &l_settingsAsset );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
-
-            l_returnValue = asset_t$destroy( &l_settingsAsset );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;

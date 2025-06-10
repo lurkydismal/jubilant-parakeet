@@ -36,6 +36,19 @@ result_t$convert$fromSDL_AppResult( SDL_AppResult _appRunResult ) {
     }
 }
 
+static FORCE_INLINE const char* result_t$convert$toStaticString(
+    const result_t _result ) {
+    switch ( _result ) {
+        case success: {
+            return ( "SUCCESS" );
+        }
+
+        default: {
+            return ( "FAILURE" );
+        }
+    }
+}
+
 static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
                                const result_t _result ) {
     bool l_returnValue = false;
@@ -45,13 +58,14 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
     }
 
     {
+        // Report if SDL error occured before quitting
         {
             const char* l_SDLErrorMessage = SDL_GetError();
 
             if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error,
-                    "Application exited with code %u: '%s'\n", _result,
+                    ( logLevel_t )error, "Application exited with %s: '%s'\n",
+                    result_t$convert$toStaticString( _result ),
                     l_SDLErrorMessage );
             }
         }
@@ -96,6 +110,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             }
         }
 
+        // Application state
         if ( LIKELY( _applicationState ) ) {
             if ( LIKELY( _applicationState->renderer ) ) {
                 SDL_DestroyRenderer( _applicationState->renderer );
@@ -114,6 +129,19 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             free( _applicationState );
         }
 
+        // TODO: Make application actually return success not on failure
+        // Report application result
+        if ( _result != ( result_t )success ) {
+            const char* l_SDLErrorMessage = SDL_GetError();
+
+            if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Application shutdown with %s: '%s'\n",
+                    result_t$convert$toStaticString( _result ),
+                    l_SDLErrorMessage );
+            }
+        }
+
         // Log
         {
             if ( UNLIKELY( !log$quit() ) ) {
@@ -122,13 +150,6 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
                 goto EXIT;
             }
-        }
-
-        if ( _result != ( result_t )success ) {
-            log$transaction$query$format(
-                ( logLevel_t )error,
-                "Application shutdown with code %u: '%s'\n", _result,
-                SDL_GetError() );
         }
 
         l_returnValue = true;

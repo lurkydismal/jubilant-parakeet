@@ -1,6 +1,7 @@
 #include "stdfunc.h"
 
 #include <ctype.h>
+#include <glob.h>
 #include <limits.h>
 #include <string.h>
 #include <unistd.h>
@@ -363,4 +364,27 @@ char* getApplicationDirectoryAbsolutePath( void ) {
 
 EXIT:
     return ( l_returnValue );
+}
+
+// TODO: Implement
+char** getPathsByGlob( const char* _glob ) {
+    char** l_returnValue = NULL;
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = createArray( char* );
+
+        // Get files
+        {
+        }
+
+        FOR_RANGE() {
+        }
+    }
+
+EXIT:
+    return (l_returnValue );
 }

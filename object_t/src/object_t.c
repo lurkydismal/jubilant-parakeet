@@ -53,7 +53,8 @@ EXIT:
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromFiles( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
-                                   char* const* restrict _files,
+                                   char* restrict _boxes,
+                                   char* const* restrict _animation,
                                    bool _isActionable,
                                    bool _canLoop ) {
     bool l_returnValue = false;
@@ -66,7 +67,11 @@ bool object_t$state$add$fromFiles( object_t* restrict _object,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+    if ( UNLIKELY( !_boxes ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
         goto EXIT;
     }
 
@@ -77,17 +82,15 @@ bool object_t$state$add$fromFiles( object_t* restrict _object,
         l_state.canLoop = _canLoop;
         l_state.isActionable = _isActionable;
 
-        l_returnValue = state_t$load$fromFiles( &l_state, _files );
+        l_returnValue = state_t$load$fromFiles( &l_state, _boxes, _animation );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            state_t$destroy( &l_state );
+
             goto EXIT;
         }
 
-        state_t* l_stateAllocated = ( state_t* )malloc( sizeof( state_t ) );
-
-        __builtin_memcpy( l_stateAllocated, &l_state, sizeof( state_t ) );
-
-        insertIntoArray( &( _object->states ), l_stateAllocated );
+        insertIntoArray( &( _object->states ), clone( &l_state ) );
 
         l_returnValue = true;
     }

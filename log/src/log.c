@@ -185,7 +185,7 @@ bool log$init( const char* restrict _fileName,
             // 4 - Read for group members
             // 4 - Read for others
             g_fileDescriptor =
-                open( l_filePath, O_WRONLY | O_TRUNC | O_CREAT, 0644 );
+                open( l_filePath, ( O_WRONLY | O_TRUNC | O_CREAT ), 0644 );
 
         EXIT_FILE_PATH_CONCAT:
             free( l_filePath );
@@ -222,9 +222,15 @@ bool log$quit( void ) {
 
         g_transactionString = NULL;
 
+        g_transactionSize = 0;
+
+        g_currentLogLevel = ( logLevel_t )unknownLogLevel;
+
         if ( UNLIKELY( close( g_fileDescriptor ) == -1 ) ) {
             goto EXIT;
         }
+
+        g_fileDescriptor = -1;
 
         l_returnValue = true;
     }
@@ -233,11 +239,31 @@ EXIT:
     return ( l_returnValue );
 }
 
+static FORCE_INLINE void reportNotInitialized( void ) {
+    char* l_string = duplicateString( "Logging system is not initialized\n" );
+
+    size_t l_stringLength =
+        log$level$prependToString( &l_string, ( logLevel_t )error );
+
+    g_transactionString = l_string;
+    g_transactionSize = l_stringLength;
+
+    log$transaction$commit();
+
+    __builtin_trap();
+}
+
 bool _log$transaction$query( const logLevel_t _logLevel,
                              const char* restrict _string ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
+        reportNotInitialized();
+
+#endif
+
         goto EXIT;
     }
 
@@ -249,19 +275,12 @@ bool _log$transaction$query( const logLevel_t _logLevel,
         goto EXIT;
     }
 
-    size_t l_stringLength = __builtin_strlen( _string );
-
-    if ( UNLIKELY( ( g_transactionSize + l_stringLength ) >
-                   LOG_MAX_TRANSACTION_SIZE_DEFAULT ) ) {
-        l_stringLength =
-            ( LOG_MAX_TRANSACTION_SIZE_DEFAULT - g_transactionSize );
-    }
-
     {
         {
             char* l_string = duplicateString( _string );
 
-            l_stringLength = log$level$prependToString( &l_string, _logLevel );
+            size_t l_stringLength =
+                log$level$prependToString( &l_string, _logLevel );
 
             if ( UNLIKELY( ( g_transactionSize + l_stringLength ) >
                            LOG_MAX_TRANSACTION_SIZE_DEFAULT ) ) {
@@ -294,6 +313,12 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
+        reportNotInitialized();
+
+#endif
+
         goto EXIT;
     }
 

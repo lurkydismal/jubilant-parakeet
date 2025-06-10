@@ -24,7 +24,8 @@ bool player_t$destroy( player_t* restrict _player );
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool player_t$state$add$fromFiles( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
-                                   char* const* restrict _files,
+                                   char* restrict _boxes,
+                                   char* const* restrict _animation,
                                    bool _isActionable,
                                    bool _canLoop );
 
