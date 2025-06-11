@@ -3,27 +3,6 @@
 #include "test.h"
 
 // TODO: Implement
-TEST( input_t$GET_DIRECTION ) {
-    input_t l_input = MAKE_INPUT( UP, A );
-
-    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ), UP );
-}
-
-// TODO: Implement
-TEST( input_t$GET_BUTTON ) {
-    input_t l_input = MAKE_INPUT( UP, A );
-
-    ASSERT_EQ( "%#b", GET_BUTTON( l_input ), A );
-}
-
-// TODO: Implement
-TEST( input_t$MAKE_INPUT ) {
-    input_t l_input = MAKE_INPUT( UP, A );
-
-    ASSERT_EQ( "%#b", l_input, 0b10001 );
-}
-
-// TODO: Implement
 TEST( input_t$convert$toStaticString ) {
     // clang-format off
     direction_t l_directions[] = {
@@ -34,15 +13,15 @@ TEST( input_t$convert$toStaticString ) {
         A, B, C, D,
     };
 
-    const char* l_directionsConverted[] = {
-        "8",  // UP
-        "2",  // DOWN
-        "4",  // LEFT
-        "6",  // RIGHT
+    const char l_directionsConverted[] = {
+        '8',  // UP
+        '2',  // DOWN
+        '4',  // LEFT
+        '6',  // RIGHT
     };
 
-    const char* l_buttonsConverted[] = {
-        "A", "B", "C", "D",
+    const char l_buttonsConverted[] = {
+        'A', 'B', 'C', 'D',
     };
     // clang-format on
 
@@ -57,4 +36,28 @@ TEST( input_t$convert$toStaticString ) {
     ASSERT_STRING_EQ(
         input_t$convert$toStaticString( MAKE_INPUT( ( DOWN | RIGHT ), ( A ) ) ),
         "3A" );
+
+    {
+        char l_expected[ 3 ];
+
+        l_expected[ 2 ] = '\0';
+
+        FOR_RANGE( size_t, 0, arrayLengthNative( l_directions ) ) {
+            const size_t l_directionIndex = _index;
+
+            FOR_RANGE( size_t, 0, arrayLengthNative( l_buttons ) ) {
+                const size_t l_buttonIndex = _index;
+
+                l_expected[ 0 ] = l_directionsConverted[ l_directionIndex ];
+                l_expected[ 1 ] = l_buttonsConverted[ l_buttonIndex ];
+
+                const input_t l_input = MAKE_INPUT(
+                        l_directions[ l_directionIndex ], l_buttons[ l_buttonIndex ] );
+
+                const char* l_actual = input_t$convert$toStaticString( l_input );
+
+                ASSERT_STRING_EQ( l_actual, l_expected );
+            }
+        }
+    }
 }

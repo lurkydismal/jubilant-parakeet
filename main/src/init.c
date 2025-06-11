@@ -202,23 +202,35 @@ static error_t parserForOption( int _key,
         }
 
         case ARGP_KEY_END: {
-            // Pick background if no
-            if ( !( l_applicationState->background ) ) {
-                size_t l_index = l_applicationState->settings.backgroundIndex;
-                const size_t l_backgroundsAmount =
-                    arrayLength( l_applicationState->config.backgrounds );
+#define PICK_RANDOM_IF_NULL( _field )                                       \
+    do {                                                                    \
+        if ( !( l_applicationState->_field ) ) {                            \
+            _field##_t** const* l_##_field##s =                             \
+                &( l_applicationState->config._field##s );                  \
+            if ( LIKELY( *l_##_field##s ) ) {                               \
+                if ( LIKELY( arrayLength( *l_##_field##s ) ) ) {            \
+                    size_t l_index =                                        \
+                        l_applicationState->settings._field##Index;         \
+                    const size_t l_##_field##sAmount =                      \
+                        arrayLength( *l_##_field##s );                      \
+                    if ( l_index >= l_##_field##sAmount ) {                 \
+                        l_index = ( randomNumber() % l_##_field##sAmount ); \
+                        log$transaction$query$format(                       \
+                            ( logLevel_t )info,                             \
+                            "Selecting random " #_field ": [ %zu ]\n",      \
+                            l_index );                                      \
+                    }                                                       \
+                    l_applicationState->_field =                            \
+                        ( *l_##_field##s )[ l_index ];                      \
+                }                                                           \
+            }                                                               \
+        }                                                                   \
+    } while ( 0 )
 
-                if ( l_index >= l_backgroundsAmount ) {
-                    l_index = ( randomNumber() % l_backgroundsAmount );
+            PICK_RANDOM_IF_NULL( background );
+            PICK_RANDOM_IF_NULL( HUD );
 
-                    log$transaction$query$format(
-                        ( logLevel_t )info,
-                        "Selecting random background: [ %zu ]\n", l_index );
-                }
-
-                l_applicationState->background =
-                    l_applicationState->config.backgrounds[ l_index ];
-            }
+#undef PICK_RANDOM_IF_NULL
 
             break;
         }
@@ -274,6 +286,7 @@ static FORCE_INLINE bool parseArguments(
         struct argp_option l_options[] = {
             { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
             { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
+            { "HUD", 'h', "INDEX", 0, "Select HUD by index", 0 },
             { "background", 'b', "INDEX", 0, "Select background by index", 0 },
             { "character", 'c', "INDEX", 0, "Select character by index", 0 },
             { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
@@ -286,8 +299,8 @@ static FORCE_INLINE bool parseArguments(
         // NAME... - at least one and more
         const char l_arguments[] = "";
 
-        struct argp l_argumentParser = { l_options, parserForOption,
-                                         l_arguments, l_description };
+        struct argp l_argumentParser = {
+            l_options, parserForOption, l_arguments, l_description, 0, 0, 0 };
 
         if ( UNLIKELY( !argp_parse( &l_argumentParser, _argumentCount,
                                     _argumentVector, 0, 0,
@@ -458,6 +471,51 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                 }
             }
 
+            // TODO: Improve
+            // Default scale mode
+            {
+                l_returnValue = SDL_SetDefaultTextureScaleMode(
+                    _applicationState->renderer, SDL_SCALEMODE_PIXELART );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query$format(
+                        ( logLevel_t )error,
+                        "Setting render pixel scale mode: '%s'\n",
+                        SDL_GetError() );
+
+                    l_returnValue = SDL_SetDefaultTextureScaleMode(
+                        _applicationState->renderer, SDL_SCALEMODE_NEAREST );
+
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query$format(
+                            ( logLevel_t )error,
+                            "Setting render nearest scale mode: '%s'\n",
+                            SDL_GetError() );
+
+                        goto EXIT;
+                    }
+                }
+            }
+
+            // Scaling
+            {
+                const float l_scaleX =
+                    ( ( float )( _applicationState->settings.window.width ) /
+                      ( float )( _applicationState->logicalWidth ) );
+                const float l_scaleY =
+                    ( ( float )( _applicationState->settings.window.height ) /
+                      ( float )( _applicationState->logicalHeight ) );
+
+                if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
+                                          l_scaleY ) ) {
+                    log$transaction$query$format(
+                        ( logLevel_t )error, "Setting render scale: '%s'\n",
+                        SDL_GetError() );
+
+                    goto EXIT;
+                }
+            }
+
             // Load resources
             {
                 if ( UNLIKELY(
@@ -467,39 +525,6 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
                     goto EXIT;
                 }
-            }
-        }
-
-        // Default scale mode
-        {
-            l_returnValue = SDL_SetDefaultTextureScaleMode(
-                _applicationState->renderer, SDL_SCALEMODE_NEAREST );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query$format(
-                    ( logLevel_t )error, "Setting render scale mode: '%s'\n",
-                    SDL_GetError() );
-
-                goto EXIT;
-            }
-        }
-
-        // Scaling
-        {
-            const float l_scaleX =
-                ( ( float )( _applicationState->settings.window.width ) /
-                  ( float )( _applicationState->logicalWidth ) );
-            const float l_scaleY =
-                ( ( float )( _applicationState->settings.window.height ) /
-                  ( float )( _applicationState->logicalHeight ) );
-
-            if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
-                                      l_scaleY ) ) {
-                log$transaction$query$format( ( logLevel_t )error,
-                                              "Setting render scale: '%s'\n",
-                                              SDL_GetError() );
-
-                goto EXIT;
             }
         }
 

@@ -4,6 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <stdbool.h>
 
+#include "HUD_t.h"
 #include "background_t.h"
 #include "camera_t.h"
 #include "config_t.h"
@@ -16,6 +17,7 @@
       .settings = DEFAULT_SETTINGS,  \
       .config = DEFAULT_CONFIG,      \
       .background = NULL,            \
+      .HUD = NULL,                   \
       .camera = DEFAULT_CAMERA,      \
       .localPlayer = DEFAULT_PLAYER, \
       .remotePlayers = NULL,         \
@@ -29,6 +31,7 @@ typedef struct {
     settings_t settings;
     config_t config;
     background_t* background;
+    HUD_t* HUD;
     camera_t camera;
     player_t localPlayer;
     player_t** remotePlayers;

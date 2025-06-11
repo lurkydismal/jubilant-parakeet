@@ -205,6 +205,9 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                         INSERT_SETTINGS_OPTION(
                             &l_settingsOptions, "background_index",
                             &( _settings->backgroundIndex ) );
+
+                        INSERT_SETTINGS_OPTION( &l_settingsOptions, "HUD_index",
+                                                &( _settings->HUDIndex ) );
                     }
 
 #undef INSERT_SETTINGS_OPTION

@@ -2,16 +2,19 @@
 
 #include <stdbool.h>
 
+#include "HUD_t.h"
 #include "asset_t.h"
 #include "background_t.h"
 
 #define DEFAULT_CONFIG       \
     {                        \
         .backgrounds = NULL, \
+        .HUDs = NULL,        \
     }
 
 typedef struct {
     background_t** backgrounds;
+    HUD_t** HUDs;
 } config_t;
 
 config_t config_t$create();

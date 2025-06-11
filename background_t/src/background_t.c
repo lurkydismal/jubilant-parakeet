@@ -1,5 +1,6 @@
 #include "background_t.h"
 
+#include "log.h"
 #include "stdfunc.h"
 
 background_t background_t$create( void ) {
@@ -48,7 +49,15 @@ bool background_t$load( background_t* restrict _background,
         goto EXIT;
     }
 
+    if ( UNLIKELY( !_renderer ) ) {
+        goto EXIT;
+    }
+
     {
+        log$transaction$query$format( ( logLevel_t )info,
+                                      "Loading background: '%s'\n",
+                                      _background->name );
+
         // TODO: Improve
         {
             const char* l_folder = _background->folder;

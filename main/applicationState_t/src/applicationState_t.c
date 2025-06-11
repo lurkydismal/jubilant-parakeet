@@ -39,6 +39,7 @@ bool applicationState_t$destroy(
         }
 
         /*
+         * HUD is a reference to config HUD
          * Background is a reference to config background
          */
 
@@ -81,14 +82,26 @@ bool applicationState_t$load( applicationState_t* _applicationState ) {
     }
 
     {
-        l_returnValue = background_t$load( _applicationState->background,
-                                           _applicationState->renderer );
+        // Background
+        {
+            l_returnValue = background_t$load( _applicationState->background,
+                                               _applicationState->renderer );
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Loading background\n" );
+                goto EXIT;
+            }
+        }
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Loading background\n" );
-
-            goto EXIT;
+        // HUD
+        {
+            l_returnValue = HUD_t$load(
+                _applicationState->HUD, _applicationState->renderer,
+                ( arrayLength( _applicationState->remotePlayers ) + 1 ) );
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error, "Loading HUD\n" );
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;
@@ -106,11 +119,18 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
     }
 
     {
-        l_returnValue = background_t$unload( _applicationState->background );
+#define TRY_UNLOAD_OR_EXIT( _field )                                    \
+    do {                                                                \
+        l_returnValue = _field##_t$unload( _applicationState->_field ); \
+        if ( UNLIKELY( !l_returnValue ) ) {                             \
+            goto EXIT;                                                  \
+        }                                                               \
+    } while ( 0 )
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
+        TRY_UNLOAD_OR_EXIT( background );
+        TRY_UNLOAD_OR_EXIT( HUD );
+
+#undef TRY_UNLOAD_OR_EXIT
 
         l_returnValue = true;
     }

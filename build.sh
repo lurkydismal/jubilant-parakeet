@@ -59,6 +59,7 @@ export declare BUILD_INCLUDES=(
     "vsync/include"
     "config_t/include"
     "background_t/include"
+    "HUD_t/include"
     "asset_t/include"
     "log/include"
     "stdfunc/include"

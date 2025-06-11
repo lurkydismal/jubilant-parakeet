@@ -10,6 +10,7 @@ config_t config_t$create() {
 
     {
         l_returnValue.backgrounds = createArray( background_t* );
+        l_returnValue.HUDs = createArray( HUD_t* );
     }
 
     return ( l_returnValue );
@@ -23,15 +24,21 @@ bool config_t$destroy( config_t* restrict _config ) {
     }
 
     {
-        FOR_ARRAY( background_t* const*, _config->backgrounds ) {
-            l_returnValue = background_t$destroy( *_element );
+#define MACRO( _field )                                       \
+    do {                                                      \
+        FOR_ARRAY( _field##_t* const*, _config->_field##s ) { \
+            l_returnValue = _field##_t$destroy( *_element );  \
+            if ( UNLIKELY( !l_returnValue ) ) {               \
+                goto EXIT;                                    \
+            }                                                 \
+        }                                                     \
+        FREE_ARRAY( _config->_field##s );                     \
+    } while ( 0 )
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
-        }
+        MACRO( background );
+        MACRO( HUD );
 
-        FREE_ARRAY( _config->backgrounds );
+#undef MACRO
 
         l_returnValue = true;
     }
@@ -68,76 +75,71 @@ static int lineHandler( void* _config,
     {
         config_t* l_config = ( config_t* )_config;
 
+        static char l_name[ PATH_MAX ] = { '\0' };
+        static char l_folder[ PATH_MAX ] = { '\0' };
+        static char l_extension[ PATH_MAX ] = { '\0' };
+
+        if ( UNLIKELY( l_name[ 0 ] == '\0' ) ) {
+            __builtin_memset( l_name, 0, sizeof( l_name ) );
+        }
+
+        if ( UNLIKELY( l_folder[ 0 ] == '\0' ) ) {
+            __builtin_memset( l_folder, 0, sizeof( l_folder ) );
+        }
+
+        if ( UNLIKELY( l_extension[ 0 ] == '\0' ) ) {
+            __builtin_memset( l_extension, 0, sizeof( l_extension ) );
+        }
+
         // TODO: Improve
 #define MATCH_STRING( _string1, _string2 ) \
     ( ( _string1 ) && ( _string2 ) &&      \
       ( __builtin_strcmp( _string1, _string2 ) == 0 ) )
 
         if ( MATCH_STRING( _sectionName, "background" ) ) {
-            static background_t l_background = DEFAULT_BACKGROUND;
-
             if ( !_key && !_value ) {
-#if defined( LOG_CONFIG )
-
                 log$transaction$query$format( ( logLevel_t )debug, "[ %s ]\n",
                                               _sectionName );
 
-#endif
+                if ( l_name && l_folder && l_extension ) {
+                    background_t l_background = background_t$create();
 
-                if ( l_background.name && l_background.folder &&
-                     l_background.extension ) {
-#if defined( LOG_CONFIG )
+                    l_background.name = duplicateString( l_name );
+                    l_background.folder = duplicateString( l_folder );
+                    l_background.extension = duplicateString( l_extension );
 
                     log$transaction$query$format(
                         ( logLevel_t )info, "[ '%s' : '%s' ]: '%s'\n",
                         l_background.name, l_background.folder,
                         l_background.extension );
 
-#endif
-
                     insertIntoArray( &( l_config->backgrounds ),
                                      clone( &l_background ) );
-
-                } else if ( l_background.name ) {
-                    free( l_background.name );
-
-                    l_background.name = NULL;
-
-                } else if ( l_background.folder ) {
-                    free( l_background.folder );
-
-                    l_background.folder = NULL;
-
-                } else if ( l_background.extension ) {
-                    free( l_background.extension );
-
-                    l_background.folder = NULL;
                 }
 
-                l_background = background_t$create();
+                __builtin_memset( l_name, 0, sizeof( l_name ) );
+                __builtin_memset( l_folder, 0, sizeof( l_folder ) );
+                __builtin_memset( l_extension, 0, sizeof( l_extension ) );
 
-            } else {
-#if defined( LOG_CONFIG )
-
+            } else if ( _key && _value ) {
                 log$transaction$query$format( ( logLevel_t )debug,
                                               "'%s' = '%s'\n", _key, _value );
 
-#endif
+                const size_t l_valueLength = __builtin_strlen( _value );
+
+                if ( UNLIKELY( l_valueLength >= PATH_MAX ) ) {
+                    // TODO: Improve
+                    __builtin_trap();
+                }
 
                 if ( MATCH_STRING( _key, "name" ) ) {
-                    free( l_background.name );
-
-                    l_background.name = duplicateString( _value );
+                    __builtin_memcpy( l_name, _value, ( l_valueLength + 1 ) );
 
                 } else if ( MATCH_STRING( _key, "folder" ) ) {
-                    free( l_background.folder );
-
-                    l_background.folder = duplicateString( _value );
+                    __builtin_memcpy( l_folder, _value, ( l_valueLength + 1 ) );
 
                 } else if ( MATCH_STRING( _key, "extension" ) ) {
-                    free( l_background.extension );
-
-                    l_background.extension = duplicateString( _value );
+                    __builtin_memcpy( l_extension, _value, ( l_valueLength + 1 ) );
                 }
             }
         }
@@ -180,16 +182,33 @@ bool config_t$load$fromString( config_t* restrict _config,
 
         // TODO: Improve
         {
-            const int l_result =
-                lineHandler( _config, "background", NULL, NULL );
+            // Background
+            {
+                const int l_result =
+                    lineHandler( _config, "background", NULL, NULL );
 
-            l_returnValue = !!( l_result );
+                l_returnValue = !!( l_result );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Config loading\n" );
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Config loading\n" );
 
-                goto EXIT;
+                    goto EXIT;
+                }
+            }
+
+            // HUD
+            {
+                const int l_result = lineHandler( _config, "HUD", NULL, NULL );
+
+                l_returnValue = !!( l_result );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Config loading\n" );
+
+                    goto EXIT;
+                }
             }
         }
 
@@ -252,6 +271,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Add HUD
 bool config_t$load$fromPath( config_t* restrict _config,
                              const char* restrict _fileName,
                              const char* restrict _fileExtension ) {
@@ -336,6 +356,7 @@ bool config_t$unload( config_t* restrict _config ) {
 
     {
 #if 0
+        // TODO
         FOR_ARRAY( background_t* const*, _config->backgrounds ) {
             l_returnValue = background_t$unload( *_element );
 
