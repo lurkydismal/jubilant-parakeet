@@ -139,7 +139,8 @@ static int lineHandler( void* _config,
                     __builtin_memcpy( l_folder, _value, ( l_valueLength + 1 ) );
 
                 } else if ( MATCH_STRING( _key, "extension" ) ) {
-                    __builtin_memcpy( l_extension, _value, ( l_valueLength + 1 ) );
+                    __builtin_memcpy( l_extension, _value,
+                                      ( l_valueLength + 1 ) );
                 }
             }
         }
