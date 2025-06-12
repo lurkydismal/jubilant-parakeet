@@ -419,6 +419,14 @@ char** getPathsByGlob( const char* restrict _glob,
                 }
             }
 
+            if ( !( l_globBuffer.gl_pathc ) ) {
+                log$transaction$query$format( ( logLevel_t )error,
+                                              "Glob empty: '%s' in '%s'\n",
+                                              _glob, _directory );
+
+                goto EXIT_GLOB;
+            }
+
             FOR_RANGE( size_t, 0, ( l_globBuffer.gl_pathc ) ) {
                 const char* l_fullPath = l_globBuffer.gl_pathv[ _index ];
                 const size_t l_fullPathLength = __builtin_strlen( l_fullPath );
@@ -435,6 +443,7 @@ char** getPathsByGlob( const char* restrict _glob,
                 insertIntoArray( &l_returnValue, l_path );
             }
 
+        EXIT_GLOB:
             globfree( &l_globBuffer );
         }
     }

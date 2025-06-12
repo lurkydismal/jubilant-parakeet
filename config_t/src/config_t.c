@@ -75,74 +75,77 @@ static int lineHandler( void* _config,
     {
         config_t* l_config = ( config_t* )_config;
 
+        static char l_previouSsectionName[ PATH_MAX ] = { '\0' };
         static char l_name[ PATH_MAX ] = { '\0' };
         static char l_folder[ PATH_MAX ] = { '\0' };
         static char l_extension[ PATH_MAX ] = { '\0' };
-
-        if ( UNLIKELY( l_name[ 0 ] == '\0' ) ) {
-            __builtin_memset( l_name, 0, sizeof( l_name ) );
-        }
-
-        if ( UNLIKELY( l_folder[ 0 ] == '\0' ) ) {
-            __builtin_memset( l_folder, 0, sizeof( l_folder ) );
-        }
-
-        if ( UNLIKELY( l_extension[ 0 ] == '\0' ) ) {
-            __builtin_memset( l_extension, 0, sizeof( l_extension ) );
-        }
 
         // TODO: Improve
 #define MATCH_STRING( _string1, _string2 ) \
     ( ( _string1 ) && ( _string2 ) &&      \
       ( __builtin_strcmp( _string1, _string2 ) == 0 ) )
 
-        if ( MATCH_STRING( _sectionName, "background" ) ) {
-            if ( !_key && !_value ) {
-                log$transaction$query$format( ( logLevel_t )debug, "[ %s ]\n",
-                                              _sectionName );
+        if ( _key && _value ) {
+            const size_t l_valueLength = __builtin_strlen( _value );
 
-                if ( l_name && l_folder && l_extension ) {
-                    background_t l_background = background_t$create();
-
-                    l_background.name = duplicateString( l_name );
-                    l_background.folder = duplicateString( l_folder );
-                    l_background.extension = duplicateString( l_extension );
-
-                    log$transaction$query$format(
-                        ( logLevel_t )info, "[ '%s' : '%s' ]: '%s'\n",
-                        l_background.name, l_background.folder,
-                        l_background.extension );
-
-                    insertIntoArray( &( l_config->backgrounds ),
-                                     clone( &l_background ) );
-                }
-
-                __builtin_memset( l_name, 0, sizeof( l_name ) );
-                __builtin_memset( l_folder, 0, sizeof( l_folder ) );
-                __builtin_memset( l_extension, 0, sizeof( l_extension ) );
-
-            } else if ( _key && _value ) {
-                log$transaction$query$format( ( logLevel_t )debug,
-                                              "'%s' = '%s'\n", _key, _value );
-
-                const size_t l_valueLength = __builtin_strlen( _value );
-
-                if ( UNLIKELY( l_valueLength >= PATH_MAX ) ) {
-                    // TODO: Improve
-                    __builtin_trap();
-                }
-
-                if ( MATCH_STRING( _key, "name" ) ) {
-                    __builtin_memcpy( l_name, _value, ( l_valueLength + 1 ) );
-
-                } else if ( MATCH_STRING( _key, "folder" ) ) {
-                    __builtin_memcpy( l_folder, _value, ( l_valueLength + 1 ) );
-
-                } else if ( MATCH_STRING( _key, "extension" ) ) {
-                    __builtin_memcpy( l_extension, _value,
-                                      ( l_valueLength + 1 ) );
-                }
+            if ( UNLIKELY( l_valueLength >= PATH_MAX ) ) {
+                // TODO: Improve
+                __builtin_trap();
             }
+
+            log$transaction$query$format( ( logLevel_t )debug, "'%s' = '%s'\n",
+                                          _key, _value );
+
+            if ( MATCH_STRING( _key, "name" ) ) {
+                __builtin_memcpy( l_name, _value, ( l_valueLength + 1 ) );
+
+            } else if ( MATCH_STRING( _key, "folder" ) ) {
+                __builtin_memcpy( l_folder, _value, ( l_valueLength + 1 ) );
+
+            } else if ( MATCH_STRING( _key, "extension" ) ) {
+                __builtin_memcpy( l_extension, _value, ( l_valueLength + 1 ) );
+            }
+
+        } else if ( !_key && !_value ) {
+            const size_t l_sectionNameLength = __builtin_strlen( _sectionName );
+
+            if ( UNLIKELY( l_sectionNameLength >= PATH_MAX ) ) {
+                // TODO: Improve
+                __builtin_trap();
+            }
+
+            if ( ( __builtin_strlen( l_name ) && __builtin_strlen( l_folder ) &&
+                   __builtin_strlen( l_extension ) ) ) {
+                log$transaction$query$format( ( logLevel_t )info,
+                                              "[ '%s' : '%s' ]: '%s'\n", l_name,
+                                              l_folder, l_extension );
+
+#define MACRO( _x )                                                    \
+    do {                                                               \
+        if ( MATCH_STRING( l_previouSsectionName, #_x ) ) {            \
+            _x##_t l_##_x = _x##_t$create();                           \
+            l_##_x.name = duplicateString( l_name );                   \
+            l_##_x.folder = duplicateString( l_folder );               \
+            l_##_x.extension = duplicateString( l_extension );         \
+            insertIntoArray( &( l_config->_x##s ), clone( &l_##_x ) ); \
+        }                                                              \
+    } while ( 0 )
+
+                MACRO( background );
+                MACRO( HUD );
+
+#undef MACRO
+            }
+
+            __builtin_memset( l_name, 0, sizeof( l_name ) );
+            __builtin_memset( l_folder, 0, sizeof( l_folder ) );
+            __builtin_memset( l_extension, 0, sizeof( l_extension ) );
+
+            log$transaction$query$format( ( logLevel_t )debug, "[ %s ]\n",
+                                          _sectionName );
+
+            __builtin_memcpy( l_previouSsectionName, _sectionName,
+                              ( l_sectionNameLength + 1 ) );
         }
 
 #undef MATCH_STRING

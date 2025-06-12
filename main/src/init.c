@@ -397,11 +397,6 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
             // Metadata
             {
-                l_returnValue = SDL_SetAppMetadata(
-                    _applicationState->settings.window.name,
-                    _applicationState->settings.version,
-                    _applicationState->settings.identifier );
-
                 log$transaction$query$format(
                     ( logLevel_t )info,
                     "Window name: '%s', Version: '%s', Identifier: '%s'\n",
@@ -411,7 +406,10 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
                 log$transaction$commit();
 
-                if ( UNLIKELY( !l_returnValue ) ) {
+                if ( UNLIKELY( !SDL_SetAppMetadata(
+                         _applicationState->settings.window.name,
+                         _applicationState->settings.version,
+                         _applicationState->settings.identifier ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error, "Setting render scale: '%s'\n",
                         SDL_GetError() );
@@ -474,19 +472,17 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             // TODO: Improve
             // Default scale mode
             {
-                l_returnValue = SDL_SetDefaultTextureScaleMode(
-                    _applicationState->renderer, SDL_SCALEMODE_PIXELART );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
+                if ( UNLIKELY( !SDL_SetDefaultTextureScaleMode(
+                         _applicationState->renderer,
+                         SDL_SCALEMODE_PIXELART ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
                         "Setting render pixel scale mode: '%s'\n",
                         SDL_GetError() );
 
-                    l_returnValue = SDL_SetDefaultTextureScaleMode(
-                        _applicationState->renderer, SDL_SCALEMODE_NEAREST );
-
-                    if ( UNLIKELY( !l_returnValue ) ) {
+                    if ( UNLIKELY( !SDL_SetDefaultTextureScaleMode(
+                             _applicationState->renderer,
+                             SDL_SCALEMODE_NEAREST ) ) ) {
                         log$transaction$query$format(
                             ( logLevel_t )error,
                             "Setting render nearest scale mode: '%s'\n",
@@ -554,9 +550,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
         // Gamepad
         {
-            l_returnValue = !( SDL_HasGamepad() );
-
-            if ( !l_returnValue ) {
+            if ( !!( SDL_HasGamepad() ) ) {
                 log$transaction$query( ( logLevel_t )error,
                                        "Initializing Gamepad\n" );
 

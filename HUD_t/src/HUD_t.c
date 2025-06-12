@@ -113,7 +113,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
                 // Boxes
                 {
-                    l_boxesPath = duplicateString( l_folder );
+                    l_boxesPath = duplicateString( _HUD->folder );
 
                     concatBeforeAndAfterString( &l_boxesPath, "/", ".boxes" );
                     concatBeforeAndAfterString( &l_boxesPath, l_folder, NULL );
@@ -125,14 +125,14 @@ static FORCE_INLINE bool HUD_t$element$load$one(
                 {
                     char* l_glob = duplicateString( "*." );
 
-                    concatBeforeAndAfterString( &l_glob, l_folder,
+                    concatBeforeAndAfterString( &l_glob, _HUD->folder,
                                                 _HUD->extension );
 
                     char* l_directory = duplicateString( l_folder );
 
                     concatBeforeAndAfterString(
                         &l_directory, asset_t$loader$assetsDirectory$get(),
-                        "/" );
+                        NULL );
 
                     l_animation = getPathsByGlob( l_glob, l_directory );
 
@@ -207,7 +207,8 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         }                                                                     \
     } while ( 0 )
 
-        TRY_LOAD_ALL_OR_EXIT( logos );
+        // TODO: Fix
+        // TRY_LOAD_ALL_OR_EXIT( logos );
 
 #undef TRY_LOAD_ALL_OR_EXIT
 
@@ -222,6 +223,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         }
 
         // Timer background
+#if 0
         {
             l_returnValue =
                 HUD_t$element$load$one( &( _HUD->timerBackground ), _HUD,
@@ -231,6 +233,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
                 goto EXIT;
             }
         }
+#endif
 
         l_returnValue = true;
     }
