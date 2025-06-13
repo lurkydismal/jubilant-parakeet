@@ -46,15 +46,14 @@ EXIT:
     return ( l_returnValue );
 }
 
-// First file - boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
-                                   char* restrict _boxes,
-                                   char* const* restrict _animation,
+                                   char* restrict _boxesPath,
+                                   char* const* restrict _animationPaths,
                                    bool _isActionable,
                                    bool _canLoop ) {
     bool l_returnValue = false;
@@ -67,11 +66,12 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_boxes ) ) {
+    if ( UNLIKELY( !_boxesPath ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
+    if ( UNLIKELY( !_animationPaths ) ||
+         UNLIKELY( !arrayLength( _animationPaths ) ) ) {
         goto EXIT;
     }
 
@@ -82,7 +82,58 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
         l_state.canLoop = _canLoop;
         l_state.isActionable = _isActionable;
 
-        l_returnValue = state_t$load$fromPaths( &l_state, _boxes, _animation );
+        l_returnValue =
+            state_t$load$fromPaths( &l_state, _boxesPath, _animationPaths );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            state_t$destroy( &l_state );
+
+            goto EXIT;
+        }
+
+        insertIntoArray( &( _object->states ), clone( &l_state ) );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$state$add$fromGlob( object_t* restrict _object,
+                                  SDL_Renderer* _renderer,
+                                  char* restrict _boxesGlob,
+                                  char* restrict _animationGlob,
+                                  bool _isActionable,
+                                  bool _canLoop ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_renderer ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_boxesGlob ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animationGlob ) ||
+         UNLIKELY( !arrayLength( _animationGlob ) ) ) {
+        goto EXIT;
+    }
+
+    {
+        state_t l_state = state_t$create();
+
+        l_state.renderer = _renderer;
+        l_state.canLoop = _canLoop;
+        l_state.isActionable = _isActionable;
+
+        l_returnValue =
+            state_t$load$fromGlob( &l_state, _boxesGlob, _animationGlob );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             state_t$destroy( &l_state );

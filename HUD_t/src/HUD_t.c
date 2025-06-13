@@ -109,50 +109,35 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             concatBeforeAndAfterString( &l_folder, _HUD->folder, _subFolder );
 
             {
-                char* l_boxesPath = NULL;
+                char* l_boxesGlbb = NULL;
 
                 // Boxes
                 {
-                    l_boxesPath = duplicateString( _HUD->folder );
+                    l_boxesGlbb = duplicateString( _HUD->folder );
 
-                    concatBeforeAndAfterString( &l_boxesPath, "/", ".boxes" );
-                    concatBeforeAndAfterString( &l_boxesPath, l_folder, NULL );
+                    concatBeforeAndAfterString( &l_boxesGlbb, "/", ".boxes" );
+                    concatBeforeAndAfterString( &l_boxesGlbb, l_folder, NULL );
                 }
 
-                char** l_animation = NULL;
+                char* l_animationGlob = NULL;
 
                 // Animation
                 {
-                    char* l_glob = duplicateString( "*." );
+                    l_animationGlob = duplicateString( "*." );
 
-                    concatBeforeAndAfterString( &l_glob, _HUD->folder,
+                    concatBeforeAndAfterString( &l_animationGlob, _HUD->folder,
                                                 _HUD->extension );
-
-                    char* l_directory = duplicateString( l_folder );
-
-                    concatBeforeAndAfterString(
-                        &l_directory, asset_t$loader$assetsDirectory$get(),
-                        NULL );
-
-                    l_animation = getPathsByGlob( l_glob, l_directory );
-
-                    free( l_glob );
-                    free( l_directory );
-
-                    FOR_ARRAY( char**, l_animation ) {
-                        concatBeforeAndAfterString( _element, "/", NULL );
-                        concatBeforeAndAfterString( _element, l_folder, NULL );
-                    }
+                    concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
+                    concatBeforeAndAfterString( &l_animationGlob, l_folder,
+                                                NULL );
                 }
 
-                l_returnValue = object_t$state$add$fromPaths(
-                    _element, _renderer, l_boxesPath, l_animation, false,
+                l_returnValue = object_t$state$add$fromGlob(
+                    _element, _renderer, l_boxesGlbb, l_animationGlob, false,
                     true );
 
-                free( l_boxesPath );
-
-                FREE_ARRAY_ELEMENTS( l_animation );
-                FREE_ARRAY( l_animation );
+                free( l_boxesGlbb );
+                free( l_animationGlob );
             }
 
             free( l_folder );

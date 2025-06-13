@@ -219,7 +219,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
                 l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto LOOP_CONTINUE;
                 }
 
                 l_returnValue = animation_t$load$fromAsset(
@@ -227,19 +227,19 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
                     l_startIndex, l_endIndex );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto LOOP_CONTINUE;
                 }
 
                 l_returnValue = asset_t$unload( &l_asset );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto LOOP_CONTINUE;
                 }
 
                 l_returnValue = asset_t$destroy( &l_asset );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    goto LOOP_CONTINUE;
                 }
             }
 
@@ -260,6 +260,43 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
                                       arrayLength( _animation->frames ) );
 
 #endif
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool animation_t$load$fromGlob( animation_t* restrict _animation,
+                                SDL_Renderer* _renderer,
+                                const char* restrict _glob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_animation ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_renderer ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        char** l_paths = getPathsByGlob( _glob, NULL );
+
+        l_returnValue =
+            animation_t$load$fromPaths( _animation, _renderer, l_paths );
+
+        FREE_ARRAY_ELEMENTS( l_paths );
+        FREE_ARRAY( l_paths );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
 
         l_returnValue = true;
     }

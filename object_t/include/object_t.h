@@ -29,17 +29,22 @@ typedef struct {
 object_t object_t$create( void );
 bool object_t$destroy( object_t* restrict _object );
 
-// First file - boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
-                                   char* restrict _boxes,
-                                   char* const* restrict _animation,
+                                   char* restrict _boxesPath,
+                                   char* const* restrict _animationPaths,
                                    bool _isActionable,
                                    bool _canLoop );
+bool object_t$state$add$fromGlob( object_t* restrict _object,
+                                  SDL_Renderer* _renderer,
+                                  char* restrict _boxesGlob,
+                                  char* restrict _animationGlob,
+                                  bool _isActionable,
+                                  bool _canLoop );
 bool object_t$state$remove( object_t* restrict _object,
                             state_t* restrict _state );
 bool object_t$states$remove( object_t* restrict _object );

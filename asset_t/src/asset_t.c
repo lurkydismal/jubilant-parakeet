@@ -193,8 +193,7 @@ bool asset_t$load$fromGlob( asset_t* restrict _asset,
 
     {
         {
-            char** l_paths =
-                getPathsByGlob( _glob, asset_t$loader$assetsDirectory$get() );
+            char** l_paths = getPathsByGlob( _glob, g_assetsDirectory );
 
             l_returnValue = asset_t$load$fromPath( _asset, l_paths[ 0 ] );
 
@@ -226,29 +225,27 @@ bool asset_t$array$load$fromGlob( asset_t*** restrict _assetArray,
     }
 
     {
-        {
-            char** l_paths =
-                getPathsByGlob( _glob, asset_t$loader$assetsDirectory$get() );
+        char** l_paths = getPathsByGlob( _glob, g_assetsDirectory );
 
-            FOR_ARRAY( char* const*, l_paths ) {
-                asset_t l_asset = asset_t$create();
+        FOR_ARRAY( char* const*, l_paths ) {
+            asset_t l_asset = asset_t$create();
 
-                l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
+            l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    asset_t$destroy( &l_asset );
+            if ( UNLIKELY( !l_returnValue ) ) {
+                asset_t$destroy( &l_asset );
 
-                    goto EXIT;
-                }
-
-                insertIntoArray( &_assetArray, clone( &l_asset ) );
+                goto EXIT_LOADING;
             }
 
-            FREE_ARRAY_ELEMENTS( l_paths );
-            FREE_ARRAY( l_paths );
+            insertIntoArray( _assetArray, clone( &l_asset ) );
         }
 
         l_returnValue = true;
+
+    EXIT_LOADING:
+        FREE_ARRAY_ELEMENTS( l_paths );
+        FREE_ARRAY( l_paths );
     }
 
 EXIT:
@@ -260,6 +257,10 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_path ) ) {
         goto EXIT;
     }
 
@@ -284,10 +285,70 @@ EXIT:
 }
 
 bool asset_t$load$fromGlob$compressed( asset_t* restrict _asset,
-                                       const char* restrict _glob ) {}
+                                       const char* restrict _glob ) {
+    bool l_returnValue = false;
 
-bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _asset,
-                                             const char* restrict _glob ) {}
+    if ( UNLIKELY( !_asset ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        if ( UNLIKELY( !asset_t$load$fromGlob( _asset, _glob ) ) ) {
+            l_returnValue = false;
+
+            goto EXIT;
+        }
+
+        if ( UNLIKELY( !asset_t$compress( _asset ) ) ) {
+            l_returnValue = false;
+
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _assetArray,
+                                             const char* restrict _glob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_assetArray ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        if ( UNLIKELY( !asset_t$array$load$fromGlob( _assetArray, _glob ) ) ) {
+            l_returnValue = false;
+
+            goto EXIT;
+        }
+
+        FOR_ARRAY( asset_t* const*, *_assetArray ) {
+            if ( UNLIKELY( !asset_t$compress( *_element ) ) ) {
+                l_returnValue = false;
+
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
 
 bool asset_t$unload( asset_t* restrict _asset ) {
     bool l_returnValue = false;
@@ -503,13 +564,16 @@ bool asset_t$save$async$toPath( asset_t* restrict _asset,
     }
 
     {
+        l_returnValue =
+            asset_t$save$sync$toPath( _asset, _path, _needTruncate );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
         l_returnValue = true;
     }
 
 EXIT:
     return ( l_returnValue );
-}
-
-const char* asset_t$loader$assetsDirectory$get( void ) {
-    return ( g_assetsDirectory );
 }

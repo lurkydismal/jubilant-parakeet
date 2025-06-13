@@ -25,10 +25,12 @@ typedef struct {
 state_t state_t$create( void );
 bool state_t$destroy( state_t* restrict _state );
 
-// First file - boxes
 bool state_t$load$fromPaths( state_t* restrict _state,
-                             char* restrict _boxes,
-                             char* const* restrict _animation );
+                             char* restrict _boxesPath,
+                             char* const* restrict _animationPath );
+bool state_t$load$fromGlob( state_t* restrict _state,
+                            char* restrict _boxesGlob,
+                            char* restrict _animationGlob );
 bool state_t$unload( state_t* restrict _state );
 
 bool state_t$step( state_t* restrict _state );

@@ -40,21 +40,21 @@ EXIT:
     return ( l_returnValue );
 }
 
-// First file - boxes
 bool state_t$load$fromPaths( state_t* restrict _state,
-                             char* restrict _boxes,
-                             char* const* restrict _animation ) {
+                             char* restrict _boxesPath,
+                             char* const* restrict _animationPath ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_boxes ) ) {
+    if ( UNLIKELY( !_boxesPath ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
+    if ( UNLIKELY( !_animationPath ) ||
+         UNLIKELY( !arrayLength( _animationPath ) ) ) {
         goto EXIT;
     }
 
@@ -62,7 +62,7 @@ bool state_t$load$fromPaths( state_t* restrict _state,
         // Animation
         {
             l_returnValue = animation_t$load$fromPaths(
-                &( _state->animation ), _state->renderer, _animation );
+                &( _state->animation ), _state->renderer, _animationPath );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;
@@ -73,12 +73,57 @@ bool state_t$load$fromPaths( state_t* restrict _state,
         {
             char** l_boxes = createArray( char* );
 
-            insertIntoArray( &l_boxes, _boxes );
+            insertIntoArray( &l_boxes, _boxesPath );
 
             l_returnValue =
                 boxes_t$load$fromPaths( &( _state->boxes ), l_boxes );
 
             FREE_ARRAY( l_boxes );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool state_t$load$fromGlob( state_t* restrict _state,
+                            char* restrict _boxesGlob,
+                            char* restrict _animationGlob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_boxesGlob ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animationGlob ) ) {
+        goto EXIT;
+    }
+
+    {
+        // Animation
+        {
+            l_returnValue = animation_t$load$fromGlob(
+                &( _state->animation ), _state->renderer, _animationGlob );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        // Boxes
+        {
+            l_returnValue =
+                boxes_t$load$fromGlob( &( _state->boxes ), _boxesGlob );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;

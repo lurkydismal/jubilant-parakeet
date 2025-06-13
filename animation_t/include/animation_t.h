@@ -32,6 +32,9 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 bool animation_t$load$fromPaths( animation_t* restrict _animation,
                                  SDL_Renderer* _renderer,
                                  char* const* restrict _paths );
+bool animation_t$load$fromGlob( animation_t* restrict _animation,
+                                SDL_Renderer* _renderer,
+                                const char* restrict _glob );
 bool animation_t$unload( animation_t* restrict _animation );
 
 bool animation_t$step( animation_t* restrict _animation, bool _canLoop );

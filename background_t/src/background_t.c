@@ -62,49 +62,34 @@ bool background_t$load( background_t* restrict _background,
         {
             const char* l_folder = _background->folder;
 
-            char* l_boxesPath = NULL;
+            char* l_boxesGlob = NULL;
 
             // Boxes
             {
-                l_boxesPath = duplicateString( l_folder );
+                l_boxesGlob = duplicateString( l_folder );
 
-                concatBeforeAndAfterString( &l_boxesPath, "/", ".boxes" );
-                concatBeforeAndAfterString( &l_boxesPath, l_folder, NULL );
+                concatBeforeAndAfterString( &l_boxesGlob, "/", ".boxes" );
+                concatBeforeAndAfterString( &l_boxesGlob, l_folder, NULL );
             }
 
-            char** l_animation = NULL;
+            char* l_animationGlob = NULL;
 
             // Animation
             {
-                char* l_glob = duplicateString( "*." );
+                l_animationGlob = duplicateString( "*." );
 
-                concatBeforeAndAfterString( &l_glob, l_folder,
+                concatBeforeAndAfterString( &l_animationGlob, l_folder,
                                             _background->extension );
-
-                char* l_directory = duplicateString( l_folder );
-
-                concatBeforeAndAfterString(
-                    &l_directory, asset_t$loader$assetsDirectory$get(), "/" );
-
-                l_animation = getPathsByGlob( l_glob, l_directory );
-
-                free( l_glob );
-                free( l_directory );
-
-                FOR_ARRAY( char**, l_animation ) {
-                    concatBeforeAndAfterString( _element, "/", NULL );
-                    concatBeforeAndAfterString( _element, l_folder, NULL );
-                }
+                concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
+                concatBeforeAndAfterString( &l_animationGlob, l_folder, NULL );
             }
 
-            l_returnValue = object_t$state$add$fromPaths(
-                &( _background->object ), _renderer, l_boxesPath, l_animation,
-                false, true );
+            l_returnValue = object_t$state$add$fromGlob(
+                &( _background->object ), _renderer, l_boxesGlob,
+                l_animationGlob, false, true );
 
-            free( l_boxesPath );
-
-            FREE_ARRAY_ELEMENTS( l_animation );
-            FREE_ARRAY( l_animation );
+            free( l_boxesGlob );
+            free( l_animationGlob );
         }
 
         if ( UNLIKELY( !l_returnValue ) ) {

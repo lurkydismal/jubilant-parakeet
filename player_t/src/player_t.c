@@ -43,15 +43,14 @@ EXIT:
     return ( l_returnValue );
 }
 
-// First file - boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
-                                   char* restrict _boxes,
-                                   char* const* restrict _animation,
+                                   char* restrict _boxesPath,
+                                   char* const* restrict _animationPaths,
                                    bool _isActionable,
                                    bool _canLoop ) {
     bool l_returnValue = false;
@@ -64,18 +63,59 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_boxes ) ) {
+    if ( UNLIKELY( !_boxesPath ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_animation ) || UNLIKELY( !arrayLength( _animation ) ) ) {
+    if ( UNLIKELY( !_animationPaths ) ||
+         UNLIKELY( !arrayLength( _animationPaths ) ) ) {
         goto EXIT;
     }
 
     {
         l_returnValue = object_t$state$add$fromPaths(
-            &( _player->object ), _renderer, _boxes, _animation, _isActionable,
-            _canLoop );
+            &( _player->object ), _renderer, _boxesPath, _animationPaths,
+            _isActionable, _canLoop );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool player_t$state$add$fromGlob( player_t* restrict _player,
+                                  SDL_Renderer* _renderer,
+                                  char* restrict _boxesGlob,
+                                  char* restrict _animationGlob,
+                                  bool _isActionable,
+                                  bool _canLoop ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_renderer ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_boxesGlob ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_animationGlob ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = object_t$state$add$fromGlob(
+            &( _player->object ), _renderer, _boxesGlob, _animationGlob,
+            _isActionable, _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;

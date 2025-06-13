@@ -383,53 +383,16 @@ bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
     }
 
     {
-#if defined( LOG_BOXES )
+        char** l_paths = getPathsByGlob( _glob, NULL );
 
-        log$transaction$query$format(
-            ( logLevel_t )debug, "Loading glob: '%s' as boxes_t\n", _glob );
+        l_returnValue = boxes_t$load$fromPaths( _boxes, l_paths );
 
-#endif
-
-        asset_t** l_assetArray = createArray( asset_t* );
-
-        l_returnValue = asset_t$array$load$fromGlob( &l_assetArray, _glob );
+        FREE_ARRAY_ELEMENTS( l_paths );
+        FREE_ARRAY( l_paths );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
-
-        FOR_ARRAY( asset_t* const*, l_assetArray ) {
-            l_returnValue = boxes_t$load$fromAsset( _boxes, *_element );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_LOADING;
-            }
-        }
-
-        FOR_ARRAY( asset_t* const*, l_assetArray ) {
-            l_returnValue = asset_t$unload( *_element );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
-        }
-
-    EXIT_LOADING:
-        FOR_ARRAY( asset_t* const*, l_assetArray ) {
-            l_returnValue = asset_t$destroy( *_element );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
-        }
-
-#if defined( LOG_BOXES )
-
-        log$transaction$query$format(
-            ( logLevel_t )debug, "Loaded %zu boxes and %zu frames\n",
-            arrayLength( _boxes->keyFrames ), arrayLength( _boxes->frames ) );
-
-#endif
 
         l_returnValue = true;
     }

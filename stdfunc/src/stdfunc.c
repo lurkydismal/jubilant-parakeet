@@ -411,17 +411,29 @@ char** getPathsByGlob( const char* restrict _glob,
             }
 
             FOR_RANGE( size_t, 0, ( l_globBuffer.gl_pathc ) ) {
-                const char* l_fullPath = l_globBuffer.gl_pathv[ _index ];
-                const size_t l_fullPathLength = __builtin_strlen( l_fullPath );
-                const size_t l_directoryLength = __builtin_strlen( _directory );
-                const size_t l_fileNameLength =
-                    ( l_fullPathLength - l_directoryLength );
+                char* l_path = NULL;
 
-                char* l_path = ( char* )malloc( ( l_fileNameLength + 1 ) *
-                                                sizeof( char ) );
-                __builtin_memcpy( l_path, ( l_fullPath + l_directoryLength ),
-                                  l_fileNameLength );
-                l_path[ l_fileNameLength ] = '\0';
+                // Strip directory
+                {
+                    const char* l_fullPath = l_globBuffer.gl_pathv[ _index ];
+                    const size_t l_fullPathLength =
+                        __builtin_strlen( l_fullPath );
+                    // 0 if NULL
+                    const size_t l_directoryLength =
+                        ( ( _directory ) ? ( __builtin_strlen( _directory ) )
+                                         : ( 0 ) );
+                    const size_t l_fileNameLength =
+                        ( l_fullPathLength - l_directoryLength );
+
+                    l_path = ( char* )malloc( ( l_fileNameLength + 1 ) *
+                                              sizeof( char ) );
+
+                    __builtin_memcpy( l_path,
+                                      ( l_fullPath + l_directoryLength ),
+                                      l_fileNameLength );
+
+                    l_path[ l_fileNameLength ] = '\0';
+                }
 
                 insertIntoArray( &l_returnValue, l_path );
             }
