@@ -312,7 +312,8 @@ bool config_t$load$fromPath( config_t* restrict _config,
                     goto EXIT_FILE_PATH_CONCAT;
                 }
 
-                l_returnValue = asset_t$load( &l_configAsset, l_filePath );
+                l_returnValue =
+                    asset_t$load$fromPath( &l_configAsset, l_filePath );
 
             EXIT_FILE_PATH_CONCAT:
                 free( l_filePath );

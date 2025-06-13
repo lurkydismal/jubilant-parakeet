@@ -118,7 +118,7 @@ EXIT:
 
 // X Y Width Height StartIndex-EndIndex
 bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
-                                  const char* restrict _string ) {
+                                  char* restrict _string ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
@@ -137,49 +137,73 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 
 #endif
 
-        char** l_boxProperties = splitStringIntoArrayBySymbol( _string, ' ' );
+        // Trim to comment symbol
+        {
+            char* l_symbol = _string;
 
-        // X
-        // Y
-        // Width
-        // Height
-        // StartIndex - EndIndex
-        if ( UNLIKELY( arrayLength( l_boxProperties ) != 5 ) ) {
-            l_returnValue = false;
+            while ( *l_symbol ) {
+                if ( *l_symbol == COMMENT_SYMBOL ) {
+                    *l_symbol = '\0';
 
-            goto EXIT_LOADING;
+                    break;
+                }
+
+                l_symbol++;
+            }
+
+            if ( !__builtin_strlen( _string ) ) {
+                l_returnValue = false;
+
+                goto EXIT;
+            }
         }
-
-        const float l_x = strtof( l_boxProperties[ 0 ], NULL );
-        const float l_y = strtof( l_boxProperties[ 1 ], NULL );
-        const float l_width = strtof( l_boxProperties[ 2 ], NULL );
-        const float l_height = strtof( l_boxProperties[ 3 ], NULL );
-
-        const SDL_FRect l_targetRectangle = {
-            .x = l_x, .y = l_y, .w = l_width, .h = l_height };
 
         {
-            char** l_startAndEndIndexAsString =
-                splitStringIntoArrayBySymbol( l_boxProperties[ 4 ], '-' );
+            char** l_boxProperties =
+                splitStringIntoArrayBySymbol( _string, ' ' );
 
-            const size_t l_startIndex = strtoul(
-                arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-            const size_t l_endIndex = strtoul(
-                arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
+            // X
+            // Y
+            // Width
+            // Height
+            // StartIndex - EndIndex
+            if ( UNLIKELY( arrayLength( l_boxProperties ) != 5 ) ) {
+                l_returnValue = false;
 
-            FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
-            FREE_ARRAY( l_startAndEndIndexAsString );
+                goto EXIT_LOADING;
+            }
 
-            l_returnValue = boxes_t$load$one( _boxes, &l_targetRectangle,
-                                              l_startIndex, l_endIndex );
-        }
+            const float l_x = strtof( l_boxProperties[ 0 ], NULL );
+            const float l_y = strtof( l_boxProperties[ 1 ], NULL );
+            const float l_width = strtof( l_boxProperties[ 2 ], NULL );
+            const float l_height = strtof( l_boxProperties[ 3 ], NULL );
 
-    EXIT_LOADING:
-        FREE_ARRAY_ELEMENTS( l_boxProperties );
-        FREE_ARRAY( l_boxProperties );
+            const SDL_FRect l_targetRectangle = {
+                .x = l_x, .y = l_y, .w = l_width, .h = l_height };
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
+            {
+                char** l_startAndEndIndexAsString =
+                    splitStringIntoArrayBySymbol( l_boxProperties[ 4 ], '-' );
+
+                const size_t l_startIndex = strtoul(
+                    arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
+                const size_t l_endIndex = strtoul(
+                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
+
+                FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
+                FREE_ARRAY( l_startAndEndIndexAsString );
+
+                l_returnValue = boxes_t$load$one( _boxes, &l_targetRectangle,
+                                                  l_startIndex, l_endIndex );
+            }
+
+        EXIT_LOADING:
+            FREE_ARRAY_ELEMENTS( l_boxProperties );
+            FREE_ARRAY( l_boxProperties );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;
@@ -272,7 +296,7 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
 
             asset_t l_asset = asset_t$create();
 
-            l_returnValue = asset_t$load( &l_asset, *_element );
+            l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 goto EXIT;
@@ -328,6 +352,74 @@ bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
                 }
 
 #endif
+            }
+        }
+
+#if defined( LOG_BOXES )
+
+        log$transaction$query$format(
+            ( logLevel_t )debug, "Loaded %zu boxes and %zu frames\n",
+            arrayLength( _boxes->keyFrames ), arrayLength( _boxes->frames ) );
+
+#endif
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
+                            const char* restrict _glob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_boxes ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+#if defined( LOG_BOXES )
+
+        log$transaction$query$format(
+            ( logLevel_t )debug, "Loading glob: '%s' as boxes_t\n", _glob );
+
+#endif
+
+        asset_t** l_assetArray = createArray( asset_t* );
+
+        l_returnValue = asset_t$array$load$fromGlob( &l_assetArray, _glob );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        FOR_ARRAY( asset_t* const*, l_assetArray ) {
+            l_returnValue = boxes_t$load$fromAsset( _boxes, *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT_LOADING;
+            }
+        }
+
+        FOR_ARRAY( asset_t* const*, l_assetArray ) {
+            l_returnValue = asset_t$unload( *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+    EXIT_LOADING:
+        FOR_ARRAY( asset_t* const*, l_assetArray ) {
+            l_returnValue = asset_t$destroy( *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
             }
         }
 
@@ -414,9 +506,6 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
     }
 
     {
-        const size_t* l_boxesIndexes =
-            ( _boxes->frames[ _boxes->currentFrame ] );
-
         color_t l_colorBefore;
 
         l_returnValue = SDL_GetRenderDrawColor(
@@ -442,6 +531,9 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
             goto EXIT;
         }
+
+        const size_t* l_boxesIndexes =
+            ( _boxes->frames[ _boxes->currentFrame ] );
 
         FOR_ARRAY( const size_t*, l_boxesIndexes ) {
             const SDL_FRect* l_boxRectangle = _boxes->keyFrames[ *_element ];

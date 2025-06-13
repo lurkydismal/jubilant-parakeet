@@ -216,7 +216,7 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
             {
                 asset_t l_asset = asset_t$create();
 
-                l_returnValue = asset_t$load( &l_asset, *_element );
+                l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;

@@ -30,6 +30,7 @@
 #define UNLIKELY( _expression ) __builtin_expect( !!( _expression ), 0 )
 
 // Constants
+#define COMMENT_SYMBOL ( '#' )
 #define DECIMAL_RADIX 10
 #define ONE_SECOND_IN_MILLISECONDS ( ( size_t )( 1000 ) )
 #define ONE_MILLISECOND_IN_NANOSECONDS ( ( size_t )( 1000000 ) )
@@ -155,15 +156,10 @@ static FORCE_INLINE float clamp$float( float _value,
 }
 
 static FORCE_INLINE void trim( char** restrict _string,
-                               const ssize_t _from,
-                               const ssize_t _to ) {
-    if ( UNLIKELY( _from >= 0 ) ) {
-        ( *_string ) += _from;
-    }
-
-    if ( UNLIKELY( _to >= 0 ) ) {
-        ( *_string )[ _to ] = '\0';
-    }
+                               const size_t _from,
+                               const size_t _to ) {
+    ( *_string ) += _from;
+    ( *_string )[ _to ] = '\0';
 }
 
 static FORCE_INLINE size_t lengthOfNumber( size_t _number ) {

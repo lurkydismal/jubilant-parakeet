@@ -396,7 +396,9 @@ bool log$transaction$commit( void ) {
                 goto EXIT;
             }
 
+#if 0
             fdatasync( g_fileDescriptor );
+#endif
         }
 
         // Log to stdout
@@ -414,7 +416,9 @@ bool log$transaction$commit( void ) {
                 goto EXIT;
             }
 
+#if 0
             fdatasync( STDOUT_FILENO );
+#endif
         }
 
 #endif

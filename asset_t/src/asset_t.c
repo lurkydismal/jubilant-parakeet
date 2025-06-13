@@ -96,7 +96,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool asset_t$load( asset_t* restrict _asset, const char* restrict _path ) {
+bool asset_t$load$fromPath( asset_t* restrict _asset,
+                            const char* restrict _path ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
@@ -178,6 +179,82 @@ EXIT:
     return ( l_returnValue );
 }
 
+bool asset_t$load$fromGlob( asset_t* restrict _asset,
+                            const char* restrict _glob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_asset ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        {
+            char** l_paths =
+                getPathsByGlob( _glob, asset_t$loader$assetsDirectory$get() );
+
+            l_returnValue = asset_t$load$fromPath( _asset, l_paths[ 0 ] );
+
+            FREE_ARRAY_ELEMENTS( l_paths );
+            FREE_ARRAY( l_paths );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool asset_t$array$load$fromGlob( asset_t*** restrict _assetArray,
+                                  const char* restrict _glob ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_assetArray ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_glob ) ) {
+        goto EXIT;
+    }
+
+    {
+        {
+            char** l_paths =
+                getPathsByGlob( _glob, asset_t$loader$assetsDirectory$get() );
+
+            FOR_ARRAY( char* const*, l_paths ) {
+                asset_t l_asset = asset_t$create();
+
+                l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    asset_t$destroy( &l_asset );
+
+                    goto EXIT;
+                }
+
+                insertIntoArray( &_assetArray, clone( &l_asset ) );
+            }
+
+            FREE_ARRAY_ELEMENTS( l_paths );
+            FREE_ARRAY( l_paths );
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 bool asset_t$load$compressed( asset_t* restrict _asset,
                               const char* restrict _path ) {
     bool l_returnValue = false;
@@ -187,7 +264,7 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
     }
 
     {
-        if ( UNLIKELY( !asset_t$load( _asset, _path ) ) ) {
+        if ( UNLIKELY( !asset_t$load$fromPath( _asset, _path ) ) ) {
             l_returnValue = false;
 
             goto EXIT;
@@ -205,6 +282,12 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
 EXIT:
     return ( l_returnValue );
 }
+
+bool asset_t$load$fromGlob$compressed( asset_t* restrict _asset,
+                                       const char* restrict _glob ) {}
+
+bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _asset,
+                                             const char* restrict _glob ) {}
 
 bool asset_t$unload( asset_t* restrict _asset ) {
     bool l_returnValue = false;
@@ -406,9 +489,9 @@ EXIT:
 }
 
 // TODO: Implement
-bool asset_t$save$async$toPath$submit( asset_t* restrict _asset,
-                                       const char* restrict _path,
-                                       const bool _needTruncate ) {
+bool asset_t$save$async$toPath( asset_t* restrict _asset,
+                                const char* restrict _path,
+                                const bool _needTruncate ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {

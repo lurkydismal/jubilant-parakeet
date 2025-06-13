@@ -112,15 +112,6 @@ char* sanitizeString( const char* restrict _string ) {
             ( char* )malloc( ( l_stringLength + 1 ) * sizeof( char ) );
         size_t l_bufferLength = 0;
 
-#define COMMENT_SYMBOL ( '#' )
-
-#if defined( __clang__ )
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wimplicit-function-declaration"
-
-#endif
-
         for ( const char* _symbol = _string;
               _symbol < ( _string + l_stringLength ); _symbol++ ) {
             if ( isspace( *_symbol ) ) {
@@ -133,14 +124,6 @@ char* sanitizeString( const char* restrict _string ) {
             l_buffer[ l_bufferLength ] = *_symbol;
             l_bufferLength++;
         }
-
-#if defined( __clang__ )
-
-#pragma clang diagnostic pop
-
-#endif
-
-#undef COMMENT_SYMBOL
 
         l_buffer[ l_bufferLength ] = '\0';
         l_bufferLength++;
@@ -349,7 +332,7 @@ char* getApplicationDirectoryAbsolutePath( void ) {
             l_directoryPath = l_executablePath;
 
             // Do not move the beginning
-            trim( &l_directoryPath, -1, l_lastSlashIndex );
+            trim( &l_directoryPath, 0, l_lastSlashIndex );
 
             if ( UNLIKELY( !concatBeforeAndAfterString( &l_directoryPath, NULL,
                                                         "/" ) ) ) {

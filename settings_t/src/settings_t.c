@@ -327,7 +327,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
                     }
 
                     l_returnValue =
-                        asset_t$load( &l_settingsAsset, l_filePath );
+                        asset_t$load$fromPath( &l_settingsAsset, l_filePath );
 
                 EXIT_PATH_LOAD:
                     free( l_filePath );

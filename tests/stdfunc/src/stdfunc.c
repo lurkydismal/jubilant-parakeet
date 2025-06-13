@@ -44,20 +44,10 @@ TEST( trim ) {
     }
 
     {
-        char l_buffer[] = "xyz";
-        char* l_string = l_buffer;
-
-        // No change
-        trim( &l_string, -1, -1 );
-
-        ASSERT_STRING_EQ( l_string, "xyz" );
-    }
-
-    {
         char l_buffer[] = "abcdef";
 
         char* l_string = l_buffer;
-        trim( &l_string, -1, 4 );
+        trim( &l_string, 0, 4 );
 
         ASSERT_STRING_EQ( l_string, "abcd" );
     }
