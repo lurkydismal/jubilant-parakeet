@@ -272,20 +272,20 @@ EXIT:
 }
 
 // fileName_ColorAsHex.extension
-bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
-                             char* const* restrict _files ) {
+bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
+                             char* const* restrict _paths ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+    if ( UNLIKELY( !_paths ) || UNLIKELY( !arrayLength( _paths ) ) ) {
         goto EXIT;
     }
 
     {
-        FOR_ARRAY( char* const*, _files ) {
+        FOR_ARRAY( char* const*, _paths ) {
 #if defined( LOG_BOXES )
 
             log$transaction$query$format( ( logLevel_t )debug,

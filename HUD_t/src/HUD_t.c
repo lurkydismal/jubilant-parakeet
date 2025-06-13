@@ -145,7 +145,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
                     }
                 }
 
-                l_returnValue = object_t$state$add$fromFiles(
+                l_returnValue = object_t$state$add$fromPaths(
                     _element, _renderer, l_boxesPath, l_animation, false,
                     true );
 

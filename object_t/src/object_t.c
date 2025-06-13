@@ -51,7 +51,7 @@ EXIT:
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
-bool object_t$state$add$fromFiles( object_t* restrict _object,
+bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxes,
                                    char* const* restrict _animation,
@@ -82,7 +82,7 @@ bool object_t$state$add$fromFiles( object_t* restrict _object,
         l_state.canLoop = _canLoop;
         l_state.isActionable = _isActionable;
 
-        l_returnValue = state_t$load$fromFiles( &l_state, _boxes, _animation );
+        l_returnValue = state_t$load$fromPaths( &l_state, _boxes, _animation );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             state_t$destroy( &l_state );

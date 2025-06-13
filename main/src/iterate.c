@@ -31,7 +31,7 @@ static FORCE_INLINE bool iterate(
                 insertIntoArray( &files, "test1.boxes" );
                 insertIntoArray( &files, "test_100x100_1-2.png" );
 
-                bool ret = player_t$state$add$fromFiles(
+                bool ret = player_t$state$add$fromPaths(
                     &( _applicationState->localPlayer ),
                     _applicationState->renderer, files, false, false );
 

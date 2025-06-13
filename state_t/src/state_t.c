@@ -41,7 +41,7 @@ EXIT:
 }
 
 // First file - boxes
-bool state_t$load$fromFiles( state_t* restrict _state,
+bool state_t$load$fromPaths( state_t* restrict _state,
                              char* restrict _boxes,
                              char* const* restrict _animation ) {
     bool l_returnValue = false;
@@ -61,7 +61,7 @@ bool state_t$load$fromFiles( state_t* restrict _state,
     {
         // Animation
         {
-            l_returnValue = animation_t$load$fromFiles(
+            l_returnValue = animation_t$load$fromPaths(
                 &( _state->animation ), _state->renderer, _animation );
 
             if ( UNLIKELY( !l_returnValue ) ) {
@@ -76,7 +76,7 @@ bool state_t$load$fromFiles( state_t* restrict _state,
             insertIntoArray( &l_boxes, _boxes );
 
             l_returnValue =
-                boxes_t$load$fromFiles( &( _state->boxes ), l_boxes );
+                boxes_t$load$fromPaths( &( _state->boxes ), l_boxes );
 
             FREE_ARRAY( l_boxes );
 

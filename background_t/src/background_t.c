@@ -97,7 +97,7 @@ bool background_t$load( background_t* restrict _background,
                 }
             }
 
-            l_returnValue = object_t$state$add$fromFiles(
+            l_returnValue = object_t$state$add$fromPaths(
                 &( _background->object ), _renderer, l_boxesPath, l_animation,
                 false, true );
 

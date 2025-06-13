@@ -48,7 +48,7 @@ EXIT:
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
-bool player_t$state$add$fromFiles( player_t* restrict _player,
+bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxes,
                                    char* const* restrict _animation,
@@ -73,7 +73,7 @@ bool player_t$state$add$fromFiles( player_t* restrict _player,
     }
 
     {
-        l_returnValue = object_t$state$add$fromFiles(
+        l_returnValue = object_t$state$add$fromPaths(
             &( _player->object ), _renderer, _boxes, _animation, _isActionable,
             _canLoop );
 

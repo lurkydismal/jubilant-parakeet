@@ -130,9 +130,9 @@ EXIT:
 }
 
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
-bool animation_t$load$fromFiles( animation_t* restrict _animation,
+bool animation_t$load$fromPaths( animation_t* restrict _animation,
                                  SDL_Renderer* _renderer,
-                                 char* const* restrict _files ) {
+                                 char* const* restrict _paths ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
@@ -143,14 +143,14 @@ bool animation_t$load$fromFiles( animation_t* restrict _animation,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_files ) || UNLIKELY( !arrayLength( _files ) ) ) {
+    if ( UNLIKELY( !_paths ) || UNLIKELY( !arrayLength( _paths ) ) ) {
         goto EXIT;
     }
 
     {
         l_returnValue = true;
 
-        FOR_ARRAY( char* const*, _files ) {
+        FOR_ARRAY( char* const*, _paths ) {
 #if defined( LOG_ANIMATION )
 
             log$transaction$query$format( ( logLevel_t )debug,

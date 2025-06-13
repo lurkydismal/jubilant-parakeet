@@ -22,7 +22,7 @@ bool player_t$destroy( player_t* restrict _player );
 // X Y Width Height StartIndex-EndIndex
 // After - animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
-bool player_t$state$add$fromFiles( player_t* restrict _player,
+bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxes,
                                    char* const* restrict _animation,

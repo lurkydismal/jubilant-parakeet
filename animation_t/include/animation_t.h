@@ -29,9 +29,9 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
                                  size_t _endIndex );
 
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
-bool animation_t$load$fromFiles( animation_t* restrict _animation,
+bool animation_t$load$fromPaths( animation_t* restrict _animation,
                                  SDL_Renderer* _renderer,
-                                 char* const* restrict _files );
+                                 char* const* restrict _paths );
 bool animation_t$unload( animation_t* restrict _animation );
 
 bool animation_t$step( animation_t* restrict _animation, bool _canLoop );

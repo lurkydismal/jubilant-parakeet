@@ -32,8 +32,8 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                                   char* restrict _string );
 bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
                              const asset_t* restrict _asset );
-bool boxes_t$load$fromFiles( boxes_t* restrict _boxes,
-                             char* const* restrict _files );
+bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
+                             char* const* restrict _paths );
 bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
                             const char* restrict _glob );
 bool boxes_t$unload( boxes_t* restrict _boxes );
