@@ -51,10 +51,12 @@ TEST( input_t$convert$toStaticString ) {
                 l_expected[ 0 ] = l_directionsConverted[ l_directionIndex ];
                 l_expected[ 1 ] = l_buttonsConverted[ l_buttonIndex ];
 
-                const input_t l_input = MAKE_INPUT(
-                        l_directions[ l_directionIndex ], l_buttons[ l_buttonIndex ] );
+                const input_t l_input =
+                    MAKE_INPUT( l_directions[ l_directionIndex ],
+                                l_buttons[ l_buttonIndex ] );
 
-                const char* l_actual = input_t$convert$toStaticString( l_input );
+                const char* l_actual =
+                    input_t$convert$toStaticString( l_input );
 
                 ASSERT_STRING_EQ( l_actual, l_expected );
             }

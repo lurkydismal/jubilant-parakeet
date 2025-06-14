@@ -15,6 +15,8 @@ static FORCE_INLINE bool iterate(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -49,9 +51,9 @@ static FORCE_INLINE bool iterate(
 #endif
         }
 
-        if ( UNLIKELY( !vsync$begin() ) ) {
-            l_returnValue = false;
+        l_returnValue = vsync$begin();
 
+        if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error, "Vsync begin\n" );
 
             goto EXIT;
@@ -71,6 +73,9 @@ static FORCE_INLINE bool iterate(
                     &( _applicationState->camera.rectangle ), false );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Rendering background\n" );
+
                     goto EXIT;
                 }
             }
@@ -98,14 +103,17 @@ static FORCE_INLINE bool iterate(
                     background_t$step( _applicationState->background );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Stepping background\n" );
+
                     goto EXIT;
                 }
             }
         }
 
-        if ( UNLIKELY( !vsync$end() ) ) {
-            l_returnValue = false;
+        l_returnValue = vsync$end();
 
+        if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error, "Vsync end\n" );
 
             goto EXIT;

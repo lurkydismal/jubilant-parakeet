@@ -17,6 +17,8 @@ bool background_t$destroy( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -24,12 +26,14 @@ bool background_t$destroy( background_t* restrict _background ) {
         l_returnValue = object_t$destroy( &( _background->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Destroying object\n" );
+
             goto EXIT;
         }
 
-        free( _background->name );
-        free( _background->folder );
-        free( _background->extension );
+        _background->name = NULL;
+        _background->folder = NULL;
+        _background->extension = NULL;
 
         l_returnValue = true;
     }
@@ -46,10 +50,14 @@ bool background_t$load( background_t* restrict _background,
     if ( UNLIKELY( !_background ) || UNLIKELY( !_background->name ) ||
          UNLIKELY( !_background->folder ) ||
          UNLIKELY( !_background->extension ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -90,10 +98,13 @@ bool background_t$load( background_t* restrict _background,
 
             free( l_boxesGlob );
             free( l_animationGlob );
-        }
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Adding object state from glob\n" );
+
+                goto EXIT;
+            }
         }
 
         // Background always have only single state
@@ -111,6 +122,8 @@ bool background_t$unload( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -118,8 +131,20 @@ bool background_t$unload( background_t* restrict _background ) {
         l_returnValue = object_t$states$remove( &( _background->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Removing object state\n" );
+
             goto EXIT;
         }
+
+        free( _background->name );
+        _background->name = NULL;
+
+        free( _background->folder );
+        _background->folder = NULL;
+
+        free( _background->extension );
+        _background->extension = NULL;
 
         l_returnValue = true;
     }
@@ -132,6 +157,8 @@ bool background_t$step( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -139,6 +166,8 @@ bool background_t$step( background_t* restrict _background ) {
         l_returnValue = object_t$step( &( _background->object ), 0, 0 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Stepping object\n" );
+
             goto EXIT;
         }
 
@@ -155,10 +184,14 @@ bool background_t$render( const background_t* restrict _background,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_cameraRectangle ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -167,6 +200,8 @@ bool background_t$render( const background_t* restrict _background,
                                          _cameraRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Rendering object\n" );
+
             goto EXIT;
         }
 

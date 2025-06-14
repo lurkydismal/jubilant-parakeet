@@ -29,8 +29,8 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    bool _canLoop );
 bool player_t$state$add$fromGlob( player_t* restrict _player,
                                   SDL_Renderer* _renderer,
-                                  char* restrict _boxesGlob,
-                                  char* restrict _animationGlob,
+                                  const char* restrict _boxesGlob,
+                                  const char* restrict _animationGlob,
                                   bool _isActionable,
                                   bool _canLoop );
 

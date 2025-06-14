@@ -1,5 +1,6 @@
 #include "control_t.h"
 
+#include "log.h"
 #include "stdfunc.h"
 
 static const SDL_Scancode g_keyboardLayoutScancodes[] = {
@@ -124,6 +125,8 @@ bool control_t$destroy( control_t* _control ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_control ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -143,6 +146,8 @@ SDL_Scancode control_t$scancode$convert$fromString( const char* _string ) {
     SDL_Scancode l_returnValue = 0;
 
     if ( UNLIKELY( !_string ) || UNLIKELY( !__builtin_strlen( _string ) ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

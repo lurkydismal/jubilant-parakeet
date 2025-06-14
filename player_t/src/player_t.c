@@ -20,6 +20,8 @@ bool player_t$destroy( player_t* restrict _player ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -27,12 +29,17 @@ bool player_t$destroy( player_t* restrict _player ) {
         l_returnValue = object_t$destroy( &( _player->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Destroying object\n" );
+
             goto EXIT;
         }
 
         l_returnValue = inputBuffer_t$destroy( &( _player->inputBuffer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Destroying input buffer\n" );
+
             goto EXIT;
         }
 
@@ -56,19 +63,27 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesPath ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationPaths ) ||
          UNLIKELY( !arrayLength( _animationPaths ) ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -78,6 +93,9 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
             _isActionable, _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding object state from files\n" );
+
             goto EXIT;
         }
 
@@ -90,25 +108,33 @@ EXIT:
 
 bool player_t$state$add$fromGlob( player_t* restrict _player,
                                   SDL_Renderer* _renderer,
-                                  char* restrict _boxesGlob,
-                                  char* restrict _animationGlob,
+                                  const char* restrict _boxesGlob,
+                                  const char* restrict _animationGlob,
                                   bool _isActionable,
                                   bool _canLoop ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesGlob ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationGlob ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -118,6 +144,9 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
             _isActionable, _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding object state from glob\n" );
+
             goto EXIT;
         }
 
@@ -134,6 +163,8 @@ bool player_t$step( player_t* restrict _player,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -142,6 +173,8 @@ bool player_t$step( player_t* restrict _player,
             object_t$step( &( _player->object ), _velocityX, _velocityY );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Stepping object\n" );
+
             goto EXIT;
         }
 
@@ -158,10 +191,14 @@ bool player_t$render( const player_t* restrict _player,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_cameraRectangle ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -170,6 +207,8 @@ bool player_t$render( const player_t* restrict _player,
                                          _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Rendering object\n" );
+
             goto EXIT;
         }
 
@@ -186,10 +225,14 @@ bool player_t$input$add( player_t* restrict _player,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_input ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -198,6 +241,9 @@ bool player_t$input$add( player_t* restrict _player,
             inputBuffer_t$insert( &( _player->inputBuffer ), _input, _frame );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding input object\n" );
+
             goto EXIT;
         }
 
@@ -214,10 +260,14 @@ input_t** player_t$inputs$get$withLimit( player_t* restrict _player,
     input_t** l_returnValue = NULL;
 
     if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_limitAmount ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

@@ -252,10 +252,14 @@ static FORCE_INLINE bool parseArguments(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_argumentVector ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -323,10 +327,14 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_argumentVector ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

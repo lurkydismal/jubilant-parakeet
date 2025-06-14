@@ -1,9 +1,9 @@
 #include "log.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #define COLOR_RED "\e[1;31m"
@@ -59,6 +59,8 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
 
     {
         if ( UNLIKELY( !_string ) || UNLIKELY( !*_string ) ) {
+            log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
             goto EXIT;
         }
 
@@ -66,36 +68,18 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
             char* l_logLevelWithBrackets =
                 duplicateString( log$level$convert$toString( _logLevel ) );
 
-            l_returnValue =
-                concatBeforeAndAfterString( &l_logLevelWithBrackets, "[", "]" );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_PREPENDING;
-            }
+            concatBeforeAndAfterString( &l_logLevelWithBrackets, "[", "]" );
 
             // Colored
-            l_returnValue = concatBeforeAndAfterString(
-                &l_logLevelWithBrackets, log$level$convert$toColor( _logLevel ),
-                COLOR_RESET );
+            concatBeforeAndAfterString( &l_logLevelWithBrackets,
+                                        log$level$convert$toColor( _logLevel ),
+                                        COLOR_RESET );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_PREPENDING;
-            }
-
-            l_returnValue = concatBeforeAndAfterString( _string, " ", "" );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_PREPENDING;
-            }
+            concatBeforeAndAfterString( _string, " ", "" );
 
             l_returnValue = concatBeforeAndAfterString(
                 _string, l_logLevelWithBrackets, "" );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_PREPENDING;
-            }
-
-        EXIT_PREPENDING:
             free( l_logLevelWithBrackets );
         }
     }
@@ -120,6 +104,8 @@ bool log$level$set$string( const char* restrict _string ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -146,10 +132,14 @@ bool log$init( const char* restrict _fileName,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_fileName ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -158,26 +148,17 @@ bool log$init( const char* restrict _fileName,
         {
             char* l_filePath = duplicateString( "." );
 
-            l_returnValue = !!( concatBeforeAndAfterString(
-                &l_filePath, _fileName, _fileExtension ) );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT_FILE_PATH_CONCAT;
-            }
+            concatBeforeAndAfterString( &l_filePath, _fileName,
+                                        _fileExtension );
 
             // Prepend absolute path to executable directory
             {
                 char* l_directoryPath = getApplicationDirectoryAbsolutePath();
 
                 // Construct full file path
-                l_returnValue = !!( concatBeforeAndAfterString(
-                    &l_filePath, l_directoryPath, "" ) );
+                concatBeforeAndAfterString( &l_filePath, l_directoryPath, "" );
 
                 free( l_directoryPath );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT_FILE_PATH_CONCAT;
-                }
             }
 
             // 0 - No special bits
@@ -187,10 +168,15 @@ bool log$init( const char* restrict _fileName,
             g_fileDescriptor =
                 open( l_filePath, ( O_WRONLY | O_TRUNC | O_CREAT ), 0644 );
 
-        EXIT_FILE_PATH_CONCAT:
             free( l_filePath );
 
-            if ( UNLIKELY( g_fileDescriptor == -1 ) ) {
+            l_returnValue = ( g_fileDescriptor != -1 );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Opening log file descriptor: %d\n",
+                    errno );
+
                 goto EXIT;
             }
         }
@@ -210,10 +196,14 @@ bool log$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( g_fileDescriptor == -1 ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -226,7 +216,12 @@ bool log$quit( void ) {
 
         g_currentLogLevel = ( logLevel_t )unknownLogLevel;
 
-        if ( UNLIKELY( close( g_fileDescriptor ) == -1 ) ) {
+        l_returnValue = ( close( g_fileDescriptor ) != -1 );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query$format(
+                ( logLevel_t )error, "Closing file descriptor: %d\n", errno );
+
             goto EXIT;
         }
 
@@ -240,6 +235,8 @@ EXIT:
 }
 
 static FORCE_INLINE void reportNotInitialized( void ) {
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
     char* l_string = duplicateString( "Logging system is not initialized\n" );
 
     size_t l_stringLength =
@@ -250,7 +247,9 @@ static FORCE_INLINE void reportNotInitialized( void ) {
 
     log$transaction$commit();
 
-    __builtin_trap();
+    trap();
+
+#endif
 }
 
 bool _log$transaction$query( const logLevel_t _logLevel,
@@ -258,20 +257,22 @@ bool _log$transaction$query( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-#if ( defined( DEBUG ) && !defined( TESTS ) )
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
 
         reportNotInitialized();
-
-#endif
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( _logLevel < g_currentLogLevel ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -313,20 +314,22 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-#if ( defined( DEBUG ) && !defined( TESTS ) )
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
 
         reportNotInitialized();
-
-#endif
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_format ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( _logLevel < g_currentLogLevel ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -344,7 +347,11 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
 
         va_end( l_arguments );
 
-        if ( UNLIKELY( !l_writtenCount ) ) {
+        l_returnValue = !!( l_writtenCount );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Formatting buffer\n" );
+
             goto EXIT_BUFFER_APPENDING;
         }
 
@@ -381,6 +388,8 @@ bool log$transaction$commit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -393,11 +402,16 @@ bool log$transaction$commit( void ) {
             l_returnValue = ( l_writtenCount == g_transactionSize );
 
             if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Writing to file\n" );
+
                 goto EXIT;
             }
 
-#if 0
+#if defined( LOG_IMMEDIATE_SYNC )
+
             fdatasync( g_fileDescriptor );
+
 #endif
         }
 
@@ -413,11 +427,16 @@ bool log$transaction$commit( void ) {
             l_returnValue = ( l_writtenCount == g_transactionSize );
 
             if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Writing to standard output\n" );
+
                 goto EXIT;
             }
 
-#if 0
+#if defined( LOG_IMMEDIATE_SYNC )
+
             fdatasync( STDOUT_FILENO );
+
 #endif
         }
 

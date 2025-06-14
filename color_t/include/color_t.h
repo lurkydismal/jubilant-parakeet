@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "log.h"
 #include "stdfunc.h"
 
 #define COLOR_BLACK \
@@ -32,6 +33,8 @@ color_t$convert$fromString( const char* restrict _string ) {
     color_t l_returnValue = DEFAULT_COLOR;
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

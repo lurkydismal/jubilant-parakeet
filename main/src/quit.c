@@ -54,6 +54,8 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

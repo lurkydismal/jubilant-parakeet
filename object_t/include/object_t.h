@@ -41,8 +41,8 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    bool _canLoop );
 bool object_t$state$add$fromGlob( object_t* restrict _object,
                                   SDL_Renderer* _renderer,
-                                  char* restrict _boxesGlob,
-                                  char* restrict _animationGlob,
+                                  const char* restrict _boxesGlob,
+                                  const char* restrict _animationGlob,
                                   bool _isActionable,
                                   bool _canLoop );
 bool object_t$state$remove( object_t* restrict _object,

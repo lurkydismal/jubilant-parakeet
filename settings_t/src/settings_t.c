@@ -27,6 +27,8 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -34,6 +36,8 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
         l_returnValue = window_t$destroy( &( _settings->window ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Destroying window\n" );
+
             goto EXIT;
         }
 
@@ -65,10 +69,14 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_asset ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -90,6 +98,9 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
             free( l_dataWithNull );
 
             if ( UNLIKELY( !arrayLength( l_lines ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Empty settings file\n" );
+
                 goto EXIT_SETTINGS_DATA_LINES;
             }
 
@@ -295,14 +306,20 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileName ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -319,20 +336,18 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
                 {
                     char* l_filePath = duplicateString( "." );
 
-                    l_returnValue = !!( concatBeforeAndAfterString(
-                        &l_filePath, _fileName, _fileExtension ) );
-
-                    if ( UNLIKELY( !l_returnValue ) ) {
-                        goto EXIT_PATH_LOAD;
-                    }
+                    concatBeforeAndAfterString( &l_filePath, _fileName,
+                                                _fileExtension );
 
                     l_returnValue =
                         asset_t$load$fromPath( &l_settingsAsset, l_filePath );
 
-                EXIT_PATH_LOAD:
                     free( l_filePath );
 
                     if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Loading asset from path\n" );
+
                         goto EXIT_SETTINGS_LOAD;
                     }
                 }
@@ -341,18 +356,27 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
                     settings_t$load$fromAsset( _settings, &l_settingsAsset );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Loading settings from asset\n" );
+
                     goto EXIT_SETTINGS_LOAD;
                 }
 
                 l_returnValue = asset_t$unload( &l_settingsAsset );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Unloading asset\n" );
+
                     goto EXIT_SETTINGS_LOAD;
                 }
             }
 
         EXIT_SETTINGS_LOAD:
             if ( UNLIKELY( !asset_t$destroy( &l_settingsAsset ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Destroying asset\n" );
+
                 l_returnValue = false;
 
                 goto EXIT;
@@ -370,10 +394,13 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Implement
 bool settings_t$unload( settings_t* restrict _settings ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

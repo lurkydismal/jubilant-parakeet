@@ -29,8 +29,8 @@ bool state_t$load$fromPaths( state_t* restrict _state,
                              char* restrict _boxesPath,
                              char* const* restrict _animationPath );
 bool state_t$load$fromGlob( state_t* restrict _state,
-                            char* restrict _boxesGlob,
-                            char* restrict _animationGlob );
+                            const char* restrict _boxesGlob,
+                            const char* restrict _animationGlob );
 bool state_t$unload( state_t* restrict _state );
 
 bool state_t$step( state_t* restrict _state );

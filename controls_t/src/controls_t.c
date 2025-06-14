@@ -1,6 +1,7 @@
 #include "controls_t.h"
 
 #include "input_t.h"
+#include "log.h"
 #include "stdfunc.h"
 
 controls_t controls_t$create( void ) {
@@ -50,62 +51,31 @@ bool controls_t$destroy( controls_t* _controls ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_controls ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     {
-#define DESTROY_DONTROL( _field ) \
-    ( { ( control_t$destroy( &( _controls->_field ) ) ); } )
+#define DESTROY_DONTROL_OR_EXIT( _field )                                     \
+    do {                                                                      \
+        if ( UNLIKELY( !( control_t$destroy( &( _controls->_field ) ) ) ) ) { \
+            log$transaction$query( ( logLevel_t )error,                       \
+                                   "Destroying control" #_field "\n" );       \
+            goto EXIT;                                                        \
+        }                                                                     \
+    } while ( 0 )
 
-        l_returnValue = DESTROY_DONTROL( up );
+        DESTROY_DONTROL_OR_EXIT( up );
+        DESTROY_DONTROL_OR_EXIT( down );
+        DESTROY_DONTROL_OR_EXIT( left );
+        DESTROY_DONTROL_OR_EXIT( right );
+        DESTROY_DONTROL_OR_EXIT( A );
+        DESTROY_DONTROL_OR_EXIT( B );
+        DESTROY_DONTROL_OR_EXIT( C );
+        DESTROY_DONTROL_OR_EXIT( D );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( down );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( left );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( right );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( A );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( B );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( C );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-        l_returnValue = DESTROY_DONTROL( D );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            goto EXIT;
-        }
-
-#undef DESTROY_DONTROL
+#undef DESTROY_DONTROL_OR_EXIT
 
         l_returnValue = true;
     }
