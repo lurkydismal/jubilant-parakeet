@@ -448,9 +448,14 @@ char** getPathsByGlob( const char* restrict _glob,
                     const size_t l_fullPathLength =
                         __builtin_strlen( l_fullPath );
                     // 0 if NULL
-                    const size_t l_directoryLength =
+                    // TODO: Improve
+                    size_t l_directoryLength =
                         ( ( _directory ) ? ( __builtin_strlen( _directory ) )
                                          : ( 0 ) );
+
+                    l_directoryLength += __builtin_strlen(
+                        asset_t$loader$assetsDirectory$get() );
+
                     const size_t l_fileNameLength =
                         ( l_fullPathLength - l_directoryLength );
 

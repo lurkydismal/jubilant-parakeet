@@ -175,8 +175,6 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
         l_returnValue = ( l_fileDescriptor != -1 );
 
         if ( !l_returnValue ) {
-            log$transaction$query( ( logLevel_t )error, "Reading asset\n" );
-
             goto EXIT;
         }
 

@@ -157,6 +157,19 @@ EXIT:
     return ( l_returnValue );
 }
 
+static FORCE_INLINE void finishLineHandling( char* _fieldName, void* _config ) {
+    config_t* l_config = ( config_t* )_config;
+
+    trim( &_fieldName, 0, ( __builtin_strlen( _fieldName ) - 1 ) );
+
+    const int l_result = lineHandler( l_config, _fieldName, NULL, NULL );
+
+    if ( UNLIKELY( !l_result ) ) {
+        log$transaction$query( ( logLevel_t )error,
+                               "Finishing config loading\n" );
+    }
+}
+
 // TODO: Improve
 bool config_t$load$fromString( config_t* restrict _config,
                                const char* restrict _string ) {
@@ -178,52 +191,28 @@ bool config_t$load$fromString( config_t* restrict _config,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format(
-                ( logLevel_t )error, "Config loading from string: line %d\n",
+                ( logLevel_t )error, "Loading config from string: line %d\n",
                 l_errorLineNumber );
 
             goto EXIT;
         }
 
-        // TODO: Improve
-        {
-            // Background
-            {
-                const int l_result =
-                    lineHandler( _config, "background", NULL, NULL );
+        iterateTopMostFields( config_t, finishLineHandling, _config );
 
-                l_returnValue = !!( l_result );
+#define MACRO( _field )                                         \
+    do {                                                        \
+        l_returnValue = ( _config->_field );                    \
+        if ( UNLIKELY( !l_returnValue ) ) {                     \
+            log$transaction$query( ( logLevel_t )error,         \
+                                   "Loaded no " #_field "\n" ); \
+            goto EXIT;                                          \
+        }                                                       \
+    } while ( 0 )
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Config loading\n" );
+        MACRO( backgrounds );
+        MACRO( HUDs );
 
-                    goto EXIT;
-                }
-            }
-
-            // HUD
-            {
-                const int l_result = lineHandler( _config, "HUD", NULL, NULL );
-
-                l_returnValue = !!( l_result );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Config loading\n" );
-
-                    goto EXIT;
-                }
-            }
-        }
-
-        if ( UNLIKELY( !( _config->backgrounds ) ) ) {
-            l_returnValue = false;
-
-            log$transaction$query( ( logLevel_t )error,
-                                   "Config loaded no backgrounds\n" );
-
-            goto EXIT;
-        }
+#undef MACRO
 
         l_returnValue = true;
     }

@@ -203,12 +203,14 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                 char** l_startAndEndIndexAsString =
                     splitStringIntoArrayBySymbol( l_boxProperties[ 4 ], '-' );
 
-                l_returnValue = ( arrayLength( l_boxProperties ) == 2 );
+                l_returnValue =
+                    ( arrayLength( l_startAndEndIndexAsString ) == 2 );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query(
+                    log$transaction$query$format(
                         ( logLevel_t )error,
-                        "Invalid index format, expected Start-End\n" );
+                        "Invalid index format, expected Start-End got '%s'\n",
+                        l_boxProperties[ 4 ] );
 
                     goto EXIT_LOADING2;
                 }

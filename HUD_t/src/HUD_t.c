@@ -74,9 +74,9 @@ static FORCE_INLINE bool HUD_t$element$load$one(
     const char* restrict _subFolder ) {
     bool l_returnValue = false;
 
-    log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
-
     if ( UNLIKELY( !_element ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

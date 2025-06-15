@@ -6,28 +6,20 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#define COLOR_RED "\e[1;31m"
-#define COLOR_GREEN "\e[1;32m"
-#define COLOR_YELLOW "\e[1;33m"
-#define COLOR_CYAN_LIGHT "\e[1;36m"
-#define COLOR_RESET "\e[0m"
-
-#define LOG_COLOR_DEBUG COLOR_CYAN_LIGHT
-#define LOG_COLOR_INFO COLOR_GREEN
-#define LOG_COLOR_WARN COLOR_YELLOW
-#define LOG_COLOR_ERROR COLOR_RED
-#define LOG_COLOR_UNKNOWN COLOR_RESET
-
-#define LOG_COLOR_MAX_LENGTH __builtin_strlen( LOG_COLOR_DEBUG )
-#define LOG_LEVEL_AS_STRING_MAX_LENGTH \
-    __builtin_strlen( LOG_LEVEL_AS_STRING_UNKNOWN )
-
 #define LOG_LEVEL_DEFAULT ( ( logLevel_t )warn )
 
 static int g_fileDescriptor = -1;
 static char* g_transactionString = NULL;
 static ssize_t g_transactionSize = 0;
 static logLevel_t g_currentLogLevel = LOG_LEVEL_DEFAULT;
+
+static FORCE_INLINE void reportNotInitialized( void ) {
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
+    trap();
+
+#endif
+}
 
 static const char* log$level$convert$toColor( const logLevel_t _logLevel ) {
     switch ( _logLevel ) {
@@ -73,7 +65,7 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
             // Colored
             concatBeforeAndAfterString( &l_logLevelWithBrackets,
                                         log$level$convert$toColor( _logLevel ),
-                                        COLOR_RESET );
+                                        LOG_COLOR_RESET_FOREGROUND );
 
             concatBeforeAndAfterString( _string, " ", "" );
 
@@ -132,13 +124,13 @@ bool log$init( const char* restrict _fileName,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_fileName ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        trap();
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        trap();
 
         goto EXIT;
     }
@@ -173,11 +165,7 @@ bool log$init( const char* restrict _fileName,
             l_returnValue = ( g_fileDescriptor != -1 );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query$format(
-                    ( logLevel_t )error, "Opening log file descriptor: %d\n",
-                    errno );
-
-                goto EXIT;
+                trap();
             }
         }
 
@@ -219,10 +207,7 @@ bool log$quit( void ) {
         l_returnValue = ( close( g_fileDescriptor ) != -1 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query$format(
-                ( logLevel_t )error, "Closing file descriptor: %d\n", errno );
-
-            goto EXIT;
+            trap();
         }
 
         g_fileDescriptor = -1;
@@ -234,31 +219,11 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE void reportNotInitialized( void ) {
-#if ( defined( DEBUG ) && !defined( TESTS ) )
-
-    char* l_string = duplicateString( "Logging system is not initialized\n" );
-
-    size_t l_stringLength =
-        log$level$prependToString( &l_string, ( logLevel_t )error );
-
-    g_transactionString = l_string;
-    g_transactionSize = l_stringLength;
-
-    log$transaction$commit();
-
-    trap();
-
-#endif
-}
-
 bool _log$transaction$query( const logLevel_t _logLevel,
                              const char* restrict _string ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
-
         reportNotInitialized();
 
         goto EXIT;
@@ -314,8 +279,6 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
-
         reportNotInitialized();
 
         goto EXIT;
