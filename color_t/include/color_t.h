@@ -107,21 +107,15 @@ static FORCE_INLINE const char* color_t$convert$toStaticString(
 
         l_returnValue[ 0 ] = l_hexDigits[ ( _color->red >> 4 ) & 0xF ];
         l_returnValue[ 1 ] = l_hexDigits[ _color->red & 0xF ];
+
         l_returnValue[ 2 ] = l_hexDigits[ ( _color->green >> 4 ) & 0xF ];
         l_returnValue[ 3 ] = l_hexDigits[ _color->green & 0xF ];
+
         l_returnValue[ 4 ] = l_hexDigits[ ( _color->blue >> 4 ) & 0xF ];
         l_returnValue[ 5 ] = l_hexDigits[ _color->blue & 0xF ];
+
         l_returnValue[ 6 ] = l_hexDigits[ ( _color->alpha >> 4 ) & 0xF ];
         l_returnValue[ 7 ] = l_hexDigits[ _color->alpha & 0xF ];
-
-#if 0
-        // TODO: Decide
-        snprintf(l_returnValue, arrayLengthNative( l_returnValue ), "%02X%02X%02X%02X",
-             _color->red,
-             _color->green,
-             _color->blue,
-             _color->alpha);
-#endif
     }
 
 EXIT:
