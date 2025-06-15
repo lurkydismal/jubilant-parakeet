@@ -6,7 +6,7 @@
 #define XXH_NO_STREAM
 #define XXH_STATIC_LINKING_ONLY
 
-#include <omp.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -51,11 +51,11 @@
 // Utility functions ( side-effects )
 #if ( defined( DEBUG ) && !defined( TESTS ) )
 
-#define trap __builtin_trap
+#define trap() __builtin_trap()
 
 #else
 
-#define trap ( ( void )0 );
+#define trap() ( ( void )0 )
 
 #endif
 
@@ -437,3 +437,50 @@ static FORCE_INLINE bool _contains( const size_t* restrict _array,
 char* getApplicationDirectoryAbsolutePath( void );
 char** getPathsByGlob( const char* restrict _glob,
                        const char* restrict _directory );
+
+// Utility Compiler specific functions ( no side-effects )
+// format - "%s%s %s = %p'
+static FORCE_INLINE void dumpCallback( void* _callback,
+                                       void* _context,
+                                       const char* _format,
+                                       ... ) {
+    static size_t l_depth = 0;
+
+    va_list l_arguments;
+
+    va_start( l_arguments, _format );
+
+    // Skip nested structs
+    if ( findSymbolInString( _format, '{' ) != -1 ) {
+        l_depth++;
+    }
+
+    // Only act on top-level fields
+    if ( ( l_depth == 1 ) && ( findSymbolInString( _format, '=' ) != -1 ) ) {
+        // Skip indentation
+        va_arg( l_arguments, char* );
+
+        // Skip type
+        va_arg( l_arguments, char* );
+
+        char* l_fieldName = duplicateString( va_arg( l_arguments, char* ) );
+
+        // Field name
+        ( ( void ( * )( char*, void* ) )_callback )( l_fieldName, _context );
+
+        free( l_fieldName );
+    }
+
+    if ( findSymbolInString( _format, '}' ) != -1 ) {
+        l_depth--;
+    }
+
+    va_end( l_arguments );
+}
+
+#define iterateTopMostFields( _type, _callback, _context )                   \
+    do {                                                                     \
+        _type l_structSample = { 0 };                                        \
+        __builtin_dump_struct( &l_structSample, dumpCallback, ( _callback ), \
+                               ( _context ) );                               \
+    } while ( 0 )

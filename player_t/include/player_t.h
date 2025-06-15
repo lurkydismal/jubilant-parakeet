@@ -44,6 +44,6 @@ bool player_t$render( const player_t* restrict _player,
 bool player_t$input$add( player_t* restrict _player,
                          const input_t _input,
                          const size_t _frame );
-input_t** player_t$inputs$get$withLimit( player_t* restrict _player,
-                                         const size_t _currentFrame,
-                                         const size_t _limitAmount );
+input_t** player_t$inputsSequences$get$withLimit( player_t* restrict _player,
+                                                  const size_t _currentFrame,
+                                                  const size_t _limitAmount );

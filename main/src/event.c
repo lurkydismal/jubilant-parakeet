@@ -79,13 +79,41 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
             _applicationState->totalFramesRendered;
 
         if ( l_lastInputFrame < l_totalFramesRendered ) {
+#if 0
+            // TODO: Decide
             const control_t* l_control =
                 controls_t$control_t$convert$fromScancode(
                     &( _applicationState->settings.controls ), _scancode );
 
             if ( l_control ) {
-                const input_t l_input = l_control->input;
+                input_t l_input = l_control->input;
+            }
+#endif
 
+            input_t l_input = 0;
+
+            {
+                int l_keysAmount = 0;
+                const bool* l_keysState = SDL_GetKeyboardState( &l_keysAmount );
+
+                FOR_RANGE( int, 0, l_keysAmount ) {
+                    // If pressed
+                    if ( l_keysState[ _index ] ) {
+                        SDL_Scancode l_scancode = _index;
+
+                        const control_t* l_control =
+                            controls_t$control_t$convert$fromScancode(
+                                &( _applicationState->settings.controls ),
+                                l_scancode );
+
+                        if ( l_control ) {
+                            l_input |= l_control->input;
+                        }
+                    }
+                }
+            }
+
+            if ( l_input ) {
                 l_returnValue =
                     player_t$input$add( &( _applicationState->localPlayer ),
                                         l_input, l_totalFramesRendered );

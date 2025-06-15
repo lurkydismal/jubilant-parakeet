@@ -167,8 +167,6 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
         // No inputs in sequence
         if ( UNLIKELY( _inputBuffer->previousBufferIndex ==
                        _inputBuffer->currentBufferIndex ) ) {
-            log$transaction$query( ( logLevel_t )info, "Empty input buffer\n" );
-
             goto EXIT;
         }
 
@@ -179,7 +177,7 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 
             if ( UNLIKELY( l_lastInputFrame >= _currentFrame ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Frame is already in sequence\n" );
+                                       "Current frame is too old\n" );
 
                 goto EXIT;
             }

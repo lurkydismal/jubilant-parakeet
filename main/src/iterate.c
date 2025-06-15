@@ -120,7 +120,7 @@ static FORCE_INLINE bool iterate(
         }
 
         // TODO: Fix
-        input_t** l_inputs = player_t$inputs$get$withLimit(
+        input_t** l_inputs = player_t$inputsSequences$get$withLimit(
             &( _applicationState->localPlayer ),
             _applicationState->totalFramesRendered, 8 );
 

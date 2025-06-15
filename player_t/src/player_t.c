@@ -254,9 +254,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-input_t** player_t$inputs$get$withLimit( player_t* restrict _player,
-                                         const size_t _currentFrame,
-                                         const size_t _limitAmount ) {
+input_t** player_t$inputsSequences$get$withLimit( player_t* restrict _player,
+                                                  const size_t _currentFrame,
+                                                  const size_t _limitAmount ) {
     input_t** l_returnValue = NULL;
 
     if ( UNLIKELY( !_player ) ) {

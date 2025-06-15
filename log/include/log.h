@@ -7,6 +7,26 @@
 
 #include "stdfunc.h"
 
+#define LOG_COLOR_RED "\e[1;31m"
+#define LOG_COLOR_GREEN "\e[1;32m"
+#define LOG_COLOR_YELLOW "\e[1;33m"
+#define LOG_COLOR_CYAN_LIGHT "\e[1;36m"
+#define LOG_COLOR_LIGHT_PURPLE "\e[1;35m"
+#define LOG_COLOR_RESET_FOREGROUND "\e[39m"
+#define LOG_COLOR_RESET_BACKGROUND "\e[49m"
+#define LOG_COLOR_RESET "\e[0m"
+
+#define LOG_COLOR_THREAD_ID LOG_COLOR_LIGHT_PURPLE
+#define LOG_COLOR_FILE_NAME LOG_COLOR_LIGHT_PURPLE
+#define LOG_COLOR_LINE_NUMBER LOG_COLOR_LIGHT_PURPLE
+#define LOG_COLOR_FUNCTION_NAME LOG_COLOR_LIGHT_PURPLE
+
+#define LOG_COLOR_DEBUG LOG_COLOR_CYAN_LIGHT
+#define LOG_COLOR_INFO LOG_COLOR_GREEN
+#define LOG_COLOR_WARN LOG_COLOR_YELLOW
+#define LOG_COLOR_ERROR LOG_COLOR_RED
+#define LOG_COLOR_UNKNOWN LOG_COLOR_RESET_FOREGROUND
+
 #define LOG_LEVEL_AS_STRING_DEBUG "DEBUG"
 #define LOG_LEVEL_AS_STRING_INFO "INFO"
 #define LOG_LEVEL_AS_STRING_WARN "WARN"
@@ -15,8 +35,12 @@
 
 #if defined( DEBUG )
 
-#define DEBUG_INFORMATION_FORMAT \
-    "Thread %zu: File '%s': line %u in function '%s' | Message: "
+#define DEBUG_INFORMATION_FORMAT                                              \
+    "Thread " LOG_COLOR_THREAD_ID "%zu" LOG_COLOR_RESET_FOREGROUND            \
+    ": File '" LOG_COLOR_FILE_NAME "%s" LOG_COLOR_RESET_FOREGROUND            \
+    "': line " LOG_COLOR_LINE_NUMBER "%u" LOG_COLOR_RESET_FOREGROUND          \
+    " in function " LOG_COLOR_FUNCTION_NAME "'%s'" LOG_COLOR_RESET_FOREGROUND \
+    " | Message: "
 #define DEBUG_INFORMATION_ARGUMENTS \
     syscall( SYS_gettid ), __FILE__, __LINE__, __func__
 
