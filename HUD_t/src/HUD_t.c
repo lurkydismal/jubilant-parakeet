@@ -100,7 +100,6 @@ static FORCE_INLINE bool HUD_t$element$load$one(
     }
 
     {
-        // TODO: Improve
         {
             char* l_folder = duplicateString( "/" );
 
@@ -109,6 +108,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             char* l_boxesGlbb = NULL;
 
             // Boxes
+            // folder/folder.boxes
             {
                 l_boxesGlbb = duplicateString( _HUD->folder );
 
@@ -119,6 +119,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             char* l_animationGlob = NULL;
 
             // Animation
+            // folder/folder*.extension
             {
                 l_animationGlob = duplicateString( "*." );
 
@@ -155,6 +156,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Accept app state
 bool HUD_t$load( HUD_t* restrict _HUD,
                  SDL_Renderer* _renderer,
                  const size_t _amount ) {

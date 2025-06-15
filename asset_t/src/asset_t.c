@@ -595,7 +595,6 @@ bool asset_t$save$sync$toPath( asset_t* restrict _asset,
     {
         int l_fileDescriptor = -1;
 
-        // TODO: Improve
         {
             {
                 char* l_path = duplicateString( _path );

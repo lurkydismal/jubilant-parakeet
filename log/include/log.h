@@ -35,12 +35,12 @@
 
 #if defined( DEBUG )
 
-#define DEBUG_INFORMATION_FORMAT                                              \
-    "Thread " LOG_COLOR_THREAD_ID "%zu" LOG_COLOR_RESET_FOREGROUND            \
-    ": File '" LOG_COLOR_FILE_NAME "%s" LOG_COLOR_RESET_FOREGROUND            \
-    "': line " LOG_COLOR_LINE_NUMBER "%u" LOG_COLOR_RESET_FOREGROUND          \
-    " in function " LOG_COLOR_FUNCTION_NAME "'%s'" LOG_COLOR_RESET_FOREGROUND \
-    " | Message: "
+#define DEBUG_INFORMATION_FORMAT                                             \
+    "Thread " LOG_COLOR_THREAD_ID "%zu" LOG_COLOR_RESET_FOREGROUND           \
+    ": File '" LOG_COLOR_FILE_NAME "%s" LOG_COLOR_RESET_FOREGROUND           \
+    "': line " LOG_COLOR_LINE_NUMBER "%u" LOG_COLOR_RESET_FOREGROUND         \
+    " in function '" LOG_COLOR_FUNCTION_NAME "%s" LOG_COLOR_RESET_FOREGROUND \
+    "' | Message: "
 #define DEBUG_INFORMATION_ARGUMENTS \
     syscall( SYS_gettid ), __FILE__, __LINE__, __func__
 

@@ -42,7 +42,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 bool background_t$load( background_t* restrict _background,
                         SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
@@ -66,13 +65,13 @@ bool background_t$load( background_t* restrict _background,
                                       "Loading background: '%s'\n",
                                       _background->name );
 
-        // TODO: Improve
         {
             const char* l_folder = _background->folder;
 
             char* l_boxesGlob = NULL;
 
             // Boxes
+            // folder/folder.boxes
             {
                 l_boxesGlob = duplicateString( l_folder );
 
@@ -83,6 +82,7 @@ bool background_t$load( background_t* restrict _background,
             char* l_animationGlob = NULL;
 
             // Animation
+            // folder/folder*.extension
             {
                 l_animationGlob = duplicateString( "*." );
 

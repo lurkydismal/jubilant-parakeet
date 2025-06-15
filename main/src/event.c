@@ -79,17 +79,6 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
             _applicationState->totalFramesRendered;
 
         if ( l_lastInputFrame < l_totalFramesRendered ) {
-#if 0
-            // TODO: Decide
-            const control_t* l_control =
-                controls_t$control_t$convert$fromScancode(
-                    &( _applicationState->settings.controls ), _scancode );
-
-            if ( l_control ) {
-                input_t l_input = l_control->input;
-            }
-#endif
-
             input_t l_input = 0;
 
             {

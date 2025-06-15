@@ -386,10 +386,6 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
                     findSymbolInString( l_colorAsString, '_' );
 
                 if ( l_colorAsStringStartIndex == -1 ) {
-                    log$transaction$query(
-                        ( logLevel_t )info,
-                        "Finding color hex string in file name\n" );
-
                     goto EXIT_COLOR_TRIM_FILE_NAME;
                 }
 
