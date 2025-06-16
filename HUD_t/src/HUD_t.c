@@ -71,7 +71,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
     object_t* restrict _element,
     HUD_t* restrict _HUD,
     SDL_Renderer* _renderer,
-    const char* restrict _subFolder ) {
+    const char* restrict _fieldName ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_element ) ) {
@@ -93,7 +93,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_subFolder ) ) {
+    if ( UNLIKELY( !_fieldName ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -101,18 +101,17 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
     {
         {
-            char* l_folder = duplicateString( "/" );
-
-            concatBeforeAndAfterString( &l_folder, _HUD->folder, _subFolder );
+            char* l_folder = _HUD->folder;
 
             char* l_boxesGlbb = NULL;
 
             // Boxes
             // folder/folder.boxes
             {
-                l_boxesGlbb = duplicateString( _HUD->folder );
+                l_boxesGlbb = duplicateString( _fieldName );
 
-                concatBeforeAndAfterString( &l_boxesGlbb, l_folder, ".boxes" );
+                concatBeforeAndAfterString( &l_boxesGlbb, "/", ".boxes" );
+                concatBeforeAndAfterString( &l_boxesGlbb, l_folder, NULL );
             }
 
             char* l_animationGlob = NULL;
@@ -122,8 +121,9 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             {
                 l_animationGlob = duplicateString( "*." );
 
-                concatBeforeAndAfterString( &l_animationGlob, _HUD->folder,
+                concatBeforeAndAfterString( &l_animationGlob, _fieldName,
                                             _HUD->extension );
+                concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
                 concatBeforeAndAfterString( &l_animationGlob, l_folder, NULL );
             }
 
@@ -198,19 +198,19 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         log$transaction$query$format( ( logLevel_t )info, "Loading HUD: '%s'",
                                       _HUD->name );
 
-#define TRY_LOAD_OR_EXIT( _field )                                            \
-    do {                                                                      \
-        FOR_ARRAY( object_t* const*, _HUD->_field ) {                         \
-            object_t l_element = object_t$create();                           \
-            l_returnValue = HUD_t$element$load$one( &l_element, _HUD,         \
-                                                    _renderer, #_field "/" ); \
-            if ( UNLIKELY( !l_returnValue ) ) {                               \
-                log$transaction$query( ( logLevel_t )error,                   \
-                                       "Loading HUD " #_field );              \
-                goto EXIT;                                                    \
-            }                                                                 \
-            insertIntoArray( &( _HUD->_field ), clone( &l_element ) );        \
-        }                                                                     \
+#define TRY_LOAD_OR_EXIT( _field )                                        \
+    do {                                                                  \
+        FOR_ARRAY( object_t* const*, _HUD->_field ) {                     \
+            object_t l_element = object_t$create();                       \
+            l_returnValue = HUD_t$element$load$one( &l_element, _HUD,     \
+                                                    _renderer, #_field ); \
+            if ( UNLIKELY( !l_returnValue ) ) {                           \
+                log$transaction$query( ( logLevel_t )error,               \
+                                       "Loading HUD " #_field );          \
+                goto EXIT;                                                \
+            }                                                             \
+            insertIntoArray( &( _HUD->_field ), clone( &l_element ) );    \
+        }                                                                 \
     } while ( 0 )
 
         // TODO: Fix
@@ -222,7 +222,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         // Timer
         {
             l_returnValue = HUD_t$element$load$one( &( _HUD->timer ), _HUD,
-                                                    _renderer, "timer/" );
+                                                    _renderer, "timer" );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -238,7 +238,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         {
             l_returnValue =
                 HUD_t$element$load$one( &( _HUD->timerBackground ), _HUD,
-                                        _renderer, "timerBackground/" );
+                                        _renderer, "timerBackground" );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
