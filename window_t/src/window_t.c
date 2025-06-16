@@ -19,15 +19,14 @@ bool window_t$destroy( window_t* restrict _window ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_window ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
         if ( UNLIKELY( !( _window->name ) ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid window name\n" );
+            log$transaction$query( ( logLevel_t )error, "Invalid window name" );
 
             goto EXIT;
         }

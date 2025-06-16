@@ -15,7 +15,7 @@ bool settingsOption_t$destroy( settingsOption_t* restrict _settingsOption ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settingsOption ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -40,19 +40,19 @@ bool _settingsOption_t$map( settingsOption_t* restrict _settingsOption,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settingsOption ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_key ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_storage ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -73,7 +73,7 @@ bool settingsOption_t$unmap( settingsOption_t* restrict _settingsOption ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settingsOption ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -101,19 +101,19 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settingsOption ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_key ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_value ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -172,8 +172,7 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
 
             default: {
                 log$transaction$query$format(
-                    ( logLevel_t )error,
-                    "Unkown settings option type for '%s'\n",
+                    ( logLevel_t )error, "Unkown settings option type for '%s'",
                     _settingsOption->key );
 
                 l_returnValue = false;

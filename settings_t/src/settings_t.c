@@ -27,7 +27,7 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -36,7 +36,7 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
         l_returnValue = window_t$destroy( &( _settings->window ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying window\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying window" );
 
             goto EXIT;
         }
@@ -69,20 +69,20 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        log$transaction$query$format( ( logLevel_t )debug,
-                                      "Settings size: %zu\n", _asset->size );
+        log$transaction$query$format( ( logLevel_t )debug, "Settings size: %zu",
+                                      _asset->size );
 
         char* l_dataWithNull =
             ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
@@ -99,7 +99,7 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
 
             if ( UNLIKELY( !arrayLength( l_lines ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Empty settings file\n" );
+                                       "Empty settings file" );
 
                 goto EXIT_SETTINGS_DATA_LINES;
             }
@@ -232,9 +232,9 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                             splitStringIntoArrayBySymbol( l_line, '=' );
 
                         if ( arrayLength( l_keyAndValue ) != 2 ) {
-                            log$transaction$query$format(
-                                ( logLevel_t )error, "Settings line: '%s'\n",
-                                l_line );
+                            log$transaction$query$format( ( logLevel_t )error,
+                                                          "Settings line: '%s'",
+                                                          l_line );
 
                             goto LOOP_CONTINUE;
                         }
@@ -257,7 +257,7 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                         if ( UNLIKELY( !l_result ) ) {
                             log$transaction$query$format(
                                 ( logLevel_t )error,
-                                "Corrupted settings key: '%s'\n", l_key );
+                                "Corrupted settings key: '%s'", l_key );
 
                             goto LOOP_CONTINUE;
                         }
@@ -271,14 +271,14 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                 FOR_ARRAY( settingsOption_t* const*, l_settingsOptions ) {
                     if ( !settingsOption_t$unmap( *_element ) ) {
                         log$transaction$query( ( logLevel_t )error,
-                                               "Settings option unmap\n" );
+                                               "Settings option unmap" );
 
                         break;
                     }
 
                     if ( !settingsOption_t$destroy( *_element ) ) {
                         log$transaction$query( ( logLevel_t )error,
-                                               "Settings option destroy\n" );
+                                               "Settings option destroy" );
 
                         break;
                     }
@@ -306,26 +306,26 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileName ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Settings path: '%s.%s'\n", _fileName,
+                                      "Settings path: '%s.%s'", _fileName,
                                       _fileExtension );
 
         // Parse settings file
@@ -346,7 +346,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
 
                     if ( UNLIKELY( !l_returnValue ) ) {
                         log$transaction$query( ( logLevel_t )error,
-                                               "Loading asset from path\n" );
+                                               "Loading asset from path" );
 
                         goto EXIT_SETTINGS_LOAD;
                     }
@@ -357,7 +357,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading settings from asset\n" );
+                                           "Loading settings from asset" );
 
                     goto EXIT_SETTINGS_LOAD;
                 }
@@ -366,7 +366,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Unloading asset\n" );
+                                           "Unloading asset" );
 
                     goto EXIT_SETTINGS_LOAD;
                 }
@@ -375,7 +375,7 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
         EXIT_SETTINGS_LOAD:
             if ( UNLIKELY( !asset_t$destroy( &l_settingsAsset ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying asset\n" );
+                                       "Destroying asset" );
 
                 l_returnValue = false;
 
@@ -399,7 +399,7 @@ bool settings_t$unload( settings_t* restrict _settings ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_settings ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }

@@ -13,7 +13,7 @@ bool camera_t$destroy( camera_t* _camera ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -31,13 +31,13 @@ bool camera_t$update( camera_t* _camera, const player_t* _player ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_player ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }

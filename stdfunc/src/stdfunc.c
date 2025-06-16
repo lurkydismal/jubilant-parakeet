@@ -46,7 +46,7 @@ size_t concatBeforeAndAfterString( char* restrict* restrict _string,
 
     {
         if ( UNLIKELY( !_string ) || UNLIKELY( !*_string ) ) {
-            log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+            log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
             goto EXIT;
         }
@@ -106,7 +106,7 @@ char* sanitizeString( const char* restrict _string ) {
     char* l_returnValue = NULL;
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -147,13 +147,13 @@ char** splitStringIntoArray( const char* restrict _string,
     char** l_returnValue = createArray( char* );
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_delimiter ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -180,7 +180,7 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
     char** l_returnValue = createArray( char* );
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -232,19 +232,19 @@ ssize_t findStringInArray( const char** restrict _array,
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_array ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_arrayLength ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_value ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -279,19 +279,19 @@ ssize_t findInArray( const size_t* restrict _array,
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_array ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_arrayLength ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_value ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -326,7 +326,7 @@ char* getApplicationDirectoryAbsolutePath( void ) {
                 "/proc/self/exe", l_executablePath, ( PATH_MAX - 1 ) );
 
             if ( UNLIKELY( l_executablePathLength == -1 ) ) {
-                log$transaction$query( ( logLevel_t )error, "readlink\n" );
+                log$transaction$query( ( logLevel_t )error, "readlink" );
 
                 free( l_executablePath );
 
@@ -344,7 +344,7 @@ char* getApplicationDirectoryAbsolutePath( void ) {
 
             if ( UNLIKELY( !l_lastSlash ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Extracting directory: '%s'\n",
+                                              "Extracting directory: '%s'",
                                               l_executablePath );
 
                 goto EXIT;
@@ -378,7 +378,7 @@ char** getPathsByGlob( const char* restrict _glob,
     char** l_returnValue = NULL;
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -424,17 +424,18 @@ char** getPathsByGlob( const char* restrict _glob,
                 free( l_glob );
 
                 if ( UNLIKELY( l_result == GLOB_ABORTED ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Glob failed\n" );
+                    log$transaction$query( ( logLevel_t )error, "Glob failed" );
 
                     goto EXIT;
                 }
             }
 
             if ( !( l_globBuffer.gl_pathc ) ) {
-                log$transaction$query$format( ( logLevel_t )error,
-                                              "Glob empty: '%s' in '%s'\n",
-                                              _glob, _directory );
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Glob empty: '%s' in directory '%s'",
+                    _glob,
+                    ( ( _directory ) ? ( _directory )
+                                     : ( "Was not specified" ) ) );
 
                 goto EXIT_GLOB;
             }

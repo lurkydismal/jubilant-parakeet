@@ -51,7 +51,7 @@ bool controls_t$destroy( controls_t* _controls ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_controls ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -61,7 +61,7 @@ bool controls_t$destroy( controls_t* _controls ) {
     do {                                                                      \
         if ( UNLIKELY( !( control_t$destroy( &( _controls->_field ) ) ) ) ) { \
             log$transaction$query( ( logLevel_t )error,                       \
-                                   "Destroying control" #_field "\n" );       \
+                                   "Destroying control" #_field );            \
             goto EXIT;                                                        \
         }                                                                     \
     } while ( 0 )

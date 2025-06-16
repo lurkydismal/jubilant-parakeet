@@ -51,7 +51,7 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
 
     {
         if ( UNLIKELY( !_string ) || UNLIKELY( !*_string ) ) {
-            log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+            log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
             goto EXIT;
         }
@@ -67,10 +67,10 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
                                         log$level$convert$toColor( _logLevel ),
                                         LOG_COLOR_RESET_FOREGROUND );
 
-            concatBeforeAndAfterString( _string, " ", "" );
+            concatBeforeAndAfterString( _string, " ", NULL );
 
             l_returnValue = concatBeforeAndAfterString(
-                _string, l_logLevelWithBrackets, "" );
+                _string, l_logLevelWithBrackets, NULL );
 
             free( l_logLevelWithBrackets );
         }
@@ -96,7 +96,7 @@ bool log$level$set$string( const char* restrict _string ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -148,7 +148,8 @@ bool log$init( const char* restrict _fileName,
                 char* l_directoryPath = getApplicationDirectoryAbsolutePath();
 
                 // Construct full file path
-                concatBeforeAndAfterString( &l_filePath, l_directoryPath, "" );
+                concatBeforeAndAfterString( &l_filePath, l_directoryPath,
+                                            NULL );
 
                 free( l_directoryPath );
             }
@@ -184,13 +185,13 @@ bool log$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( g_fileDescriptor == -1 ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -219,6 +220,15 @@ EXIT:
     return ( l_returnValue );
 }
 
+static FORCE_INLINE void appendColorReset( void ) {
+    const size_t l_colorResetLength = __builtin_strlen( LOG_COLOR_RESET );
+
+    __builtin_memcpy( ( g_transactionString + g_transactionSize ),
+                      LOG_COLOR_RESET, l_colorResetLength );
+
+    g_transactionSize += l_colorResetLength;
+}
+
 bool _log$transaction$query( const logLevel_t _logLevel,
                              const char* restrict _string ) {
     bool l_returnValue = false;
@@ -230,13 +240,13 @@ bool _log$transaction$query( const logLevel_t _logLevel,
     }
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( _logLevel < g_currentLogLevel ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -247,8 +257,11 @@ bool _log$transaction$query( const logLevel_t _logLevel,
 
             size_t l_stringLength =
                 log$level$prependToString( &l_string, _logLevel );
+            const size_t l_colorResetLength =
+                __builtin_strlen( LOG_COLOR_RESET );
 
-            if ( UNLIKELY( ( g_transactionSize + l_stringLength ) >
+            if ( UNLIKELY( ( g_transactionSize + l_stringLength +
+                             l_colorResetLength ) >
                            LOG_MAX_TRANSACTION_SIZE_DEFAULT ) ) {
                 l_stringLength =
                     ( LOG_MAX_TRANSACTION_SIZE_DEFAULT - g_transactionSize );
@@ -258,6 +271,12 @@ bool _log$transaction$query( const logLevel_t _logLevel,
                               l_string, l_stringLength );
 
             g_transactionSize += l_stringLength;
+
+            appendColorReset();
+
+            g_transactionString[ g_transactionSize ] = '\n';
+
+            g_transactionSize++;
 
             free( l_string );
         }
@@ -285,13 +304,13 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     }
 
     if ( UNLIKELY( !_format ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( _logLevel < g_currentLogLevel ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -313,7 +332,7 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
         l_returnValue = !!( l_writtenCount );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Formatting buffer\n" );
+            log$transaction$query( ( logLevel_t )error, "Formatting buffer" );
 
             goto EXIT_BUFFER_APPENDING;
         }
@@ -331,6 +350,12 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
                               l_buffer, l_bufferSize );
 
             g_transactionSize += l_bufferSize;
+
+            appendColorReset();
+
+            g_transactionString[ g_transactionSize ] = '\n';
+
+            g_transactionSize++;
         }
 
         if ( UNLIKELY( _logLevel == ( logLevel_t )error ) ) {
@@ -351,7 +376,7 @@ bool log$transaction$commit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -365,8 +390,7 @@ bool log$transaction$commit( void ) {
             l_returnValue = ( l_writtenCount == g_transactionSize );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Writing to file\n" );
+                log$transaction$query( ( logLevel_t )error, "Writing to file" );
 
                 goto EXIT;
             }
@@ -391,7 +415,7 @@ bool log$transaction$commit( void ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Writing to standard output\n" );
+                                       "Writing to standard output" );
 
                 goto EXIT;
             }

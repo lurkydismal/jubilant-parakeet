@@ -20,23 +20,23 @@ bool config_t$destroy( config_t* restrict _config ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-#define MACRO( _field )                                              \
-    do {                                                             \
-        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {        \
-            l_returnValue = _field##_t$destroy( *_element );         \
-            if ( UNLIKELY( !l_returnValue ) ) {                      \
-                log$transaction$query( ( logLevel_t )error,          \
-                                       "Destroying " #_field "\n" ); \
-                goto EXIT;                                           \
-            }                                                        \
-        }                                                            \
-        FREE_ARRAY( _config->_field##s );                            \
+#define MACRO( _field )                                         \
+    do {                                                        \
+        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {   \
+            l_returnValue = _field##_t$destroy( *_element );    \
+            if ( UNLIKELY( !l_returnValue ) ) {                 \
+                log$transaction$query( ( logLevel_t )error,     \
+                                       "Destroying " #_field ); \
+                goto EXIT;                                      \
+            }                                                   \
+        }                                                       \
+        FREE_ARRAY( _config->_field##s );                       \
     } while ( 0 )
 
         MACRO( background );
@@ -60,25 +60,25 @@ static int lineHandler( void* _config,
     int l_returnValue = 0;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !__builtin_strlen( _sectionName ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( ( _key ) && !__builtin_strlen( _key ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( ( _value ) && !__builtin_strlen( _value ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -99,7 +99,7 @@ static int lineHandler( void* _config,
             const size_t l_valueLength = __builtin_strlen( _value );
 
             if ( UNLIKELY( l_valueLength >= PATH_MAX ) ) {
-                log$transaction$query( ( logLevel_t )error, "Value length\n" );
+                log$transaction$query( ( logLevel_t )error, "Value length" );
 
                 trap();
 
@@ -108,7 +108,7 @@ static int lineHandler( void* _config,
 
 #if defined( LOG_CONFIG )
 
-            log$transaction$query$format( ( logLevel_t )debug, "'%s' = '%s'\n",
+            log$transaction$query$format( ( logLevel_t )debug, "'%s' = '%s'",
                                           _key, _value );
 
 #endif
@@ -128,7 +128,7 @@ static int lineHandler( void* _config,
 
             if ( UNLIKELY( l_sectionNameLength >= PATH_MAX ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Section name length\n" );
+                                       "Section name length" );
 
                 trap();
 
@@ -138,7 +138,7 @@ static int lineHandler( void* _config,
             if ( __builtin_strlen( l_name ) && __builtin_strlen( l_folder ) &&
                  __builtin_strlen( l_extension ) ) {
                 log$transaction$query$format( ( logLevel_t )info,
-                                              "[ '%s' : '%s' ]: '%s'\n", l_name,
+                                              "[ '%s' : '%s' ]: '%s'", l_name,
                                               l_folder, l_extension );
 
                 // TODO: Name macro
@@ -165,7 +165,7 @@ static int lineHandler( void* _config,
 
 #if defined( LOG_CONFIG )
 
-            log$transaction$query$format( ( logLevel_t )debug, "[ %s ]\n",
+            log$transaction$query$format( ( logLevel_t )debug, "[ %s ]",
                                           _sectionName );
 
 #endif
@@ -192,7 +192,7 @@ static FORCE_INLINE void finishLineHandling( char* _fieldName, void* _config ) {
 
     if ( UNLIKELY( !l_result ) ) {
         log$transaction$query( ( logLevel_t )error,
-                               "Finishing config loading\n" );
+                               "Finishing config loading" );
     }
 }
 
@@ -201,13 +201,13 @@ bool config_t$load$fromString( config_t* restrict _config,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_string ) || UNLIKELY( !__builtin_strlen( _string ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -219,9 +219,9 @@ bool config_t$load$fromString( config_t* restrict _config,
         l_returnValue = ( l_errorLineNumber == 0 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query$format(
-                ( logLevel_t )error, "Loading config from string: line %d\n",
-                l_errorLineNumber );
+            log$transaction$query$format( ( logLevel_t )error,
+                                          "Loading config from string: line %d",
+                                          l_errorLineNumber );
 
             goto EXIT;
         }
@@ -229,14 +229,14 @@ bool config_t$load$fromString( config_t* restrict _config,
         iterateTopMostFields( config_t, finishLineHandling, _config );
 
 // TODO: Improve
-#define MACRO( _field )                                         \
-    do {                                                        \
-        l_returnValue = !!( arrayLength(_config->_field) );                  \
-        if ( UNLIKELY( !l_returnValue ) ) {                     \
-            log$transaction$query( ( logLevel_t )error,         \
-                                   "Loaded no " #_field "\n" ); \
-            goto EXIT;                                          \
-        }                                                       \
+#define MACRO( _field )                                       \
+    do {                                                      \
+        l_returnValue = !!( arrayLength( _config->_field ) ); \
+        if ( UNLIKELY( !l_returnValue ) ) {                   \
+            log$transaction$query( ( logLevel_t )error,       \
+                                   "Loaded no " #_field );    \
+            goto EXIT;                                        \
+        }                                                     \
     } while ( 0 )
 
         MACRO( backgrounds );
@@ -256,13 +256,13 @@ bool config_t$load$fromAsset( config_t* restrict _config,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -271,7 +271,7 @@ bool config_t$load$fromAsset( config_t* restrict _config,
 #if defined( LOG_CONFIG )
 
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Config loading asset: Size = %zu\n",
+                                      "Config loading asset: Size = %zu",
                                       _asset->size );
 
 #endif
@@ -289,7 +289,7 @@ bool config_t$load$fromAsset( config_t* restrict _config,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Loading config from string\n" );
+                                   "Loading config from string" );
 
             goto EXIT;
         }
@@ -307,26 +307,26 @@ bool config_t$load$fromPath( config_t* restrict _config,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileName ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Config path: '%s.%s'\n", _fileName,
+                                      "Config path: '%s.%s'", _fileName,
                                       _fileExtension );
 
         // Parse config file
@@ -346,7 +346,7 @@ bool config_t$load$fromPath( config_t* restrict _config,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading asset from path\n" );
+                                           "Loading asset from path" );
 
                     goto EXIT_CONFIG_LOAD;
                 }
@@ -356,7 +356,7 @@ bool config_t$load$fromPath( config_t* restrict _config,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading config from asset\n" );
+                                       "Loading config from asset" );
 
                 goto EXIT_CONFIG_LOAD2;
             }
@@ -365,8 +365,7 @@ bool config_t$load$fromPath( config_t* restrict _config,
             l_returnValue = asset_t$unload( &l_configAsset );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Unloading asset\n" );
+                log$transaction$query( ( logLevel_t )error, "Unloading asset" );
 
                 goto EXIT_CONFIG_LOAD;
             }
@@ -374,7 +373,7 @@ bool config_t$load$fromPath( config_t* restrict _config,
         EXIT_CONFIG_LOAD:
             if ( UNLIKELY( !asset_t$destroy( &l_configAsset ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying asset\n" );
+                                       "Destroying asset" );
 
                 goto EXIT;
             }
@@ -395,22 +394,22 @@ bool config_t$unload( config_t* restrict _config ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_config ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-#define MACRO( _field )                                             \
-    do {                                                            \
-        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {       \
-            l_returnValue = _field##_t$unload( *_element );         \
-            if ( UNLIKELY( !l_returnValue ) ) {                     \
-                log$transaction$query( ( logLevel_t )error,         \
-                                       "Unloading " #_field "\n" ); \
-                goto EXIT;                                          \
-            }                                                       \
-        }                                                           \
+#define MACRO( _field )                                        \
+    do {                                                       \
+        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {  \
+            l_returnValue = _field##_t$unload( *_element );    \
+            if ( UNLIKELY( !l_returnValue ) ) {                \
+                log$transaction$query( ( logLevel_t )error,    \
+                                       "Unloading " #_field ); \
+                goto EXIT;                                     \
+            }                                                  \
+        }                                                      \
     } while ( 0 )
 
         MACRO( background );

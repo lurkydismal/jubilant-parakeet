@@ -216,51 +216,51 @@ TEST( log$quit ) {
 }
 
 TEST( log$transaction$query ) {
-    bool l_returnValue = log$transaction$query( ( logLevel_t )debug, "TEST\n" );
+    bool l_returnValue = log$transaction$query( ( logLevel_t )debug, "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
-    l_returnValue = log$transaction$query( ( logLevel_t )info, "TEST\n" );
+    l_returnValue = log$transaction$query( ( logLevel_t )info, "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
-    l_returnValue = log$transaction$query( ( logLevel_t )warn, "TEST\n" );
+    l_returnValue = log$transaction$query( ( logLevel_t )warn, "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
-    l_returnValue = log$transaction$query( ( logLevel_t )error, "TEST\n" );
+    l_returnValue = log$transaction$query( ( logLevel_t )error, "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
     l_returnValue =
-        log$transaction$query( ( logLevel_t )unknownLogLevel, "TEST\n" );
+        log$transaction$query( ( logLevel_t )unknownLogLevel, "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 }
 
 TEST( log$transaction$query$format ) {
     bool l_returnValue =
-        log$transaction$query$format( ( logLevel_t )debug, "%s", "TEST\n" );
+        log$transaction$query$format( ( logLevel_t )debug, "%s", "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
     l_returnValue =
-        log$transaction$query$format( ( logLevel_t )info, "%s", "TEST\n" );
+        log$transaction$query$format( ( logLevel_t )info, "%s", "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
     l_returnValue =
-        log$transaction$query$format( ( logLevel_t )warn, "%s", "TEST\n" );
+        log$transaction$query$format( ( logLevel_t )warn, "%s", "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
     l_returnValue =
-        log$transaction$query$format( ( logLevel_t )error, "%s", "TEST\n" );
+        log$transaction$query$format( ( logLevel_t )error, "%s", "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 
     l_returnValue = log$transaction$query$format( ( logLevel_t )unknownLogLevel,
-                                                  "%s", "TEST\n" );
+                                                  "%s", "TEST" );
 
     ASSERT_FALSE( l_returnValue );
 }
