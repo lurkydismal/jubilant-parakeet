@@ -231,7 +231,7 @@ bool config_t$load$fromString( config_t* restrict _config,
 // TODO: Improve
 #define MACRO( _field )                                         \
     do {                                                        \
-        l_returnValue = !!( _config->_field );                  \
+        l_returnValue = !!( arrayLength(_config->_field) );                  \
         if ( UNLIKELY( !l_returnValue ) ) {                     \
             log$transaction$query( ( logLevel_t )error,         \
                                    "Loaded no " #_field "\n" ); \
