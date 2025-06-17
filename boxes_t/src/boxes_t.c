@@ -510,8 +510,9 @@ bool boxes_t$step( boxes_t* restrict _boxes, bool _canLoop ) {
     {
         if ( _boxes->frames ) {
             if ( arrayLength( _boxes->frames ) > 1 ) {
-                if ( _boxes->currentFrame != arrayLength( _boxes->frames ) ) {
-                    // _boxes->currentFrame++;
+                if ( _boxes->currentFrame <
+                     ( arrayLength( _boxes->frames ) - 1 ) ) {
+                    _boxes->currentFrame++;
 
                 } else {
                     if ( _canLoop ) {

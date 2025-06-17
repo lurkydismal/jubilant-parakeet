@@ -61,7 +61,6 @@
 const char* argp_program_version;
 const char* argp_program_bug_address;
 
-// TODO: Implement options c m p
 static error_t parserForOption( int _key,
                                 char* _value,
                                 struct argp_state* _state ) {
@@ -102,9 +101,27 @@ static error_t parserForOption( int _key,
             break;
         }
 
-            /*
-             * TODO: cmp
-             */
+        case 'h': {
+            const size_t l_HUDIndex = strtoul( _value, NULL, 10 );
+
+            if ( UNLIKELY( l_HUDIndex >=
+                           arrayLength( l_applicationState->config.HUDs ) ) ) {
+                log$transaction$query$format( ( logLevel_t )error,
+                                              "HUD index: %s", _value );
+
+                argp_error( _state, "HUD index '%s' is out of range", _value );
+
+                break;
+            }
+
+            l_applicationState->settings.HUDIndex = l_HUDIndex;
+
+            l_applicationState->HUD =
+                l_applicationState->config.HUDs[ l_HUDIndex ];
+
+            break;
+        }
+
         case 'b': {
             const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
 
@@ -124,6 +141,23 @@ static error_t parserForOption( int _key,
 
             l_applicationState->background =
                 l_applicationState->config.backgrounds[ l_backgroundIndex ];
+
+            break;
+        }
+
+        case 'p': {
+              char l_configAsString[ PATH_MAX ] = {'\0' };
+
+              // Generate
+              {
+                  const char* l_name = (*_element)->folder;
+                  const char* l_type = _fieldName;
+
+                  snprintf( l_configAsString, PATH_MAX, "[ '%s' : '%zu' ]: '%s'\n", l_name, l_index, l_type );
+              }
+
+              argp_error( _state, "%s\n",
+                      l_configAsString );
 
             break;
         }

@@ -405,9 +405,9 @@ bool animation_t$step( animation_t* restrict _animation, bool _canLoop ) {
     {
         if ( _animation->frames ) {
             if ( arrayLength( _animation->frames ) > 1 ) {
-                if ( _animation->currentFrame !=
-                     arrayLength( _animation->frames ) ) {
-                    // _animation->currentFrame++;
+                if ( _animation->currentFrame <
+                     ( arrayLength( _animation->frames ) - 1 ) ) {
+                    _animation->currentFrame++;
 
                 } else {
                     if ( _canLoop ) {
