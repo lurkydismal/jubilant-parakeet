@@ -146,7 +146,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
                 if ( LIKELY( _endIndex > l_framesAmount ) ) {
                     int64_t l_preallocationAmount =
-                        ( _endIndex - l_framesAmount );
+                        ( _endIndex - l_framesAmount - 1 );
 
                     preallocateArray( &( _animation->frames ),
                                       l_preallocationAmount );
@@ -524,11 +524,22 @@ bool animation_t$render( const animation_t* restrict _animation,
             goto EXIT;
         }
 
+        const size_t l_animationKeyFrameIndex =
+            _animation->frames[ _animation->currentFrame ];
+
+        l_returnValue =
+            ( l_animationKeyFrameIndex < arrayLength( _animation->keyFrames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid animation current frame" );
+
+            goto EXIT;
+        }
+
         l_returnValue = SDL_RenderTexture(
-            _renderer,
-            _animation
-                ->keyFrames[ _animation->frames[ _animation->currentFrame ] ],
-            NULL, &l_resolvedTargetRectangle );
+            _renderer, _animation->keyFrames[ l_animationKeyFrameIndex ], NULL,
+            &l_resolvedTargetRectangle );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
