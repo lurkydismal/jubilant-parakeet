@@ -327,23 +327,16 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         arrayLength_t* l_arrayAllocationCurrent =                              \
             arrayAllocationPointer( *( _array ) );                             \
         const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
-        const size_t l_arraySizeCurrent =                                      \
-            ( l_arrayLengthCurrent * sizeof( typeof( *( _array ) ) ) );        \
         const arrayLength_t l_arrayLengthNew =                                 \
             ( l_arrayLengthCurrent + ( _length ) );                            \
-        const size_t l_arraySizeNew =                                          \
-            ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) );            \
         arrayLength_t* l_arrayAllocationNew = ( arrayLength_t* )realloc(       \
             l_arrayAllocationCurrent,                                          \
-            ( sizeof( arrayLength_t ) + l_arraySizeNew ) );                    \
+            ( sizeof( arrayLength_t ) +                                        \
+              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) );      \
         if ( l_arrayAllocationNew ) {                                          \
-            const size_t l_arraySizeDifference =                               \
-                ( l_arraySizeNew - l_arraySizeCurrent );                       \
             *l_arrayAllocationNew = l_arrayLengthNew;                          \
             *( _array ) =                                                      \
                 ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );         \
-            __builtin_memset( ( *_array + l_arraySizeCurrent ), 0,             \
-                              l_arraySizeDifference );                         \
         }                                                                      \
     } while ( 0 )
 
