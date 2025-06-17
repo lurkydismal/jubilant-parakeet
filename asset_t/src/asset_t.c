@@ -209,7 +209,7 @@ bool asset_t$load$fromGlob( asset_t* restrict _asset,
 
     {
         {
-            char** l_paths = getPathsByGlob( _glob, g_assetsDirectory );
+            char** l_paths = getPathsByGlob( _glob, g_assetsDirectory, false );
 
             l_returnValue = asset_t$load$fromPath( _asset, l_paths[ 0 ] );
 
@@ -255,7 +255,7 @@ bool asset_t$array$load$fromGlob( asset_t*** restrict _assetArray,
     }
 
     {
-        char** l_paths = getPathsByGlob( _glob, g_assetsDirectory );
+        char** l_paths = getPathsByGlob( _glob, g_assetsDirectory, false );
 
         FOR_ARRAY( char* const*, l_paths ) {
             asset_t l_asset = asset_t$create();

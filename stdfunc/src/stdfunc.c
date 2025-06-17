@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "stdfunc.h"
 
 #include <ctype.h>
@@ -372,9 +374,17 @@ EXIT:
     return ( l_returnValue );
 }
 
+static int getPathsByGlob$comparator( const void* _path1, const void* _path2 ) {
+    const char* l_path1 = *( ( const char** )_path1 );
+    const char* l_path2 = *( ( const char** )_path2 );
+
+    return ( strverscmp( l_path1, l_path2 ) );
+}
+
 // TODO: Remove asset_t
 char** getPathsByGlob( const char* restrict _glob,
-                       const char* restrict _directory ) {
+                       const char* restrict _directory,
+                       const bool _needSort ) {
     char** l_returnValue = NULL;
 
     if ( UNLIKELY( !_glob ) ) {
@@ -475,6 +485,11 @@ char** getPathsByGlob( const char* restrict _glob,
 
         EXIT_GLOB:
             globfree( &l_globBuffer );
+        }
+
+        if ( _needSort ) {
+            qsort( l_returnValue, arrayLength( l_returnValue ), sizeof( char* ),
+                   getPathsByGlob$comparator );
         }
     }
 

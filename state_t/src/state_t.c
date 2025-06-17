@@ -266,10 +266,22 @@ bool state_t$render( const state_t* restrict _state,
             goto EXIT;
         }
 
+        const size_t l_targetBoxesKeyFrameIndex = arrayFirstElement(
+            l_targetBoxes->frames[ l_targetBoxes->currentFrame ] );
+
+        l_returnValue = ( l_targetBoxesKeyFrameIndex <
+                          arrayLength( l_targetBoxes->keyFrames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid target boxes key frame index" );
+
+            goto EXIT;
+        }
+
         // Always single box
         const SDL_FRect* l_targetBox =
-            l_targetBoxes->keyFrames
-                [ l_targetBoxes->frames[ l_targetBoxes->currentFrame ][ 0 ] ];
+            l_targetBoxes->keyFrames[ l_targetBoxesKeyFrameIndex ];
 
         const SDL_FRect l_targetRectangle = {
             ( _cameraRectangle->x + l_targetBox->x ),
