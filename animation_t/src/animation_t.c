@@ -79,6 +79,18 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
         goto EXIT;
     }
 
+    if ( UNLIKELY( !_endIndex ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( _startIndex > _endIndex ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
     {
         {
 #if defined( LOG_ANIMATION )
@@ -89,6 +101,8 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
                                           _asset->size );
 
 #endif
+
+            size_t l_keyFrameIndex;
 
             // Key frame
             {
@@ -113,16 +127,35 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
                     log$transaction$query( ( logLevel_t )error,
                                            "Creating texture from asset" );
 
+                    if ( UNLIKELY( SDL_CloseIO( l_stream ) ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Closing IO stream" );
+                    }
+
                     goto EXIT;
                 }
 
-                insertIntoArray( &( _animation->keyFrames ), l_texture );
+                l_keyFrameIndex =
+                    insertIntoArray( &( _animation->keyFrames ), l_texture );
+            }
+
+            // Preallocate frames
+            {
+                const arrayLength_t l_framesAmount =
+                    arrayLength( _animation->frames );
+
+                if ( LIKELY( _endIndex > l_framesAmount ) ) {
+                    int64_t l_preallocationAmount =
+                        ( _endIndex - l_framesAmount );
+
+                    preallocateArray( &( _animation->frames ),
+                                      l_preallocationAmount );
+                }
             }
 
             // Fill key frame index in frames
             FOR_RANGE( size_t, _startIndex, _endIndex ) {
-                insertIntoArray( &( _animation->frames ),
-                                 ( arrayLength( _animation->keyFrames ) - 1 ) );
+                _animation->frames[ _index - 1 ] = l_keyFrameIndex;
             }
         }
 
@@ -333,7 +366,7 @@ bool animation_t$load$fromGlob( animation_t* restrict _animation,
     }
 
     {
-        char** l_paths = getPathsByGlob( _glob, NULL );
+        char** l_paths = getPathsByGlob( _glob, NULL, false );
 
         l_returnValue =
             animation_t$load$fromPaths( _animation, _renderer, l_paths );

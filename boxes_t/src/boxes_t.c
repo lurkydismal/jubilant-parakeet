@@ -83,22 +83,25 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
 #endif
 
         // Key frame
-        insertIntoArray( &( _boxes->keyFrames ),
-                         clone( ( SDL_FRect* )_targetRectangle ) );
+        size_t l_keyFrameIndex = insertIntoArray(
+            &( _boxes->keyFrames ), clone( ( SDL_FRect* )_targetRectangle ) );
 
         // Fill key frame index in frames
         {
-            // Allocate frames
+            // Preallocate frames
             {
-                const arrayLength_t l_framesLength =
+                const arrayLength_t l_framesAmount =
                     arrayLength( _boxes->frames );
 
-                if ( _endIndex > l_framesLength ) {
+                if ( LIKELY( _endIndex > l_framesAmount ) ) {
+                    int64_t l_preallocationAmount =
+                        ( _endIndex - l_framesAmount - 1 );
+
                     preallocateArray( &( _boxes->frames ),
-                                      ( _endIndex - l_framesLength - 1 ) );
+                                      l_preallocationAmount );
 
                     size_t** l_frameToCreateBegin =
-                        &( _boxes->frames[ l_framesLength ] );
+                        &( _boxes->frames[ l_framesAmount ] );
                     size_t* const* l_frameToCreateEnd =
                         arrayLastElementPointer( _boxes->frames );
 
@@ -110,9 +113,10 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
                 }
             }
 
+            // Fill key frame index in frames
             FOR_RANGE( size_t, _startIndex, _endIndex ) {
                 insertIntoArray( &( _boxes->frames[ _index - 1 ] ),
-                                 ( arrayLength( _boxes->keyFrames ) - 1 ) );
+                                 l_keyFrameIndex );
             }
         }
 
@@ -446,7 +450,7 @@ bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
     }
 
     {
-        char** l_paths = getPathsByGlob( _glob, NULL );
+        char** l_paths = getPathsByGlob( _glob, NULL, false );
 
         l_returnValue = boxes_t$load$fromPaths( _boxes, l_paths );
 

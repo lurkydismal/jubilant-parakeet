@@ -177,7 +177,7 @@ static FORCE_INLINE bool iterate(
 
         FREE_ARRAY( l_inputs );
 
-        if ( ( _applicationState->totalFramesRendered % 10 ) == 0 ) {
+        if ( ( _applicationState->totalFramesRendered % 60 ) == 0 ) {
             log$transaction$commit();
         }
 
