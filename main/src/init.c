@@ -145,6 +145,7 @@ static error_t parserForOption( int _key,
             break;
         }
 
+#if 0
         case 'p': {
               char l_configAsString[ PATH_MAX ] = {'\0' };
 
@@ -161,6 +162,7 @@ static error_t parserForOption( int _key,
 
             break;
         }
+#endif
 
         case 's': {
             // Will not be cleaned or free'd
