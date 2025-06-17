@@ -26,7 +26,7 @@ bool config_t$destroy( config_t* restrict _config ) {
     }
 
     {
-#define MACRO( _field )                                         \
+#define DESTROY_FIELDS_OR_EXIT( _field )                        \
     do {                                                        \
         FOR_ARRAY( _field##_t* const*, _config->_field##s ) {   \
             l_returnValue = _field##_t$destroy( *_element );    \
@@ -39,10 +39,10 @@ bool config_t$destroy( config_t* restrict _config ) {
         FREE_ARRAY( _config->_field##s );                       \
     } while ( 0 )
 
-        MACRO( background );
-        MACRO( HUD );
+        DESTROY_FIELDS_OR_EXIT( background );
+        DESTROY_FIELDS_OR_EXIT( HUD );
 
-#undef MACRO
+#undef DESTROY_FIELDS_OR_EXIT
 
         l_returnValue = true;
     }
@@ -141,8 +141,7 @@ static int lineHandler( void* _config,
                                               "[ '%s' : '%s' ]: '%s'", l_name,
                                               l_folder, l_extension );
 
-                // TODO: Name macro
-#define MACRO( _x )                                                    \
+#define INIT_AND_INSERT_IF_MATCHED( _x )                               \
     do {                                                               \
         if ( MATCH_STRING( l_previouSsectionName, #_x ) ) {            \
             _x##_t l_##_x = _x##_t$create();                           \
@@ -153,10 +152,10 @@ static int lineHandler( void* _config,
         }                                                              \
     } while ( 0 )
 
-                MACRO( background );
-                MACRO( HUD );
+                INIT_AND_INSERT_IF_MATCHED( background );
+                INIT_AND_INSERT_IF_MATCHED( HUD );
 
-#undef MACRO
+#undef INIT_AND_INSERT_IF_MATCHED
             }
 
             __builtin_memset( l_name, 0, sizeof( l_name ) );
@@ -228,8 +227,7 @@ bool config_t$load$fromString( config_t* restrict _config,
 
         iterateTopMostFields( config_t, finishLineHandling, _config );
 
-// TODO: Improve
-#define MACRO( _field )                                       \
+#define CHECK_FIELD_EXIST_OR_EXIT( _field )                   \
     do {                                                      \
         l_returnValue = !!( arrayLength( _config->_field ) ); \
         if ( UNLIKELY( !l_returnValue ) ) {                   \
@@ -239,10 +237,10 @@ bool config_t$load$fromString( config_t* restrict _config,
         }                                                     \
     } while ( 0 )
 
-        MACRO( backgrounds );
-        MACRO( HUDs );
+        CHECK_FIELD_EXIST_OR_EXIT( backgrounds );
+        CHECK_FIELD_EXIST_OR_EXIT( HUDs );
 
-#undef MACRO
+#undef CHECK_FIELD_EXIST_OR_EXIT
 
         l_returnValue = true;
     }
@@ -400,7 +398,7 @@ bool config_t$unload( config_t* restrict _config ) {
     }
 
     {
-#define MACRO( _field )                                        \
+#define UNLOAD_FIELDS_OR_EXIT( _field )                        \
     do {                                                       \
         FOR_ARRAY( _field##_t* const*, _config->_field##s ) {  \
             l_returnValue = _field##_t$unload( *_element );    \
@@ -412,10 +410,10 @@ bool config_t$unload( config_t* restrict _config ) {
         }                                                      \
     } while ( 0 )
 
-        MACRO( background );
-        MACRO( HUD );
+        UNLOAD_FIELDS_OR_EXIT( background );
+        UNLOAD_FIELDS_OR_EXIT( HUD );
 
-#undef MACRO
+#undef UNLOAD_FIELDS_OR_EXIT
 
         l_returnValue = true;
     }
