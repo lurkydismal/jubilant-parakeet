@@ -72,8 +72,8 @@ static FORCE_INLINE void configFieldHandler( char* _fieldName,
 
     // Generate
     {
+        // TODO: Implement
         static size_t l_index = 0;
-
         const char* l_name = "???";
         char* l_type = _fieldName;
 
