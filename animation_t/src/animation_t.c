@@ -102,6 +102,9 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
 #endif
 
+            // TODO: Improve
+            _endIndex++;
+
             size_t l_keyFrameIndex;
 
             // Key frame
@@ -263,10 +266,8 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 l_startIndex = strtoul(
                     arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                l_endIndex =
-                    ( strtoul( arrayLastElement( l_startAndEndIndexAsString ),
-                               NULL, 10 ) +
-                      1 );
+                l_endIndex = strtoul(
+                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
 
                 FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
                 FREE_ARRAY( l_startAndEndIndexAsString );

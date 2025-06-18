@@ -17,9 +17,10 @@ typedef struct {
 player_t player_t$create( void );
 bool player_t$destroy( player_t* restrict _player );
 
+// Boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
-// After - animation
+// Animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
@@ -33,6 +34,7 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
                                   const char* restrict _animationGlob,
                                   bool _isActionable,
                                   bool _canLoop );
+bool player_t$states$remove( player_t* restrict _player );
 
 bool player_t$step( player_t* restrict _player,
                     float _velocityX,

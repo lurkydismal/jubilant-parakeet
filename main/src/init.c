@@ -379,8 +379,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
         {
             if ( UNLIKELY( !log$init( LOG_FILE_NAME_DEFAULT,
                                       LOG_FILE_EXTENSION_DEFAULT ) ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Initializing logging system" );
+                trap();
 
                 goto EXIT;
             }

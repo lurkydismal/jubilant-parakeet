@@ -28,45 +28,37 @@ bool applicationState_t$destroy(
     }
 
     {
-        l_returnValue = settings_t$destroy( &( _applicationState->settings ) );
+#define TRY_DESTROY_OR_EXIT( _field )                                         \
+    do {                                                                      \
+        l_returnValue = _field##_t$destroy( &( _applicationState->_field ) ); \
+        if ( UNLIKELY( !l_returnValue ) ) {                                   \
+            log$transaction$query( ( logLevel_t )error,                       \
+                                   "Destroying " #_field );                   \
+            goto EXIT;                                                        \
+        }                                                                     \
+    } while ( 0 )
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying settings" );
-
-            goto EXIT;
-        }
-
-        l_returnValue = config_t$destroy( &( _applicationState->config ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying config" );
-
-            goto EXIT;
-        }
+        TRY_DESTROY_OR_EXIT( settings );
 
         /*
          * HUD is a reference to config HUD
          * Background is a reference to config background
          */
+        TRY_DESTROY_OR_EXIT( config );
+        TRY_DESTROY_OR_EXIT( camera );
 
-        l_returnValue = camera_t$destroy( &( _applicationState->camera ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying camera" );
-
-            goto EXIT;
-        }
+#undef TRY_DESTROY_OR_EXIT
 
         l_returnValue = player_t$destroy( &( _applicationState->localPlayer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying player" );
+            log$transaction$query( ( logLevel_t )error,
+                                   "Destroying local player" );
 
             goto EXIT;
         }
 
         FREE_ARRAY( _applicationState->remotePlayers );
-
         _applicationState->remotePlayers = NULL;
 
         l_returnValue = true;
@@ -86,31 +78,23 @@ bool applicationState_t$load( applicationState_t* _applicationState ) {
     }
 
     {
-        // Background
-        {
-            l_returnValue = background_t$load( _applicationState->background,
-                                               _applicationState->renderer );
+        // TODO: Improve
+        _applicationState->HUD->playerAmount = ( 1 );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Loading background" );
+#define TRY_LOAD_OR_EXIT( _field )                                            \
+    do {                                                                      \
+        l_returnValue = _field##_t$load( _applicationState->_field,           \
+                                         _applicationState->renderer );       \
+        if ( UNLIKELY( !l_returnValue ) ) {                                   \
+            log$transaction$query( ( logLevel_t )error, "Loading " #_field ); \
+            goto EXIT;                                                        \
+        }                                                                     \
+    } while ( 0 )
 
-                goto EXIT;
-            }
-        }
+        TRY_LOAD_OR_EXIT( background );
+        TRY_LOAD_OR_EXIT( HUD );
 
-        // HUD
-        {
-            l_returnValue = HUD_t$load(
-                _applicationState->HUD, _applicationState->renderer,
-                ( arrayLength( _applicationState->remotePlayers ) + 1 ) );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Loading HUD" );
-
-                goto EXIT;
-            }
-        }
+#undef TRY_LOAD_OR_EXIT
 
         l_returnValue = true;
     }
@@ -129,27 +113,53 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
     }
 
     {
-#define TRY_UNLOAD_OR_EXIT( _field )                                    \
+#define TRY_UNLOAD_POINTER_OR_EXIT( _field )                            \
     do {                                                                \
         l_returnValue = _field##_t$unload( _applicationState->_field ); \
         if ( UNLIKELY( !l_returnValue ) ) {                             \
             log$transaction$query( ( logLevel_t )error,                 \
-                                   "Unloading " #_field "" );           \
+                                   "Unloading " #_field );              \
             goto EXIT;                                                  \
         }                                                               \
     } while ( 0 )
 
-        TRY_UNLOAD_OR_EXIT( background );
-        TRY_UNLOAD_OR_EXIT( HUD );
+        TRY_UNLOAD_POINTER_OR_EXIT( background );
+        TRY_UNLOAD_POINTER_OR_EXIT( HUD );
+
+#undef TRY_UNLOAD_POINTER_OR_EXIT
+
+#define TRY_UNLOAD_OR_EXIT( _field )                                         \
+    do {                                                                     \
+        l_returnValue = _field##_t$unload( &( _applicationState->_field ) ); \
+        if ( UNLIKELY( !l_returnValue ) ) {                                  \
+            log$transaction$query( ( logLevel_t )error,                      \
+                                   "Unloading " #_field );                   \
+            goto EXIT;                                                       \
+        }                                                                    \
+    } while ( 0 )
+
+        TRY_UNLOAD_OR_EXIT( settings );
+        TRY_UNLOAD_OR_EXIT( config );
 
 #undef TRY_UNLOAD_OR_EXIT
 
+        l_returnValue =
+            player_t$states$remove( &( _applicationState->localPlayer ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Unloading local player" );
+
+            goto EXIT;
+        }
+
         FOR_ARRAY( player_t* const*, _applicationState->remotePlayers ) {
+            l_returnValue = player_t$states$remove( *_element );
             l_returnValue = player_t$destroy( *_element );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying player" );
+                                       "Unloading remote player" );
 
                 goto EXIT;
             }

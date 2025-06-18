@@ -382,7 +382,7 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
                 break;                                                         \
             }                                                                  \
         }                                                                      \
-        ( arrayLength( _array ) != l_arrayLengthCurrent );                     \
+        ( arrayLength( *( _array ) ) != l_arrayLengthCurrent );                \
     } )
 
 ssize_t findStringInArray( const char** restrict _array,

@@ -59,7 +59,7 @@ TEST( boxes_t$load$one ) {
     {
         // First box
         {
-            // Load frames from 1 up to ( but not including ) 3
+            // Load frames from 1 up to 3
             bool l_returnValue =
                 boxes_t$load$one( &l_boxes, &l_targetRectangle, 1, 3 );
 
@@ -84,10 +84,10 @@ TEST( boxes_t$load$one ) {
             }
 
             // The frames array should have indices 1 and 2
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )2 );
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )3 );
 
-            // For each index from 1 to 2 we should have recorded a frame index
-            // of 0
+            // For each index from 1 up to 3 we should have recorded a frame
+            // index of 0
             FOR_ARRAY( size_t* const*, l_boxes.frames ) {
                 // Each l_boxes.frames[ _index ] is itself an array of size_t
                 ASSERT_EQ( "%zu", arrayLength( *_element ), ( size_t )1 );
@@ -104,7 +104,7 @@ TEST( boxes_t$load$one ) {
             const SDL_FRect l_targetRectangle = {
                 .x = 5.0f, .y = 6.0f, .w = 7.0f, .h = 8.0f };
 
-            // Load frames from 3 up to ( but not including ) 5
+            // Load frames from 3 up to 5
             bool l_returnValue =
                 boxes_t$load$one( &l_boxes, &l_targetRectangle, 3, 5 );
 
@@ -128,10 +128,10 @@ TEST( boxes_t$load$one ) {
                            l_targetRectangle.h );
             }
 
-            // The frames array should have indices 1, 2, 3 and 4
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )4 );
+            // The frames array should have indices 1, 2, 3, 4 and 5
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )5 );
 
-            // For each index from 3 to 4 we should have recorded a frame index
+            // For each index from 3 to 5 we should have recorded a frame index
             // of 0
             {
                 size_t* const* l_frames = l_boxes.frames;
@@ -140,6 +140,23 @@ TEST( boxes_t$load$one ) {
                 l_frames++;
 
                 // Index 3
+                {
+                    // Each l_boxes.frames[ _index ] is itself an array of
+                    // size_t
+                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )2 );
+
+                    size_t l_frameIndex = ( *l_frames )[ 0 ];
+
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )0 );
+
+                    l_frameIndex = ( *l_frames )[ 1 ];
+
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
+                }
+
+                l_frames++;
+
+                // Index 4
                 {
                     // Each l_boxes.frames[ _index ] is itself an array of
                     // size_t
@@ -152,7 +169,7 @@ TEST( boxes_t$load$one ) {
 
                 l_frames++;
 
-                // Index 4
+                // Index 5
                 {
                     // Each l_boxes.frames[ _index ] is itself an array of
                     // size_t
@@ -171,7 +188,7 @@ TEST( boxes_t$load$one ) {
             const SDL_FRect l_targetRectangle = {
                 .x = 9.0f, .y = 10.0f, .w = 11.0f, .h = -1.0f };
 
-            // Load frames from 2 up to ( but not including ) 4
+            // Load frames from 2 up to 4
             bool l_returnValue =
                 boxes_t$load$one( &l_boxes, &l_targetRectangle, 2, 4 );
 
@@ -195,8 +212,8 @@ TEST( boxes_t$load$one ) {
                            l_targetRectangle.h );
             }
 
-            // The frames array should have indices 1, 2, 3 and 4
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )4 );
+            // The frames array should have indices 1, 2, 3, 4 and 5
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )5 );
 
             // For each index from 2 to 4 we should have recorded a frame index
             // of 0
@@ -226,13 +243,17 @@ TEST( boxes_t$load$one ) {
                 {
                     // Each l_boxes.frames[ _index ] is itself an array of
                     // size_t
-                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )2 );
+                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )3 );
 
                     size_t l_frameIndex = ( *l_frames )[ 0 ];
 
-                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )0 );
 
                     l_frameIndex = ( *l_frames )[ 1 ];
+
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
+
+                    l_frameIndex = ( *l_frames )[ 2 ];
 
                     ASSERT_EQ( "%zu", l_frameIndex, ( size_t )2 );
                 }
@@ -274,7 +295,7 @@ TEST( boxes_t$load$one$fromString ) {
     {
         // First box
         {
-            // Load frames from 1 up to ( but not including ) 3
+            // Load frames from 1 up to 3
             bool l_returnValue =
                 boxes_t$load$one$fromString( &l_boxes, "1 2 3 4 1-3" );
 
@@ -294,8 +315,8 @@ TEST( boxes_t$load$one$fromString ) {
                 ASSERT_EQ( "%f", l_targetRectangleStored->h, 4.0f );
             }
 
-            // The frames array should have indices 1 and 2
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )2 );
+            // The frames array should have indices 1 2 and 3
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )3 );
 
             // For each index from 1 to 2 we should have recorded a frame index
             // of 0
@@ -312,7 +333,7 @@ TEST( boxes_t$load$one$fromString ) {
         // Second box
         // No overlapping
         {
-            // Load frames from 3 up to ( but not including ) 5
+            // Load frames from 3 up to 5
             bool l_returnValue =
                 boxes_t$load$one$fromString( &l_boxes, "5 6 7 8 3-5" );
 
@@ -332,8 +353,8 @@ TEST( boxes_t$load$one$fromString ) {
                 ASSERT_EQ( "%f", l_targetRectangleStored->h, 8.0f );
             }
 
-            // The frames array should have indices 1, 2, 3 and 4
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )4 );
+            // The frames array should have indices 1, 2, 3, 4 and 5
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )5 );
 
             // For each index from 3 to 4 we should have recorded a frame index
             // of 0
@@ -347,9 +368,13 @@ TEST( boxes_t$load$one$fromString ) {
                 {
                     // Each l_boxes.frames[ _index ] is itself an array of
                     // size_t
-                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )1 );
+                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )2 );
 
-                    const size_t l_frameIndex = ( *l_frames )[ 0 ];
+                    size_t l_frameIndex = ( *l_frames )[ 0 ];
+
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )0 );
+
+                    l_frameIndex = ( *l_frames )[ 1 ];
 
                     ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
                 }
@@ -372,7 +397,7 @@ TEST( boxes_t$load$one$fromString ) {
         // Third box
         // Overlapping
         {
-            // Load frames from 2 up to ( but not including ) 4
+            // Load frames from 2 up to 4
             bool l_returnValue =
                 boxes_t$load$one$fromString( &l_boxes, "9 10 11 -1 2-4" );
 
@@ -392,8 +417,8 @@ TEST( boxes_t$load$one$fromString ) {
                 ASSERT_EQ( "%f", l_targetRectangleStored->h, -1.0f );
             }
 
-            // The frames array should have indices 1, 2, 3 and 4
-            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )4 );
+            // The frames array should have indices 1, 2, 3, 4 and 5
+            ASSERT_EQ( "%zu", arrayLength( l_boxes.frames ), ( size_t )5 );
 
             // For each index from 2 to 4 we should have recorded a frame index
             // of 0
@@ -423,13 +448,17 @@ TEST( boxes_t$load$one$fromString ) {
                 {
                     // Each l_boxes.frames[ _index ] is itself an array of
                     // size_t
-                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )2 );
+                    ASSERT_EQ( "%zu", arrayLength( *l_frames ), ( size_t )3 );
 
                     size_t l_frameIndex = ( *l_frames )[ 0 ];
 
-                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )0 );
 
                     l_frameIndex = ( *l_frames )[ 1 ];
+
+                    ASSERT_EQ( "%zu", l_frameIndex, ( size_t )1 );
+
+                    l_frameIndex = ( *l_frames )[ 2 ];
 
                     ASSERT_EQ( "%zu", l_frameIndex, ( size_t )2 );
                 }

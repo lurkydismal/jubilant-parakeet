@@ -26,23 +26,8 @@ bool config_t$destroy( config_t* restrict _config ) {
     }
 
     {
-#define DESTROY_FIELDS_OR_EXIT( _field )                        \
-    do {                                                        \
-        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {   \
-            l_returnValue = _field##_t$destroy( *_element );    \
-            if ( UNLIKELY( !l_returnValue ) ) {                 \
-                log$transaction$query( ( logLevel_t )error,     \
-                                       "Destroying " #_field ); \
-                goto EXIT;                                      \
-            }                                                   \
-        }                                                       \
-        FREE_ARRAY( _config->_field##s );                       \
-    } while ( 0 )
-
-        DESTROY_FIELDS_OR_EXIT( background );
-        DESTROY_FIELDS_OR_EXIT( HUD );
-
-#undef DESTROY_FIELDS_OR_EXIT
+        FREE_ARRAY( _config->backgrounds );
+        FREE_ARRAY( _config->HUDs );
 
         l_returnValue = true;
     }
@@ -227,7 +212,7 @@ bool config_t$load$fromString( config_t* restrict _config,
 
         iterateTopMostFields( config_t, finishLineHandling, _config );
 
-#define CHECK_FIELD_EXIST_OR_EXIT( _field )                   \
+#define CHECK_EXIST_OR_EXIT( _field )                         \
     do {                                                      \
         l_returnValue = !!( arrayLength( _config->_field ) ); \
         if ( UNLIKELY( !l_returnValue ) ) {                   \
@@ -237,10 +222,10 @@ bool config_t$load$fromString( config_t* restrict _config,
         }                                                     \
     } while ( 0 )
 
-        CHECK_FIELD_EXIST_OR_EXIT( backgrounds );
-        CHECK_FIELD_EXIST_OR_EXIT( HUDs );
+        CHECK_EXIST_OR_EXIT( backgrounds );
+        CHECK_EXIST_OR_EXIT( HUDs );
 
-#undef CHECK_FIELD_EXIST_OR_EXIT
+#undef CHECK_EXIST_OR_EXIT
 
         l_returnValue = true;
     }
@@ -398,22 +383,29 @@ bool config_t$unload( config_t* restrict _config ) {
     }
 
     {
-#define UNLOAD_FIELDS_OR_EXIT( _field )                        \
-    do {                                                       \
-        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {  \
-            l_returnValue = _field##_t$unload( *_element );    \
-            if ( UNLIKELY( !l_returnValue ) ) {                \
-                log$transaction$query( ( logLevel_t )error,    \
-                                       "Unloading " #_field ); \
-                goto EXIT;                                     \
-            }                                                  \
-        }                                                      \
+#define UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( _field )           \
+    do {                                                        \
+        FOR_ARRAY( _field##_t* const*, _config->_field##s ) {   \
+            l_returnValue = _field##_t$unload( *_element );     \
+            if ( UNLIKELY( !l_returnValue ) ) {                 \
+                log$transaction$query( ( logLevel_t )error,     \
+                                       "Unloading " #_field );  \
+                goto EXIT;                                      \
+            }                                                   \
+            l_returnValue = _field##_t$destroy( *_element );    \
+            if ( UNLIKELY( !l_returnValue ) ) {                 \
+                log$transaction$query( ( logLevel_t )error,     \
+                                       "Destroying " #_field ); \
+                goto EXIT;                                      \
+            }                                                   \
+        }                                                       \
+        FREE_ARRAY_ELEMENTS( _config->_field##s );              \
     } while ( 0 )
 
-        UNLOAD_FIELDS_OR_EXIT( background );
-        UNLOAD_FIELDS_OR_EXIT( HUD );
+        UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( background );
+        UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( HUD );
 
-#undef UNLOAD_FIELDS_OR_EXIT
+#undef UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT
 
         l_returnValue = true;
     }
