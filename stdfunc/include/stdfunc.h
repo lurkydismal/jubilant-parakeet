@@ -444,7 +444,11 @@ char** getPathsByGlob( const char* restrict _glob,
 static FORCE_INLINE void dumpCallback( void* _callback,
                                        void* _context,
                                        const char* _format,
-                                       ... ) {
+                                       ... )
+    __attribute__( ( format( printf,
+                             3, // Format index
+                             4  // First format argument index
+                             ) ) ) {
     static size_t l_depth = 0;
 
     va_list l_arguments;

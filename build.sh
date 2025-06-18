@@ -13,7 +13,7 @@ export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
 # 3 - Tests
 export BUILD_TYPE=${BUILD_TYPE:-0}
 
-export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra"
+export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-fprofile-use -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
@@ -95,6 +95,7 @@ if [ ! -z "${ENABLE_MUSL+x}" ]; then
 
         C_COMPILER="ccache musl-gcc"
 
+        BUILD_C_FLAGS="${BUILD_C_FLAGS/-Wno-gcc-compat/}"
         LINK_FLAGS="${LINK_FLAGS/-fuse-ld=mold/}"
 
         if [ -z "${ENABLE_MUSL_STATIC+x}" ]; then
