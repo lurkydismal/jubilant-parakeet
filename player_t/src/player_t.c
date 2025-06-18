@@ -50,10 +50,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// fileName_ColorAsHex.extension
-// X Y Width Height StartIndex-EndIndex
-// After - animation
-// fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxesPath,
@@ -148,6 +144,35 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
                                    "Adding object state from glob" );
 
             goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool player_t$states$remove( player_t* restrict _player ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        FOR_ARRAY( state_t* const*, _player->object.states ) {
+            l_returnValue =
+                object_t$state$remove( &( _player->object ), *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Removing state from player" );
+
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;

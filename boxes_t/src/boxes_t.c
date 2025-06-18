@@ -82,6 +82,9 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
 
 #endif
 
+        // TODO: Improve
+        _endIndex++;
+
         // Key frame
         size_t l_keyFrameIndex = insertIntoArray(
             &( _boxes->keyFrames ), clone( ( SDL_FRect* )_targetRectangle ) );
@@ -221,10 +224,8 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 
                 const size_t l_startIndex = strtoul(
                     arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                const size_t l_endIndex =
-                    ( strtoul( arrayLastElement( l_startAndEndIndexAsString ),
-                               NULL, 10 ) +
-                      1 );
+                const size_t l_endIndex = strtoul(
+                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
 
                 l_returnValue = boxes_t$load$one( _boxes, &l_targetRectangle,
                                                   l_startIndex, l_endIndex );

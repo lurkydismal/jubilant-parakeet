@@ -29,9 +29,10 @@ typedef struct {
 object_t object_t$create( void );
 bool object_t$destroy( object_t* restrict _object );
 
+// Boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
-// After - animation
+// Animation
 // fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,

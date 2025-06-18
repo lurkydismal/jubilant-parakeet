@@ -23,19 +23,6 @@ bool object_t$destroy( object_t* restrict _object ) {
     }
 
     {
-        FOR_ARRAY( state_t* const*, _object->states ) {
-            l_returnValue = state_t$destroy( *_element );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Destroying state" );
-
-                goto EXIT;
-            }
-        }
-
-        FREE_ARRAY_ELEMENTS( _object->states );
-
         FREE_ARRAY( _object->states );
 
         _object->states = NULL;
@@ -51,10 +38,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// fileName_ColorAsHex.extension
-// X Y Width Height StartIndex-EndIndex
-// After - animation
-// fileName_WidthxHeight_StartIndex-EndIndex.extension
 bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxesPath,
@@ -237,8 +220,9 @@ bool object_t$states$remove( object_t* restrict _object ) {
     }
 
     {
-        FOR_ARRAY( state_t* const*, _object->states ) {
-            l_returnValue = object_t$state$remove( _object, *_element );
+        FOR_RANGE( size_t, 0, arrayLength( _object->states ) ) {
+            l_returnValue =
+                object_t$state$remove( _object, _object->states[ _index ] );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,

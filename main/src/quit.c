@@ -113,6 +113,11 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
         // Application state
         if ( LIKELY( _applicationState ) ) {
+            if ( UNLIKELY( !applicationState_t$unload( _applicationState ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Unloading application state" );
+            }
+
             if ( LIKELY( _applicationState->renderer ) ) {
                 SDL_DestroyRenderer( _applicationState->renderer );
             }
@@ -146,8 +151,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         // Log
         {
             if ( UNLIKELY( !log$quit() ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Quitting logging system" );
+                trap();
 
                 goto EXIT;
             }

@@ -32,11 +32,22 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
     {
         FREE_ARRAY( _HUD->logos );
+        _HUD->logos = NULL;
+
         FREE_ARRAY( _HUD->hpGauges );
+        _HUD->hpGauges = NULL;
+
         FREE_ARRAY( _HUD->hpBars );
+        _HUD->hpBars = NULL;
+
         FREE_ARRAY( _HUD->names );
+        _HUD->names = NULL;
+
         FREE_ARRAY( _HUD->meterGauges );
+        _HUD->meterGauges = NULL;
+
         FREE_ARRAY( _HUD->meterBars );
+        _HUD->meterBars = NULL;
 
         // Timer
         {
@@ -61,6 +72,13 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
                 goto EXIT;
             }
         }
+
+        _HUD->name = NULL;
+        _HUD->folder = NULL;
+        _HUD->extension = NULL;
+        _HUD->playerAmount = 0;
+
+        l_returnValue = true;
     }
 
 EXIT:
@@ -134,8 +152,6 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             free( l_boxesGlbb );
             free( l_animationGlob );
 
-            free( l_folder );
-
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
                                        "Adding object state from glob" );
@@ -169,10 +185,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Accept app state
-bool HUD_t$load( HUD_t* restrict _HUD,
-                 SDL_Renderer* _renderer,
-                 const size_t _amount ) {
+bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) || UNLIKELY( !_HUD->name ) ||
@@ -188,7 +201,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_amount ) ) {
+    if ( UNLIKELY( !_HUD->playerAmount ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -200,7 +213,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
 
 #define TRY_LOAD_OR_EXIT( _field )                                        \
     do {                                                                  \
-        FOR_ARRAY( object_t* const*, _HUD->_field ) {                     \
+        FOR_RANGE( size_t, 0, _HUD->playerAmount ) {                      \
             object_t l_element = object_t$create();                       \
             l_returnValue = HUD_t$element$load$one( &l_element, _HUD,     \
                                                     _renderer, #_field ); \
@@ -324,6 +337,15 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
             }
         }
 
+        free( _HUD->name );
+        _HUD->name = NULL;
+
+        free( _HUD->folder );
+        _HUD->folder = NULL;
+
+        free( _HUD->extension );
+        _HUD->extension = NULL;
+
         l_returnValue = true;
     }
 
@@ -331,7 +353,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Accept app state
 bool HUD_t$step( HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
@@ -342,7 +363,7 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
     }
 
     {
-#define STEP_FIELD_OBJECTS_OR_EXIT( _field )                  \
+#define STEP_OBJECTS_OR_EXIT( _field )                        \
     do {                                                      \
         FOR_ARRAY( object_t* const*, _HUD->__field ) {        \
             l_returnValue = object_t$step( *_element, 0, 0 ); \
@@ -355,15 +376,15 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
     } while ( 0 )
 
 #if 0
-        STEP_FIELD_OBJECTS_OR_EXIT( logos );
-        STEP_FIELD_OBJECTS_OR_EXIT( hpGauges );
-        STEP_FIELD_OBJECTS_OR_EXIT( hpBars );
-        STEP_FIELD_OBJECTS_OR_EXIT( names );
-        STEP_FIELD_OBJECTS_OR_EXIT( meterGauges );
-        STEP_FIELD_OBJECTS_OR_EXIT( meterBars );
+        STEP_OBJECTS_OR_EXIT( logos );
+        STEP_OBJECTS_OR_EXIT( hpGauges );
+        STEP_OBJECTS_OR_EXIT( hpBars );
+        STEP_OBJECTS_OR_EXIT( names );
+        STEP_OBJECTS_OR_EXIT( meterGauges );
+        STEP_OBJECTS_OR_EXIT( meterBars );
 #endif
 
-#undef STEP_FIELD_OBJECTS_OR_EXIT
+#undef STEP_OBJECTS_OR_EXIT
 
 #if 0
         // Timer
@@ -399,7 +420,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Accept app state
 bool HUD_t$render( const HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
@@ -413,7 +433,7 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         const SDL_FRect l_cameraRectangle = { .x = 0, .y = 0, .w = 0, .h = 0 };
         const bool l_doDrawBoxes = false;
 
-#define RENDER_FIELD_OBJECTS_OR_EXIT( _field )                              \
+#define RENDER_OBJECTS_OR_EXIT( _field )                                    \
     do {                                                                    \
         FOR_ARRAY( object_t* const*, ( _HUD->_field ) ) {                   \
             l_returnValue = object_t$render( *_element, &l_cameraRectangle, \
@@ -427,15 +447,15 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
     } while ( 0 )
 
 #if 0
-        RENDER_FIELD_OBJECTS_OR_EXIT( logos );
-        RENDER_FIELD_OBJECTS_OR_EXIT( hpGauges );
-        RENDER_FIELD_OBJECTS_OR_EXIT( hpBars );
-        RENDER_FIELD_OBJECTS_OR_EXIT( names );
-        RENDER_FIELD_OBJECTS_OR_EXIT( meterGauges );
-        RENDER_FIELD_OBJECTS_OR_EXIT( meterBars );
+        RENDER_OBJECTS_OR_EXIT( logos );
+        RENDER_OBJECTS_OR_EXIT( hpGauges );
+        RENDER_OBJECTS_OR_EXIT( hpBars );
+        RENDER_OBJECTS_OR_EXIT( names );
+        RENDER_OBJECTS_OR_EXIT( meterGauges );
+        RENDER_OBJECTS_OR_EXIT( meterBars );
 #endif
 
-#undef RENDER_FIELD_OBJECTS_OR_EXIT
+#undef RENDER_OBJECTS_OR_EXIT
 
 #if 0
         // Timer
