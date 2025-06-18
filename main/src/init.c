@@ -36,7 +36,8 @@
     "medium_attack = %s\n"     \
     "heavy_attack = %s\n"      \
     "shield = %s\n"            \
-    "background_index = %zu\n"
+    "background_index = %zu\n" \
+    "HUD_index = %zu\n"
 
 #define SETTINGS_FORMAT_ARGUMENTS( _settings )               \
     ( _settings ).window.width, ( _settings ).window.height, \
@@ -56,7 +57,7 @@
             ( _settings ).controls.C.scancode ),             \
         control_t$scancode$convert$toString(                 \
             ( _settings ).controls.D.scancode ),             \
-        ( _settings ).backgroundIndex
+        ( _settings ).backgroundIndex, ( _settings ).HUDIndex
 
 const char* argp_program_version;
 const char* argp_program_bug_address;
