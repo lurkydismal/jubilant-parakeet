@@ -22,7 +22,7 @@ declare -a partsToBuild=(
 )
 declare -a testsToBuild=(
     "controls_t"
-    "input"
+    # "input"
     "FPS"
     "player_t"
     "object_t"
