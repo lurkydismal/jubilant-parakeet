@@ -37,7 +37,6 @@ bool asset_t$uncompress( asset_t* restrict _asset );
 bool asset_t$save$sync$toPath( asset_t* restrict _asset,
                                const char* restrict _path,
                                const bool _needTruncate );
-// TODO: Implement
 bool asset_t$save$async$toPath( asset_t* restrict _asset,
                                 const char* restrict _path,
                                 const bool _needTruncate );

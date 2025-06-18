@@ -7,19 +7,19 @@
 
 #include "stdfunc.h"
 
-#define LOG_COLOR_RED "\e[1;31m"
-#define LOG_COLOR_GREEN "\e[1;32m"
-#define LOG_COLOR_YELLOW "\e[1;33m"
 #define LOG_COLOR_CYAN_LIGHT "\e[1;36m"
-#define LOG_COLOR_LIGHT_PURPLE "\e[1;35m"
+#define LOG_COLOR_GREEN "\e[1;32m"
+#define LOG_COLOR_PURPLE_LIGHT "\e[1;35m"
+#define LOG_COLOR_RED "\e[1;31m"
+#define LOG_COLOR_YELLOW "\e[1;33m"
 #define LOG_COLOR_RESET_FOREGROUND "\e[39m"
 #define LOG_COLOR_RESET_BACKGROUND "\e[49m"
 #define LOG_COLOR_RESET "\e[0m"
 
-#define LOG_COLOR_THREAD_ID LOG_COLOR_LIGHT_PURPLE
-#define LOG_COLOR_FILE_NAME LOG_COLOR_LIGHT_PURPLE
-#define LOG_COLOR_LINE_NUMBER LOG_COLOR_LIGHT_PURPLE
-#define LOG_COLOR_FUNCTION_NAME LOG_COLOR_LIGHT_PURPLE
+#define LOG_COLOR_THREAD_ID LOG_COLOR_PURPLE_LIGHT
+#define LOG_COLOR_FILE_NAME LOG_COLOR_PURPLE_LIGHT
+#define LOG_COLOR_LINE_NUMBER LOG_COLOR_PURPLE_LIGHT
+#define LOG_COLOR_FUNCTION_NAME LOG_COLOR_PURPLE_LIGHT
 
 #define LOG_COLOR_DEBUG LOG_COLOR_CYAN_LIGHT
 #define LOG_COLOR_INFO LOG_COLOR_GREEN
@@ -139,5 +139,9 @@ bool _log$transaction$query( const logLevel_t _logLevel,
                              const char* restrict _string );
 bool _log$transaction$query$format( const logLevel_t _logLevel,
                                     const char* restrict _format,
-                                    ... );
+                                    ... )
+    __attribute__( ( format( printf,
+                             2, // Format index
+                             3  // First format argument index
+                             ) ) );
 bool log$transaction$commit( void );

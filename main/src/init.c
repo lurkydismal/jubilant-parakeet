@@ -24,6 +24,10 @@
 #define CONFIG_FILE_NAME "config"
 #define CONFIG_FILE_EXTENSION "ini"
 
+#define PRINT_CONFIG_FORMAT_STRING \
+    "\nConfig options:\n"          \
+    "%s" LOG_COLOR_RESET "\n"
+
 // Keys should match keys for settings options
 #define SETTINGS_FORMAT_STRING \
     "window_width = %zu\n"     \
@@ -62,6 +66,39 @@
 const char* argp_program_version;
 const char* argp_program_bug_address;
 
+static FORCE_INLINE void configFieldHandler( char* _fieldName,
+                                             void* _configAsString ) {
+    char** l_configAsString = ( char** )_configAsString;
+
+    // Generate
+    {
+        static size_t l_index = 0;
+
+        const char* l_name = "???";
+        char* l_type = _fieldName;
+
+        l_type[ __builtin_strlen( l_type ) - 1 ] = '\0';
+
+        const size_t l_configAsStringLength =
+            __builtin_strlen( *l_configAsString );
+
+        const size_t l_configAsStringRemainingLength =
+            ( PATH_MAX - l_configAsStringLength );
+
+        snprintf( ( ( *l_configAsString ) + l_configAsStringLength ),
+                  l_configAsStringRemainingLength,
+                  LOG_COLOR_YELLOW
+                  "[" LOG_COLOR_RESET_FOREGROUND " '" LOG_COLOR_GREEN
+                  "%s" LOG_COLOR_RESET_FOREGROUND "' = '" LOG_COLOR_RED
+                  "%zu" LOG_COLOR_RESET_FOREGROUND "' " LOG_COLOR_YELLOW
+                  "]" LOG_COLOR_RESET_FOREGROUND ": '" LOG_COLOR_PURPLE_LIGHT
+                  "%s" LOG_COLOR_RESET_FOREGROUND "'\n",
+                  l_name, l_index, l_type );
+
+        l_index++;
+    }
+}
+
 static error_t parserForOption( int _key,
                                 char* _value,
                                 struct argp_state* _state ) {
@@ -70,6 +107,7 @@ static error_t parserForOption( int _key,
     applicationState_t* l_applicationState = _state->input;
 
     switch ( _key ) {
+        // Verbose
         case 'v': {
             const logLevel_t l_logLevel = info;
 
@@ -86,6 +124,7 @@ static error_t parserForOption( int _key,
             break;
         }
 
+            // Quiet
         case 'q': {
             const logLevel_t l_logLevel = unknownLogLevel;
 
@@ -102,6 +141,7 @@ static error_t parserForOption( int _key,
             break;
         }
 
+            // HUD
         case 'h': {
             const size_t l_HUDIndex = strtoul( _value, NULL, 10 );
 
@@ -123,6 +163,7 @@ static error_t parserForOption( int _key,
             break;
         }
 
+            // Background
         case 'b': {
             const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
 
@@ -146,25 +187,20 @@ static error_t parserForOption( int _key,
             break;
         }
 
-#if 0
+            // Print
         case 'p': {
-              char l_configAsString[ PATH_MAX ] = {'\0' };
+            char* l_configAsString =
+                ( char* )malloc( ( PATH_MAX + 1 ) * sizeof( char ) );
 
-              // Generate
-              {
-                  const char* l_name = (*_element)->folder;
-                  const char* l_type = _fieldName;
+            iterateTopMostFields( config_t, configFieldHandler,
+                                  &l_configAsString );
 
-                  snprintf( l_configAsString, PATH_MAX, "[ '%s' : '%zu' ]: '%s'\n", l_name, l_index, l_type );
-              }
+            printf( PRINT_CONFIG_FORMAT_STRING, l_configAsString );
 
-              argp_error( _state, "%s\n",
-                      l_configAsString );
-
-            break;
+            _exit( 0 );
         }
-#endif
 
+            // Save
         case 's': {
             // Will not be cleaned or free'd
             asset_t l_settingsAsAsset = asset_t$create();
