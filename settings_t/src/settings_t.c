@@ -41,9 +41,24 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
             goto EXIT;
         }
 
+        l_returnValue = controls_t$destroy( &( _settings->controls ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Destroying controls" );
+
+            goto EXIT;
+        }
+
+        free( _settings->version );
         _settings->version = NULL;
+
+        free( _settings->identifier );
         _settings->identifier = NULL;
+
+        free( _settings->description );
         _settings->description = NULL;
+
+        free( _settings->contactAddress );
         _settings->contactAddress = NULL;
 
         l_returnValue = true;
