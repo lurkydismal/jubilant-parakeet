@@ -69,6 +69,7 @@ export declare BUILD_INCLUDES=(
     "asset_t/include"
     "log/include"
     "stdfunc/include"
+    "cpp_compatibility/include"
 )
 
 export declare BUILD_INCLUDES_TESTS=(
@@ -383,18 +384,25 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$LIBRARIES_COLOR""$librariesToLinkAsString""$RESET_COLOR"
             fi
 
-            $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-            echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
+            echo "TEST"
+            echo $COMPILER -lSDL3 $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+            $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -lSDL3 -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
-            if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
-                if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
-                    printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
-                    echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -eq 0 ]; then
+                echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
+
+                if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
+                    if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
+                        printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
+                        echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
+                    fi
+
+                    objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME" $sectionsToStripAsString
+
+                    strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
                 fi
-
-                objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME" $sectionsToStripAsString
-
-                strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
             fi
         fi
     fi
@@ -471,17 +479,22 @@ if [ $BUILD_STATUS -eq 0 ]; then
             fi
 
             $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
-            echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
 
-            if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
-                if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
-                    printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
-                    echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -eq 0 ]; then
+                echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
+
+                if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
+                    if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
+                        printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
+                        echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
+                    fi
+
+                    objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
+
+                    strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
                 fi
-
-                objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
-
-                strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
             fi
         fi
     fi
