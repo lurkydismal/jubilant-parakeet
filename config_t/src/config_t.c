@@ -167,17 +167,34 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE void finishLineHandling( char* _fieldName, void* _config ) {
-    config_t* l_config = ( config_t* )_config;
+static FORCE_INLINE bool finishLineHandling( char* _fieldName, void* _config ) {
+    bool l_returnValue = false;
 
-    trim( &_fieldName, 0, ( __builtin_strlen( _fieldName ) - 1 ) );
-
-    const int l_result = lineHandler( l_config, _fieldName, NULL, NULL );
-
-    if ( UNLIKELY( !l_result ) ) {
-        log$transaction$query( ( logLevel_t )error,
-                               "Finishing config loading" );
+    if ( UNLIKELY( !_fieldName ) ) {
+        goto EXIT;
     }
+
+    if ( UNLIKELY( !_config ) ) {
+        goto EXIT;
+    }
+
+    {
+        config_t* l_config = ( config_t* )_config;
+
+        trim( &_fieldName, 0, ( __builtin_strlen( _fieldName ) - 1 ) );
+
+        const int l_result = lineHandler( l_config, _fieldName, NULL, NULL );
+
+        if ( UNLIKELY( !l_result ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Finishing config loading" );
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
 }
 
 bool config_t$load$fromString( config_t* restrict _config,

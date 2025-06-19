@@ -471,15 +471,21 @@ static FORCE_INLINE void dumpCallback( void* _callback,
         char* l_fieldName = duplicateString( va_arg( l_arguments, char* ) );
 
         // Field name
-        ( ( void ( * )( char*, void* ) )_callback )( l_fieldName, _context );
+        bool l_result = ( ( bool ( * )( char*, void* ) )_callback )(
+            l_fieldName, _context );
 
         free( l_fieldName );
+
+        if ( UNLIKELY( !l_result ) ) {
+            goto EXIT;
+        }
     }
 
     if ( findSymbolInString( _format, '}' ) != -1 ) {
         l_depth--;
     }
 
+EXIT:
     va_end( l_arguments );
 }
 
