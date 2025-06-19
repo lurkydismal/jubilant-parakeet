@@ -25,6 +25,8 @@ export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE"
 export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE"
 export BUILD_CPP_FLAGS_TESTS="$BUILD_C_FLAGS_TESTS"
 
+export SCAN_BUILD_FLAGS="-enable-checker core"
+
 export declare BUILD_DEFINES=(
     "INI_ALLOW_INLINE_COMMENTS=1"
     "INI_STOP_ON_FIRST_ERROR=1"
@@ -93,16 +95,16 @@ export declare EXTERNAL_LIBRARIES_TO_LINK=(
 export declare LIBRARIES_TO_LINK_TESTS=(
     "m"
 )
-export C_COMPILER="ccache gcc"
-export CPP_COMPILER="ccache g++"
+export C_COMPILER="gcc"
+export CPP_COMPILER="g++"
 
 if [ ! -z "${ENABLE_MUSL+x}" ]; then
     # Release
         # Musl does not work with Clang
         export DISABLE_CLANG=1
 
-        C_COMPILER="ccache musl-gcc"
-        CPP_COMPILER="ccache musl-g++"
+        C_COMPILER="musl-gcc"
+        CPP_COMPILER="musl-g++"
 
         BUILD_C_FLAGS="${BUILD_C_FLAGS/-Wno-gcc-compat/}"
         BUILD_CPP_FLAGS="${BUILD_CPP_FLAGS/-Wno-gcc-compat/}"
@@ -116,8 +118,8 @@ fi
 if [ -z "${DISABLE_CLANG+x}" ]; then
     # Not Release
     if [ $BUILD_TYPE -ne 1 ]; then
-        C_COMPILER="ccache clang"
-        CPP_COMPILER="ccache clang++"
+        C_COMPILER="clang"
+        CPP_COMPILER="clang++"
 
         BUILD_C_FLAGS+=" -Wno-c23-extensions"
 
@@ -235,6 +237,27 @@ elif [ $BUILD_TYPE -eq 3 ]; then
     BUILD_DEFINES+=( "${BUILD_DEFINES_TESTS[@]}" )
 fi
 
+# Set BUILD_FLAGS and COMPILER
+if [ ! -z "${CPP_PROJECT+x}" ]; then
+    BUILD_FLAGS="$BUILD_CPP_FLAGS"
+    COMPILER="$CPP_COMPILER"
+
+else
+    BUILD_FLAGS="$BUILD_C_FLAGS"
+    COMPILER="$C_COMPILER"
+fi
+
+export BUILD_FLAGS
+export COMPILER
+
+if [ -z "${DISABLE_BUILD_CACHE+x}" ]; then
+    COMPILER="ccache $COMPILER"
+fi
+
+if [ ! -z "${SCAN_BUILD+x}" ]; then
+    COMPILER="scan-build $SCAN_BUILD_FLAGS $COMPILER"
+fi
+
 if [ ${#BUILD_DEFINES[@]} -ne 0 ]; then
     printf -v definesAsString -- "-D %s " "${BUILD_DEFINES[@]}"
     echo -e "$DEFINES_COLOR""$definesAsString""$RESET_COLOR"
@@ -279,18 +302,6 @@ if [ ${#partsToBuild[@]} -ne 0 ]; then
     printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s.a " "${partsToBuild[@]}"
     echo -e "$PARTS_TO_BUILD_COLOR""$partsToBuildAsString""$RESET_COLOR"
 fi
-
-if [ ! -z "${CPP_PROJECT+x}" ]; then
-    BUILD_FLAGS="$BUILD_CPP_FLAGS"
-    COMPILER="$CPP_COMPILER"
-
-else
-    BUILD_FLAGS="$BUILD_C_FLAGS"
-    COMPILER="$C_COMPILER"
-fi
-
-export BUILD_FLAGS
-export COMPILER
 
 for partToBuild in "${partsToBuild[@]}"; do
     source "$partToBuild/config.sh" && {
@@ -384,11 +395,11 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$LIBRARIES_COLOR""$librariesToLinkAsString""$RESET_COLOR"
             fi
 
-            echo "TEST"
-            echo $COMPILER -lSDL3 $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-            $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -lSDL3 -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+            if [ -z "${SCAN_BUILD+x}" ]; then
+                $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -lSDL3 -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
-            BUILD_STATUS=$?
+                BUILD_STATUS=$?
+            fi
 
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
@@ -478,9 +489,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$LIBRARIES_COLOR""$testsLibrariesToLinkAsString""$RESET_COLOR"
             fi
 
-            $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+            if [ -z "${SCAN_BUILD+x}" ]; then
+                $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
 
-            BUILD_STATUS=$?
+                BUILD_STATUS=$?
+            fi
+
 
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"

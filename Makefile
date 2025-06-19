@@ -8,7 +8,6 @@ EXES                  =
 
 ### Common settings
 
-COMPILER_EXTRA        = $(BUILD_FLAGS)
 RCEXTRA               =
 DEFINES               = $(DEFINES)
 INCLUDE_PATH          = $(INCLUDES) \
@@ -65,7 +64,7 @@ $(SUBDIRS): dummy
 DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
 
 .c.o:
-	$(COMPILER) -c $(BUILD_FLAGS) $(COMPILER_EXTRA) $(DEFINCL) -o $@ $<
+	$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
 
 .rc.res:
 	$(RC) $(RCFLAGS) $(RCEXTRA) $(DEFINCL) -fo$@ $<

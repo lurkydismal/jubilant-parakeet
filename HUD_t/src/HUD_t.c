@@ -154,7 +154,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Adding object state from glob" );
+                                       "Adding HUD element state from glob" );
 
                 goto EXIT;
             }
@@ -279,18 +279,18 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
     }
 
     {
-#define REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _objects )                 \
+#define REMOVE_STATES_AND_FREE_OR_EXIT( _field )                              \
     do {                                                                      \
-        if ( UNLIKELY( !( _objects ) ) ) {                                    \
+        if ( UNLIKELY( !( _HUD->_field ) ) ) {                                \
             l_returnValue = false;                                            \
             log$transaction$query( ( logLevel_t )error, "Invalid argument" ); \
             goto EXIT;                                                        \
         }                                                                     \
-        FOR_ARRAY( object_t* const*, ( _objects ) ) {                         \
+        FOR_ARRAY( object_t* const*, ( _HUD->_field ) ) {                     \
             l_returnValue = object_t$states$remove( *_element );              \
             if ( UNLIKELY( !l_returnValue ) ) {                               \
                 log$transaction$query( ( logLevel_t )error,                   \
-                                       "Removing object states" );            \
+                                       "Removing HUD " #_field " states" );   \
                 goto EXIT;                                                    \
             }                                                                 \
             l_returnValue = object_t$destroy( *_element );                    \
@@ -299,18 +299,18 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
                                        "Destroying object" );                 \
                 goto EXIT;                                                    \
             }                                                                 \
-            FREE_ARRAY_ELEMENTS( _objects );                                  \
         }                                                                     \
+        FREE_ARRAY_ELEMENTS( _HUD->_field );                                  \
     } while ( 0 )
 
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->logos );
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->hpGauges );
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->hpBars );
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->names );
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->meterGauges );
-        REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->meterBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( logos );
+        REMOVE_STATES_AND_FREE_OR_EXIT( hpGauges );
+        REMOVE_STATES_AND_FREE_OR_EXIT( hpBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( names );
+        REMOVE_STATES_AND_FREE_OR_EXIT( meterGauges );
+        REMOVE_STATES_AND_FREE_OR_EXIT( meterBars );
 
-#undef REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT
+#undef REMOVE_STATES_AND_FREE_OR_EXIT
 
         // Timer
         {
@@ -318,7 +318,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing object states" );
+                                       "Removing timer states" );
 
                 goto EXIT;
             }
@@ -331,7 +331,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing object states" );
+                                       "Removing timer background states" );
 
                 goto EXIT;
             }
@@ -365,7 +365,7 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
     {
 #define STEP_OBJECTS_OR_EXIT( _field )                        \
     do {                                                      \
-        FOR_ARRAY( object_t* const*, _HUD->__field ) {        \
+        FOR_ARRAY( object_t* const*, _HUD->_field ) {         \
             l_returnValue = object_t$step( *_element, 0, 0 ); \
             if ( UNLIKELY( !l_returnValue ) ) {               \
                 log$transaction$query( ( logLevel_t )error,   \
@@ -375,14 +375,12 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
         }                                                     \
     } while ( 0 )
 
-#if 0
         STEP_OBJECTS_OR_EXIT( logos );
         STEP_OBJECTS_OR_EXIT( hpGauges );
         STEP_OBJECTS_OR_EXIT( hpBars );
         STEP_OBJECTS_OR_EXIT( names );
         STEP_OBJECTS_OR_EXIT( meterGauges );
         STEP_OBJECTS_OR_EXIT( meterBars );
-#endif
 
 #undef STEP_OBJECTS_OR_EXIT
 
@@ -446,14 +444,12 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         }                                                                   \
     } while ( 0 )
 
-#if 0
         RENDER_OBJECTS_OR_EXIT( logos );
         RENDER_OBJECTS_OR_EXIT( hpGauges );
         RENDER_OBJECTS_OR_EXIT( hpBars );
         RENDER_OBJECTS_OR_EXIT( names );
         RENDER_OBJECTS_OR_EXIT( meterGauges );
         RENDER_OBJECTS_OR_EXIT( meterBars );
-#endif
 
 #undef RENDER_OBJECTS_OR_EXIT
 

@@ -20,9 +20,13 @@
 #define FORCE_INLINE __attribute__( ( always_inline ) ) inline
 #define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
 #define NO_RETURN __attribute__( ( noreturn ) )
+#define CONST __attribute__( ( const ) )
+#define PURE __attribute__( ( pure ) )
 #define HOT __attribute__( ( hot ) )
 #define COLD __attribute__( ( cold ) )
 #define SENTINEL __attribute__( ( sentinel ) )
+
+// Struct attributes
 #define PACKED __attribute__( ( packed ) )
 
 // Branch prediction hints
@@ -49,6 +53,20 @@
 #define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
 
 // Utility functions ( side-effects )
+#define CHECK_CONSTANT_ARGUMENT( _argument ) \
+    ( __builtin_constant_p( _argument ) )
+#define CHECK_CONSTANT_ARGUMENT_CRITICAL( _argument )       \
+    ( _Static_assert( CHECK_CONSTANT_ARGUMENT( _argument ), \
+                      "Argument is not a compile-time constant" ) )
+
+// TODO: Implement
+#if 0
+#define CHECK_CONSTANT_FUNCTION_CRITICAL( _function, ... )                \
+    ( _Static_assert(                                                     \
+        ( ( _function( __VA_ARGS__ ) ) == ( _function( __VA_ARGS__ ) ) ), \
+        "Function cannot be executed at compile-time" ) )
+#endif
+
 #if ( defined( DEBUG ) && !defined( TESTS ) )
 
 #define trap() __builtin_trap()
@@ -493,10 +511,9 @@ EXIT:
     va_end( l_arguments );
 }
 
-#define iterateTopMostFields( _type, _callback, _context )    \
-    do {                                                      \
-        _type l_structSample;                                 \
-        __builtin_dump_struct( &l_structSample, dumpCallback, \
-                               ( void* )( _callback ),        \
-                               ( void* )( _context ) );       \
+#define iterateTopMostFields( _type, _callback, _context )                   \
+    do {                                                                     \
+        _type l_structSample = { 0 };                                        \
+        __builtin_dump_struct( &l_structSample, dumpCallback, ( _callback ), \
+                               ( _context ) );                               \
     } while ( 0 )

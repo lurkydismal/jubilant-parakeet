@@ -148,18 +148,26 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Unloading local player" );
+                                   "Removing local player states" );
 
             goto EXIT;
         }
 
         FOR_ARRAY( player_t* const*, _applicationState->remotePlayers ) {
             l_returnValue = player_t$states$remove( *_element );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Removing remote player states" );
+
+                goto EXIT;
+            }
+
             l_returnValue = player_t$destroy( *_element );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Unloading remote player" );
+                                       "Destroying remote player" );
 
                 goto EXIT;
             }
