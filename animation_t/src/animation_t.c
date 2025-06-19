@@ -28,7 +28,10 @@ bool animation_t$destroy( animation_t* restrict _animation ) {
     }
 
     {
+        FREE_ARRAY( _animation->keyFrames );
         _animation->keyFrames = NULL;
+
+        FREE_ARRAY( _animation->frames );
         _animation->frames = NULL;
 
         l_returnValue = boxes_t$destroy( &( _animation->targetBoxes ) );
@@ -411,14 +414,6 @@ bool animation_t$unload( animation_t* restrict _animation ) {
 
             goto EXIT;
         }
-
-        FREE_ARRAY( _animation->keyFrames );
-
-        _animation->keyFrames = NULL;
-
-        FREE_ARRAY( _animation->frames );
-
-        _animation->frames = NULL;
 
         l_returnValue = true;
     }

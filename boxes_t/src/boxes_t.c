@@ -24,7 +24,10 @@ bool boxes_t$destroy( boxes_t* restrict _boxes ) {
     }
 
     {
+        FREE_ARRAY( _boxes->keyFrames );
         _boxes->keyFrames = NULL;
+
+        FREE_ARRAY( _boxes->frames );
         _boxes->frames = NULL;
 
         l_returnValue = true;
@@ -487,14 +490,6 @@ bool boxes_t$unload( boxes_t* restrict _boxes ) {
         FOR_ARRAY( size_t* const*, _boxes->frames ) {
             FREE_ARRAY( *_element );
         }
-
-        FREE_ARRAY( _boxes->keyFrames );
-
-        _boxes->keyFrames = NULL;
-
-        FREE_ARRAY( _boxes->frames );
-
-        _boxes->frames = NULL;
 
         l_returnValue = true;
     }
