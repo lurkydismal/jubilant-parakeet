@@ -371,7 +371,7 @@ static FORCE_INLINE bool parseArguments(
                 { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
                 { "print", 'p', 0, 0, "Print available configuration", 0 },
                 { "save", 's', 0, 0, "Save without running", 0 },
-                { 0, 0, 0, 0, 0, 0 } };
+                { 0 } };
 
             // [NAME] - optional
             // NAME - required

@@ -5,7 +5,6 @@
 #include "HUD_t.h"
 #include "asset_t.h"
 #include "background_t.h"
-#include "cpp_compatibility.h"
 
 #define DEFAULT_CONFIG       \
     {                        \

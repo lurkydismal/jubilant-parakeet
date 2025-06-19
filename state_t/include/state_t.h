@@ -6,7 +6,6 @@
 
 #include "animation_t.h"
 #include "boxes_t.h"
-#include "cpp_compatibility.h"
 
 #define DEFAULT_STATE                 \
     { .animation = DEFAULT_ANIMATION, \
