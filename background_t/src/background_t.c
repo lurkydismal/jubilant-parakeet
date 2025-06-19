@@ -100,7 +100,7 @@ bool background_t$load( background_t* restrict _background,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Adding object state from glob" );
+                                       "Adding background state from glob" );
 
                 goto EXIT;
             }
@@ -131,7 +131,7 @@ bool background_t$unload( background_t* restrict _background ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing object state" );
+                                   "Removing background states" );
 
             goto EXIT;
         }

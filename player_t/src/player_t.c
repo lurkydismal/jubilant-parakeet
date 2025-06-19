@@ -90,7 +90,7 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Adding object state from files" );
+                                   "Adding player state from paths" );
 
             goto EXIT;
         }
@@ -141,7 +141,7 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Adding object state from glob" );
+                                   "Adding player state from glob" );
 
             goto EXIT;
         }

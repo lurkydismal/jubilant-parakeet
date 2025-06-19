@@ -208,8 +208,6 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
     }
 
     {
-        l_returnValue = true;
-
         FOR_ARRAY( char* const*, _paths ) {
 #if defined( LOG_ANIMATION )
 

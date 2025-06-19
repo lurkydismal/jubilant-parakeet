@@ -167,18 +167,22 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
 
                 goto FILE_EXIT;
             }
-
-            l_returnValue = true;
         }
 
     FILE_EXIT:
-        l_returnValue = ( l_fileDescriptor != -1 );
+        if ( UNLIKELY( l_fileDescriptor == -1 ) ) {
+            l_returnValue = false;
 
-        if ( !l_returnValue ) {
             goto EXIT;
         }
 
         close( l_fileDescriptor );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = true;
     }
 
 EXIT:
@@ -218,8 +222,8 @@ bool asset_t$load$fromGlob( asset_t* restrict _asset,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Loading asset from path: '%s'",
-                                              l_paths[ 0 ] );
+                                              "Loading asset from glob: '%s'",
+                                              _glob );
 
                 goto EXIT;
             }
