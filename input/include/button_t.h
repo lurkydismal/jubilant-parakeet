@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "cpp_compatibility.h"
 #include "stdfunc.h"
 
 #define INPUT_BUTTON_MASK ( A | B | C | D )
@@ -32,12 +33,24 @@ static FORCE_INLINE const char* button_t$convert$toStaticString(
     }
 
     {
+#if !defined( CPP )
+
+#define CLEAR_BUTTON( _button, _buttonToClear ) \
+    ( _button ) &= ~( _buttonToClear );
+
+#else
+
+#define CLEAR_BUTTON( _button, _buttonToClear ) \
+    ( _button ) = static_cast< button_t >( ( _button ) & ~( _buttonToClear ) );
+
+#endif
+
 #define APPEND_IF_BUTTON_SET( _buffer, _bufferLength, _button, _buttonType ) \
     do {                                                                     \
         if ( ( _button ) & ( _buttonType ) ) {                               \
             ( _buffer )[ ( _bufferLength ) ] =                               \
                 BUTTON_TYPE_TO_CHAR( _buttonType );                          \
-            ( _button ) &= ~( _buttonType );                                 \
+            CLEAR_BUTTON( ( _button ), ( _buttonType ) );                    \
             ( _bufferLength )++;                                             \
         }                                                                    \
     } while ( 0 )

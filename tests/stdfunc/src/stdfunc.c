@@ -249,47 +249,47 @@ TEST( duplicateString ) {
 TEST( findSymbolInString ) {
     // Symbol present
     {
-        ASSERT_EQ( "%ld", findSymbolInString( "hello", 'e' ), ( ssize_t )1 );
-        ASSERT_EQ( "%ld", findSymbolInString( "abcdef", 'd' ), ( ssize_t )3 );
+        ASSERT_EQ( "%zd", findSymbolInString( "hello", 'e' ), ( ssize_t )1 );
+        ASSERT_EQ( "%zd", findSymbolInString( "abcdef", 'd' ), ( ssize_t )3 );
     }
 
     // Symbol at the beginning
-    ASSERT_EQ( "%ld", findSymbolInString( "world", 'w' ), ( ssize_t )0 );
+    ASSERT_EQ( "%zd", findSymbolInString( "world", 'w' ), ( ssize_t )0 );
 
     // Symbol at the end
-    ASSERT_EQ( "%ld", findSymbolInString( "test", 't' ), ( ssize_t )0 );
+    ASSERT_EQ( "%zd", findSymbolInString( "test", 't' ), ( ssize_t )0 );
 
     // Symbol not present
-    ASSERT_EQ( "%ld", findSymbolInString( "abc", 'z' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findSymbolInString( "abc", 'z' ), ( ssize_t )( -1 ) );
 
     // Empty string
-    ASSERT_EQ( "%ld", findSymbolInString( "", 'x' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findSymbolInString( "", 'x' ), ( ssize_t )( -1 ) );
 
     // NULL string
-    ASSERT_EQ( "%ld", findSymbolInString( NULL, 'a' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findSymbolInString( NULL, 'a' ), ( ssize_t )( -1 ) );
 }
 
 TEST( findLastSymbolInString ) {
     // Last occurrence in middle
-    ASSERT_EQ( "%ld", findLastSymbolInString( "hello", 'l' ), ( ssize_t )3 );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "hello", 'l' ), ( ssize_t )3 );
 
     // Symbol at the end
-    ASSERT_EQ( "%ld", findLastSymbolInString( "abcdef", 'f' ), ( ssize_t )5 );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "abcdef", 'f' ), ( ssize_t )5 );
 
     // Symbol at the beginning
-    ASSERT_EQ( "%ld", findLastSymbolInString( "test", 't' ), ( ssize_t )3 );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "test", 't' ), ( ssize_t )3 );
 
     // Multiple occurrences, last one should be returned
-    ASSERT_EQ( "%ld", findLastSymbolInString( "banana", 'a' ), ( ssize_t )5 );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "banana", 'a' ), ( ssize_t )5 );
 
     // Symbol not present
-    ASSERT_EQ( "%ld", findLastSymbolInString( "xyz", 'a' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "xyz", 'a' ), ( ssize_t )( -1 ) );
 
     // Empty string
-    ASSERT_EQ( "%ld", findLastSymbolInString( "", 'x' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findLastSymbolInString( "", 'x' ), ( ssize_t )( -1 ) );
 
     // NULL string
-    ASSERT_EQ( "%ld", findLastSymbolInString( NULL, 'a' ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findLastSymbolInString( NULL, 'a' ), ( ssize_t )( -1 ) );
 }
 
 TEST( concatBeforeAndAfterString ) {
@@ -861,22 +861,22 @@ TEST( findStringInArray ) {
     // Cases
     {
         ASSERT_EQ(
-            "%ld",
+            "%zd",
             findStringInArray( l_array, arrayLengthNative( l_array ), "apple" ),
             ( ssize_t )0 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findStringInArray( l_array, arrayLengthNative( l_array ),
                                       "banana" ),
                    ( ssize_t )1 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findStringInArray( l_array, arrayLengthNative( l_array ),
                                       "cherry" ),
                    ( ssize_t )2 );
         ASSERT_EQ(
-            "%ld",
+            "%zd",
             findStringInArray( l_array, arrayLengthNative( l_array ), "date" ),
             ( ssize_t )3 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findStringInArray( l_array, arrayLengthNative( l_array ),
                                       "elderberry" ),
                    ( ssize_t )4 );
@@ -884,16 +884,16 @@ TEST( findStringInArray ) {
 
     // String not found
     ASSERT_EQ(
-        "%ld",
+        "%zd",
         findStringInArray( l_array, arrayLengthNative( l_array ), "fig" ),
         ( ssize_t )( -1 ) );
 
     // Empty array
-    ASSERT_EQ( "%ld", findStringInArray( NULL, 0, "apple" ),
+    ASSERT_EQ( "%zd", findStringInArray( NULL, 0, "apple" ),
                ( ssize_t )( -1 ) );
 
     // NULL search string
-    ASSERT_EQ( "%ld",
+    ASSERT_EQ( "%zd",
                findStringInArray( l_array, arrayLengthNative( l_array ), NULL ),
                ( ssize_t )( -1 ) );
 }
@@ -903,33 +903,33 @@ TEST( findInArray ) {
 
     // Cases
     {
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findInArray( l_array, arrayLengthNative( l_array ), 10 ),
                    ( ssize_t )0 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findInArray( l_array, arrayLengthNative( l_array ), 20 ),
                    ( ssize_t )1 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findInArray( l_array, arrayLengthNative( l_array ), 30 ),
                    ( ssize_t )2 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findInArray( l_array, arrayLengthNative( l_array ), 40 ),
                    ( ssize_t )3 );
-        ASSERT_EQ( "%ld",
+        ASSERT_EQ( "%zd",
                    findInArray( l_array, arrayLengthNative( l_array ), 50 ),
                    ( ssize_t )4 );
     }
 
     // String not found
-    ASSERT_EQ( "%ld", findInArray( l_array, arrayLengthNative( l_array ), 60 ),
+    ASSERT_EQ( "%zd", findInArray( l_array, arrayLengthNative( l_array ), 60 ),
                ( ssize_t )( -1 ) );
 
     // Empty array
-    ASSERT_EQ( "%ld", findInArray( ( size_t* )NULL, 0, 0 ), ( ssize_t )( -1 ) );
+    ASSERT_EQ( "%zd", findInArray( ( size_t* )NULL, 0, 0 ), ( ssize_t )( -1 ) );
 
     // NULL search string
     ASSERT_EQ(
-        "%ld",
+        "%zd",
         findInArray( l_array, arrayLengthNative( l_array ), ( size_t )NULL ),
         ( ssize_t )( -1 ) );
 }

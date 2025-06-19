@@ -25,12 +25,12 @@ typedef enum {
     UP_RIGHT = ( UP | RIGHT ),
     DOWN_LEFT = ( DOWN | LEFT ),
     DOWN_RIGHT = ( DOWN | RIGHT ),
-    DIRECITONS_COUNT = 8
+    DIRECTIONS_COUNT = 8
 } direction_t;
 
 static FORCE_INLINE const char* direction_t$convert$toStaticString(
     direction_t _direction ) {
-    static char l_returnValue[ DIRECITONS_COUNT + 1 ];
+    static char l_returnValue[ DIRECTIONS_COUNT + 1 ];
 
     if ( !_direction ) {
         l_returnValue[ 0 ] = '5';
@@ -40,6 +40,19 @@ static FORCE_INLINE const char* direction_t$convert$toStaticString(
     }
 
     {
+#if !defined( CPP )
+
+#define CLEAR_DIRECTION( _direction, _directionToClear ) \
+    ( _direction ) &= ~( _directionToClear );
+
+#else
+
+#define CLEAR_DIRECTION( _direction, _directionToClear ) \
+    ( _direction ) =                                     \
+        static_cast< direction_t >( ( _direction ) & ~( _directionToClear ) );
+
+#endif
+
 #define APPEND_IF_DIRECTION_MATCH( _buffer, _bufferLength, _direction,        \
                                    _directionType, _matchExactly )            \
     do {                                                                      \
@@ -48,7 +61,7 @@ static FORCE_INLINE const char* direction_t$convert$toStaticString(
                                : ( ( _direction ) & ( _directionType ) ) ) {  \
             ( _buffer )[ ( _bufferLength ) ] =                                \
                 DIRECTION_TYPE_TO_CHAR( _directionType );                     \
-            ( _direction ) &= ~( _directionType );                            \
+            CLEAR_DIRECTION( ( _direction ), ( _directionType ) );            \
             ( _bufferLength )++;                                              \
         }                                                                     \
     } while ( 0 )
@@ -75,6 +88,8 @@ static FORCE_INLINE const char* direction_t$convert$toStaticString(
                                    false );
 
 #undef APPEND_IF_DIRECTION_MATCH
+
+#undef CLEAR_DIRECTION
 
         l_returnValue[ l_length ] = '\0';
     }

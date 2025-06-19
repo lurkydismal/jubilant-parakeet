@@ -4,6 +4,7 @@
 #include <SDL3/SDL_render.h>
 
 #include "boxes_t.h"
+#include "cpp_compatibility.h"
 
 #define DEFAULT_ANIMATION \
     { .keyFrames = NULL,  \

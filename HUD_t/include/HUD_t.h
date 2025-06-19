@@ -2,6 +2,7 @@
 
 #include <stdbool.h>
 
+#include "cpp_compatibility.h"
 #include "object_t.h"
 
 #define DEFAULT_HUD                      \

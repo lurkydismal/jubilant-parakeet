@@ -7,12 +7,11 @@ COMPILE_PATHS=$(echo $FILES_TO_COMPILE | sed "s~[^ ]*~$TARGET_DIRECTORY/&~g")
 source "$SCRIPT_DIRECTORY/config.sh" && \
     make clean && \
     make \
-        "C_FLAGS=$2" \
+        "BUILD_FLAGS=$2" \
         "DEFINES=$3" \
         "INCLUDES=$4" \
         "FILES_TO_INCLUDE=$INCLUDE_PATHS" \
         "FILES_TO_COMPILE=$COMPILE_PATHS" \
-        "C_COMPILER=$C_COMPILER" \
     && \
     mv "$OUTPUT_FILE" "$BUILD_DIRECTORY" && \
     cd $TARGET_DIRECTORY && \

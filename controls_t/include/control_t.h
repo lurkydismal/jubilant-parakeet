@@ -3,11 +3,12 @@
 #include <SDL3/SDL_scancode.h>
 #include <stdbool.h>
 
+#include "cpp_compatibility.h"
 #include "input_t.h"
 
 #define CONTROL_AS_STRING_UNKNOWN "UNKNOWN"
 
-#define DEFAULT_CONTROL { .scancode = 0, .input = 0 }
+#define DEFAULT_CONTROL { .scancode = SDL_SCANCODE_UNKNOWN, .input = 0 }
 
 typedef struct {
     SDL_Scancode scancode;

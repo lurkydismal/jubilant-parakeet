@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "cpp_compatibility.h"
 #include "stdfloat16.h"
 #include "stdfunc.h"
 #include "vsync.h"

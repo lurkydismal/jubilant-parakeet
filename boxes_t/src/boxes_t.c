@@ -201,41 +201,50 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                 goto EXIT_LOADING;
             }
 
-            const float l_x = strtof( l_boxProperties[ 0 ], NULL );
-            const float l_y = strtof( l_boxProperties[ 1 ], NULL );
-            const float l_width = strtof( l_boxProperties[ 2 ], NULL );
-            const float l_height = strtof( l_boxProperties[ 3 ], NULL );
-
-            const SDL_FRect l_targetRectangle = {
-                .x = l_x, .y = l_y, .w = l_width, .h = l_height };
-
             {
-                char** l_startAndEndIndexAsString =
-                    splitStringIntoArrayBySymbol( l_boxProperties[ 4 ], '-' );
+                const float l_x = strtof( l_boxProperties[ 0 ], NULL );
+                const float l_y = strtof( l_boxProperties[ 1 ], NULL );
+                const float l_width = strtof( l_boxProperties[ 2 ], NULL );
+                const float l_height = strtof( l_boxProperties[ 3 ], NULL );
 
-                l_returnValue =
-                    ( arrayLength( l_startAndEndIndexAsString ) == 2 );
+                const SDL_FRect l_targetRectangle = {
+                    .x = l_x, .y = l_y, .w = l_width, .h = l_height };
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query$format(
-                        ( logLevel_t )error,
-                        "Invalid index format, expected Start-End got '%s'",
-                        l_boxProperties[ 4 ] );
+                {
+                    char** l_startAndEndIndexAsString =
+                        splitStringIntoArrayBySymbol( l_boxProperties[ 4 ],
+                                                      '-' );
 
-                    goto EXIT_LOADING2;
+                    l_returnValue =
+                        ( arrayLength( l_startAndEndIndexAsString ) == 2 );
+
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query$format(
+                            ( logLevel_t )error,
+                            "Invalid index format, expected Start-End got '%s'",
+                            l_boxProperties[ 4 ] );
+
+                        goto EXIT_LOADING2;
+                    }
+
+                    {
+                        const size_t l_startIndex = strtoul(
+                            arrayFirstElement( l_startAndEndIndexAsString ),
+                            NULL, 10 );
+                        const size_t l_endIndex = strtoul(
+                            arrayLastElement( l_startAndEndIndexAsString ),
+                            NULL, 10 );
+
+                        l_returnValue =
+                            boxes_t$load$one( _boxes, &l_targetRectangle,
+                                              l_startIndex, l_endIndex );
+                    }
+
+                    // TODO: Improve
+                EXIT_LOADING2:
+                    FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
+                    FREE_ARRAY( l_startAndEndIndexAsString );
                 }
-
-                const size_t l_startIndex = strtoul(
-                    arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                const size_t l_endIndex = strtoul(
-                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
-
-                l_returnValue = boxes_t$load$one( _boxes, &l_targetRectangle,
-                                                  l_startIndex, l_endIndex );
-
-            EXIT_LOADING2:
-                FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
-                FREE_ARRAY( l_startAndEndIndexAsString );
             }
 
         EXIT_LOADING:

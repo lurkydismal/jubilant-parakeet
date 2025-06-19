@@ -234,87 +234,93 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
                 goto LOOP_CONTINUE;
             }
 
-            SDL_FRect l_targetRectangle = {
-                .x = 0.0f, .y = 0.0f, .w = 0.0f, .h = 0.0f };
-
-            // Target rectangle
             {
-                char* l_targetRectangleSizeAsString =
-                    l_animationProperties[ 1 ];
+                SDL_FRect l_targetRectangle = {
+                    .x = 0.0f, .y = 0.0f, .w = 0.0f, .h = 0.0f };
+
+                // Target rectangle
+                {
+                    char* l_targetRectangleSizeAsString =
+                        l_animationProperties[ 1 ];
+
+                    {
+                        char** l_targetRectangleWidthAndHeight =
+                            splitStringIntoArrayBySymbol(
+                                l_targetRectangleSizeAsString, 'x' );
+
+                        l_targetRectangle.w =
+                            strtof( arrayFirstElement(
+                                        l_targetRectangleWidthAndHeight ),
+                                    NULL );
+                        l_targetRectangle.h = strtof(
+                            arrayLastElement( l_targetRectangleWidthAndHeight ),
+                            NULL );
+
+                        FREE_ARRAY_ELEMENTS( l_targetRectangleWidthAndHeight );
+                        FREE_ARRAY( l_targetRectangleWidthAndHeight );
+                    }
+                }
+
+                size_t l_startIndex = 0;
+                size_t l_endIndex = 0;
+
+                // Start and End indexes
+                {
+                    char** l_startAndEndIndexAsString =
+                        splitStringIntoArray( l_animationProperties[ 2 ], "-" );
+
+                    l_startIndex = strtoul(
+                        arrayFirstElement( l_startAndEndIndexAsString ), NULL,
+                        10 );
+                    l_endIndex =
+                        strtoul( arrayLastElement( l_startAndEndIndexAsString ),
+                                 NULL, 10 );
+
+                    FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
+                    FREE_ARRAY( l_startAndEndIndexAsString );
+                }
 
                 {
-                    char** l_targetRectangleWidthAndHeight =
-                        splitStringIntoArrayBySymbol(
-                            l_targetRectangleSizeAsString, 'x' );
+                    asset_t l_asset = asset_t$create();
 
-                    l_targetRectangle.w = strtof(
-                        arrayFirstElement( l_targetRectangleWidthAndHeight ),
-                        NULL );
-                    l_targetRectangle.h = strtof(
-                        arrayLastElement( l_targetRectangleWidthAndHeight ),
-                        NULL );
+                    l_returnValue =
+                        asset_t$load$fromPath( &l_asset, *_element );
 
-                    FREE_ARRAY_ELEMENTS( l_targetRectangleWidthAndHeight );
-                    FREE_ARRAY( l_targetRectangleWidthAndHeight );
-                }
-            }
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Loading asset from path" );
 
-            size_t l_startIndex = 0;
-            size_t l_endIndex = 0;
+                        goto LOOP_CONTINUE;
+                    }
 
-            // Start and End indexes
-            {
-                char** l_startAndEndIndexAsString =
-                    splitStringIntoArray( l_animationProperties[ 2 ], "-" );
+                    l_returnValue = animation_t$load$fromAsset(
+                        _animation, _renderer, &l_asset, &l_targetRectangle,
+                        l_startIndex, l_endIndex );
 
-                l_startIndex = strtoul(
-                    arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                l_endIndex = strtoul(
-                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Loading animation from asset" );
 
-                FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
-                FREE_ARRAY( l_startAndEndIndexAsString );
-            }
+                        goto LOOP_CONTINUE;
+                    }
 
-            {
-                asset_t l_asset = asset_t$create();
+                    l_returnValue = asset_t$unload( &l_asset );
 
-                l_returnValue = asset_t$load$fromPath( &l_asset, *_element );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Unloading asset" );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Loading asset from path" );
+                        goto LOOP_CONTINUE;
+                    }
 
-                    goto LOOP_CONTINUE;
-                }
+                    l_returnValue = asset_t$destroy( &l_asset );
 
-                l_returnValue = animation_t$load$fromAsset(
-                    _animation, _renderer, &l_asset, &l_targetRectangle,
-                    l_startIndex, l_endIndex );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Destroying asset" );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Loading animation from asset" );
-
-                    goto LOOP_CONTINUE;
-                }
-
-                l_returnValue = asset_t$unload( &l_asset );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Unloading asset" );
-
-                    goto LOOP_CONTINUE;
-                }
-
-                l_returnValue = asset_t$destroy( &l_asset );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Destroying asset" );
-
-                    goto LOOP_CONTINUE;
+                        goto LOOP_CONTINUE;
+                    }
                 }
             }
 

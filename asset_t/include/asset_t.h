@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "cpp_compatibility.h"
+
 #define DEFAULT_ASSET { .data = NULL, .size = 0 }
 
 typedef struct {

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "cpp_compatibility.h"
 #include "stdfunc.h"
 #include "vsync_t.h"
 

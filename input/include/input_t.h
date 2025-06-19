@@ -9,14 +9,15 @@
     ( ( input_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
                    ( ( _button ) & INPUT_BUTTON_MASK ) ) )
 
-#define GET_DIRECTION( _input ) ( ( _input ) & INPUT_DIRECTION_MASK )
-#define GET_BUTTON( _input ) ( ( _input ) & INPUT_BUTTON_MASK )
+#define GET_DIRECTION( _input ) \
+    ( ( direction_t )( ( _input ) & INPUT_DIRECTION_MASK ) )
+#define GET_BUTTON( _input ) ( ( button_t )( ( _input ) & INPUT_BUTTON_MASK ) )
 
 typedef uint8_t input_t;
 
 static FORCE_INLINE const char* input_t$convert$toStaticString(
     const input_t _input ) {
-    static char l_returnValue[ ( BUTTON_COUNT + DIRECITONS_COUNT + 1 ) ];
+    static char l_returnValue[ ( BUTTON_COUNT + DIRECTIONS_COUNT + 1 ) ];
 
     size_t l_length = 0;
 
