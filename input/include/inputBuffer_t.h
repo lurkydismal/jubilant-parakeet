@@ -10,11 +10,8 @@
 
 #define MAX_DELAY_BETWEEN_INPUTS ( 8 )
 
-#define DEFAULT_INPUT_BUFFER   \
-    { .inputs = { 0 },         \
-      .frames = { 0 },         \
-      .currentBufferIndex = 0, \
-      .previousBufferIndex = 0 }
+#define DEFAULT_INPUT_BUFFER \
+    { .currentBufferIndex = 0, .previousBufferIndex = 0 }
 
 typedef struct {
     input_t inputs[ INPUT_BUFFER_LENGTH ];

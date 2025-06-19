@@ -3,7 +3,6 @@
 #include <SDL3/SDL_render.h>
 #include <stdbool.h>
 
-#include "cpp_compatibility.h"
 #include "object_t.h"
 
 #define DEFAULT_BACKGROUND      \

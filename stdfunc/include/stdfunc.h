@@ -16,8 +16,6 @@
 #include <sys/types.h>
 #include <xxhash.h>
 
-#include "cpp_compatibility.h"
-
 // Function attributes
 #define FORCE_INLINE __attribute__( ( always_inline ) ) inline
 #define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
@@ -47,12 +45,8 @@
 #define MACRO_TO_STRING( _macro ) STRINGIFY_MACRO( _macro )
 
 // Utility functions ( no side-effects )
-#if !defined( CPP )
-
 #define max( _a, _b ) ( ( ( _a ) > ( _b ) ) ? ( _a ) : ( _b ) )
 #define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
-
-#endif
 
 // Utility functions ( side-effects )
 #if ( defined( DEBUG ) && !defined( TESTS ) )

@@ -8,7 +8,6 @@
 #include "background_t.h"
 #include "camera_t.h"
 #include "config_t.h"
-#include "cpp_compatibility.h"
 #include "player_t.h"
 #include "settings_t.h"
 

@@ -3,8 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cpp_compatibility.h"
-
 bool FPS$init( size_t* restrict _totalFramesPassed );
 bool FPS$quit( void );
 

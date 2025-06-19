@@ -5,7 +5,6 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
-#include "cpp_compatibility.h"
 #include "stdfunc.h"
 
 #define LOG_COLOR_CYAN_LIGHT "\e[1;36m"

@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "cpp_compatibility.h"
 #include "inputBuffer_t.h"
 #include "object_t.h"
 

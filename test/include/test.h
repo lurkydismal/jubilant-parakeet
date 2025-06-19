@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 
-#include "cpp_compatibility.h"
-
 #define RED "\e[1;31m"
 #define GREEN "\e[1;32m"
 #define YELLOW "\e[1;33m"

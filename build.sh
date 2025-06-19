@@ -69,7 +69,6 @@ export declare BUILD_INCLUDES=(
     "asset_t/include"
     "log/include"
     "stdfunc/include"
-    "cpp_compatibility/include"
 )
 
 export declare BUILD_INCLUDES_TESTS=(
