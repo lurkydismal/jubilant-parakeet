@@ -66,39 +66,6 @@
 const char* argp_program_version;
 const char* argp_program_bug_address;
 
-static FORCE_INLINE void configFieldHandler( char* _fieldName,
-                                             void* _configAsString ) {
-    char** l_configAsString = ( char** )_configAsString;
-
-    // Generate
-    {
-        // TODO: Implement
-        static size_t l_index = 0;
-        const char* l_name = "???";
-        char* l_type = _fieldName;
-
-        l_type[ __builtin_strlen( l_type ) - 1 ] = '\0';
-
-        const size_t l_configAsStringLength =
-            __builtin_strlen( *l_configAsString );
-
-        const size_t l_configAsStringRemainingLength =
-            ( PATH_MAX - l_configAsStringLength );
-
-        snprintf( ( ( *l_configAsString ) + l_configAsStringLength ),
-                  l_configAsStringRemainingLength,
-                  LOG_COLOR_YELLOW
-                  "[" LOG_COLOR_RESET_FOREGROUND " '" LOG_COLOR_GREEN
-                  "%s" LOG_COLOR_RESET_FOREGROUND "' = '" LOG_COLOR_RED
-                  "%zu" LOG_COLOR_RESET_FOREGROUND "' " LOG_COLOR_YELLOW
-                  "]" LOG_COLOR_RESET_FOREGROUND ": '" LOG_COLOR_PURPLE_LIGHT
-                  "%s" LOG_COLOR_RESET_FOREGROUND "'\n",
-                  l_name, l_index, l_type );
-
-        l_index++;
-    }
-}
-
 static error_t parserForOption( int _key,
                                 char* _value,
                                 struct argp_state* _state ) {
@@ -189,11 +156,43 @@ static error_t parserForOption( int _key,
 
             // Print
         case 'p': {
-            char* l_configAsString =
-                ( char* )malloc( ( PATH_MAX + 1 ) * sizeof( char ) );
+            char l_configAsString[ PATH_MAX ] = { '\0' };
 
-            iterateTopMostFields( config_t, configFieldHandler,
-                                  &l_configAsString );
+#define configFieldHandler( _field, _fieldName, _configAsString )             \
+    do {                                                                      \
+        static size_t l_index = 0;                                            \
+        const char* l_name = ( _field )->name;                                \
+        const char* l_type = ( _fieldName );                                  \
+        const size_t l_configAsStringLength =                                 \
+            __builtin_strlen( _configAsString );                              \
+        const size_t l_configAsStringRemainingLength =                        \
+            ( PATH_MAX - l_configAsStringLength );                            \
+        snprintf( ( ( _configAsString ) + l_configAsStringLength ),           \
+                  l_configAsStringRemainingLength,                            \
+                  LOG_COLOR_YELLOW                                            \
+                  "[" LOG_COLOR_RESET_FOREGROUND " '" LOG_COLOR_GREEN         \
+                  "%s" LOG_COLOR_RESET_FOREGROUND "' = '" LOG_COLOR_RED       \
+                  "%zu" LOG_COLOR_RESET_FOREGROUND "' " LOG_COLOR_YELLOW      \
+                  "]" LOG_COLOR_RESET_FOREGROUND ": '" LOG_COLOR_PURPLE_LIGHT \
+                  "%s" LOG_COLOR_RESET_FOREGROUND "'\n",                      \
+                  l_name, l_index, l_type );                                  \
+        l_index++;                                                            \
+    } while ( 0 )
+
+#define HANDLE_CONFIG_FIELD( _field )                                   \
+    do {                                                                \
+        FOR_ARRAY( _field##_t* const*,                                  \
+                   l_applicationState->config._field##s ) {             \
+            configFieldHandler( *_element, #_field, l_configAsString ); \
+        }                                                               \
+    } while ( 0 )
+
+            HANDLE_CONFIG_FIELD( background );
+            HANDLE_CONFIG_FIELD( HUD );
+
+#undef HANDLE_CONFIG_FIELD
+
+#undef configFieldHandler
 
             printf( PRINT_CONFIG_FORMAT_STRING, l_configAsString );
 
@@ -349,40 +348,47 @@ static FORCE_INLINE bool parseArguments(
 
         argp_program_bug_address = _applicationState->settings.contactAddress;
 
-        char* l_description = NULL;
-
         {
-            l_description = duplicateString( " - " );
+            char* l_description = NULL;
 
-            concatBeforeAndAfterString(
-                &l_description, _applicationState->settings.identifier,
-                _applicationState->settings.description );
+            {
+                l_description = duplicateString( " - " );
+
+                concatBeforeAndAfterString(
+                    &l_description, _applicationState->settings.identifier,
+                    _applicationState->settings.description );
+            }
+
+            struct argp_option l_options[] = {
+                { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
+                { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
+                { "HUD", 'h', "INDEX", 0, "Select HUD by index", 0 },
+                { "background", 'b', "INDEX", 0, "Select background by index",
+                  0 },
+                { "character", 'c', "INDEX", 0, "Select character by index",
+                  0 },
+                { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
+                { "print", 'p', 0, 0, "Print available configuration", 0 },
+                { "save", 's', 0, 0, "Save without running", 0 },
+                { 0 } };
+
+            // [NAME] - optional
+            // NAME - required
+            // NAME... - at least one and more
+            const char l_arguments[] = "";
+
+            struct argp l_argumentParser = {
+                l_options, parserForOption, l_arguments, l_description, 0, 0,
+                0 };
+
+            l_returnValue =
+                argp_parse( &l_argumentParser, _argumentCount, _argumentVector,
+                            0, 0, _applicationState );
+
+            free( l_description );
         }
 
-        struct argp_option l_options[] = {
-            { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
-            { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
-            { "HUD", 'h', "INDEX", 0, "Select HUD by index", 0 },
-            { "background", 'b', "INDEX", 0, "Select background by index", 0 },
-            { "character", 'c', "INDEX", 0, "Select character by index", 0 },
-            { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
-            { "print", 'p', 0, 0, "Print available configuration", 0 },
-            { "save", 's', 0, 0, "Save without running", 0 },
-            { 0 } };
-
-        // [NAME] - optional
-        // NAME - required
-        // NAME... - at least one and more
-        const char l_arguments[] = "";
-
-        struct argp l_argumentParser = {
-            l_options, parserForOption, l_arguments, l_description, 0, 0, 0 };
-
-        if ( UNLIKELY( !argp_parse( &l_argumentParser, _argumentCount,
-                                    _argumentVector, 0, 0,
-                                    _applicationState ) ) ) {
-            l_returnValue = false;
-
+        if ( UNLIKELY( !l_returnValue ) ) {
             goto EXIT;
         }
 
