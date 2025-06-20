@@ -14,8 +14,8 @@ HUD_t HUD_t$create( void ) {
         l_returnValue.meterGauges = createArray( object_t* );
         l_returnValue.meterBars = createArray( object_t* );
 
-        l_returnValue.timer = object_t$create();
         l_returnValue.timerBackground = object_t$create();
+        l_returnValue.timer = object_t$create();
     }
 
     return ( l_returnValue );
@@ -49,9 +49,9 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
         FREE_ARRAY( _HUD->meterBars );
         _HUD->meterBars = NULL;
 
-        // Timer
+        // Timer background
         {
-            l_returnValue = object_t$destroy( &( _HUD->timer ) );
+            l_returnValue = object_t$destroy( &( _HUD->timerBackground ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -61,9 +61,9 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
             }
         }
 
-        // Timer background
+        // Timer
         {
-            l_returnValue = object_t$destroy( &( _HUD->timerBackground ) );
+            l_returnValue = object_t$destroy( &( _HUD->timer ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -137,7 +137,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             // Animation
             // folder/folder*.extension
             {
-                l_animationGlob = duplicateString( "*." );
+                l_animationGlob = duplicateString( "_*." );
 
                 concatBeforeAndAfterString( &l_animationGlob, _fieldName,
                                             _HUD->extension );
@@ -231,23 +231,7 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
 
 #undef TRY_LOAD_OR_EXIT
 
-#if 0
-        // Timer
-        {
-            l_returnValue = HUD_t$element$load$one( &( _HUD->timer ), _HUD,
-                                                    _renderer, "timer" );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Loading HUD timer" );
-
-                goto EXIT;
-            }
-        }
-#endif
-
         // Timer background
-#if 1
         {
             l_returnValue =
                 HUD_t$element$load$one( &( _HUD->timerBackground ), _HUD,
@@ -260,7 +244,19 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
                 goto EXIT;
             }
         }
-#endif
+
+        // Timer
+        {
+            l_returnValue = HUD_t$element$load$one( &( _HUD->timer ), _HUD,
+                                                    _renderer, "timer" );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Loading HUD timer" );
+
+                goto EXIT;
+            }
+        }
 
         l_returnValue = true;
     }
@@ -312,18 +308,6 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
 #undef REMOVE_STATES_AND_FREE_OR_EXIT
 
-        // Timer
-        {
-            l_returnValue = object_t$states$remove( &( _HUD->timer ) );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Removing timer states" );
-
-                goto EXIT;
-            }
-        }
-
         // Timer background
         {
             l_returnValue =
@@ -332,6 +316,18 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
                                        "Removing timer background states" );
+
+                goto EXIT;
+            }
+        }
+
+        // Timer
+        {
+            l_returnValue = object_t$states$remove( &( _HUD->timer ) );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Removing timer states" );
 
                 goto EXIT;
             }
@@ -384,20 +380,6 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
 
 #undef STEP_OBJECTS_OR_EXIT
 
-#if 0
-        // Timer
-        {
-            l_returnValue = object_t$step( &( _HUD->timer ), 0, 0 );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Stepping timer" );
-
-                goto EXIT;
-            }
-        }
-#endif
-
-#if 1
         // Timer background
         {
             l_returnValue = object_t$step( &( _HUD->timerBackground ), 0, 0 );
@@ -409,7 +391,17 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
                 goto EXIT;
             }
         }
-#endif
+
+        // Timer
+        {
+            l_returnValue = object_t$step( &( _HUD->timer ), 0, 0 );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error, "Stepping timer" );
+
+                goto EXIT;
+            }
+        }
 
         l_returnValue = true;
     }
@@ -453,21 +445,6 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
 
 #undef RENDER_OBJECTS_OR_EXIT
 
-#if 0
-        // Timer
-        {
-            l_returnValue = object_t$render(
-                &( _HUD->timer ), &l_cameraRectangle, l_doDrawBoxes );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Rendering timer" );
-
-                goto EXIT;
-            }
-        }
-#endif
-
-#if 1
         // Timer background
         {
             l_returnValue = object_t$render(
@@ -480,7 +457,18 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
                 goto EXIT;
             }
         }
-#endif
+
+        // Timer
+        {
+            l_returnValue = object_t$render(
+                &( _HUD->timer ), &l_cameraRectangle, l_doDrawBoxes );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error, "Rendering timer" );
+
+                goto EXIT;
+            }
+        }
 
         l_returnValue = true;
     }
