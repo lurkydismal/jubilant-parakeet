@@ -246,8 +246,6 @@ bool _log$transaction$query( const logLevel_t _logLevel,
     }
 
     if ( _logLevel < g_currentLogLevel ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
         goto EXIT;
     }
 
@@ -310,8 +308,6 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     }
 
     if ( _logLevel < g_currentLogLevel ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
         goto EXIT;
     }
 

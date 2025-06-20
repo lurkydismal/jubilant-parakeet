@@ -26,14 +26,26 @@ bool background_t$destroy( background_t* restrict _background ) {
         l_returnValue = object_t$destroy( &( _background->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying object" );
+            log$transaction$query( ( logLevel_t )error,
+                                   "Destroying background" );
 
             goto EXIT;
         }
 
-        _background->name = NULL;
-        _background->folder = NULL;
-        _background->extension = NULL;
+        if ( LIKELY( _background->name ) ) {
+            free( _background->name );
+            _background->name = NULL;
+        }
+
+        if ( LIKELY( _background->folder ) ) {
+            free( _background->folder );
+            _background->folder = NULL;
+        }
+
+        if ( LIKELY( _background->extension ) ) {
+            free( _background->extension );
+            _background->extension = NULL;
+        }
 
         l_returnValue = true;
     }
@@ -104,11 +116,11 @@ bool background_t$load( background_t* restrict _background,
 
                 goto EXIT;
             }
-        }
 
-        // Background always have only single state
-        _background->object.currentState =
-            arrayFirstElement( _background->object.states );
+            // Background always have only single state
+            _background->object.currentState =
+                arrayFirstElement( _background->object.states );
+        }
 
         l_returnValue = true;
     }
@@ -136,14 +148,7 @@ bool background_t$unload( background_t* restrict _background ) {
             goto EXIT;
         }
 
-        free( _background->name );
-        _background->name = NULL;
-
-        free( _background->folder );
-        _background->folder = NULL;
-
-        free( _background->extension );
-        _background->extension = NULL;
+        _background->object.currentState = NULL;
 
         l_returnValue = true;
     }
@@ -165,7 +170,7 @@ bool background_t$step( background_t* restrict _background ) {
         l_returnValue = object_t$step( &( _background->object ), 0, 0 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping object" );
+            log$transaction$query( ( logLevel_t )error, "Stepping background" );
 
             goto EXIT;
         }
