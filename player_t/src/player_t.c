@@ -29,7 +29,7 @@ bool player_t$destroy( player_t* restrict _player ) {
         l_returnValue = object_t$destroy( &( _player->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying object" );
+            log$transaction$query( ( logLevel_t )error, "Destroying player" );
 
             goto EXIT;
         }
@@ -198,7 +198,7 @@ bool player_t$step( player_t* restrict _player,
             object_t$step( &( _player->object ), _velocityX, _velocityY );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping object" );
+            log$transaction$query( ( logLevel_t )error, "Stepping player" );
 
             goto EXIT;
         }
@@ -232,7 +232,7 @@ bool player_t$render( const player_t* restrict _player,
                                          _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Rendering object" );
+            log$transaction$query( ( logLevel_t )error, "Rendering player" );
 
             goto EXIT;
         }
@@ -266,7 +266,8 @@ bool player_t$input$add( player_t* restrict _player,
             inputBuffer_t$insert( &( _player->inputBuffer ), _input, _frame );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Adding input object" );
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding input to player" );
 
             goto EXIT;
         }

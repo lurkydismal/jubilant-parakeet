@@ -138,6 +138,8 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
     {
         switch ( _event->type ) {
             case ( SDL_EVENT_QUIT ): {
+                _applicationState->status = true;
+
                 l_returnValue = false;
 
                 goto EXIT;
@@ -194,6 +196,13 @@ SDL_AppResult SDL_AppEvent( void* _applicationState, SDL_Event* _event ) {
     event_t* l_event = ( event_t* )_event;
 
     if ( UNLIKELY( !event( l_applicationState, l_event ) ) ) {
+        if ( l_applicationState->status ) {
+            l_returnValue = SDL_APP_SUCCESS;
+
+        } else {
+            l_returnValue = SDL_APP_FAILURE;
+        }
+
         goto EXIT;
     }
 

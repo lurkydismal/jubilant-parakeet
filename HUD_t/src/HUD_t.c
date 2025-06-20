@@ -55,7 +55,7 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying object" );
+                                       "Destroying timer background" );
 
                 goto EXIT;
             }
@@ -67,15 +67,27 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying object" );
+                                       "Destroying timer" );
 
                 goto EXIT;
             }
         }
 
-        _HUD->name = NULL;
-        _HUD->folder = NULL;
-        _HUD->extension = NULL;
+        if ( LIKELY( _HUD->name ) ) {
+            free( _HUD->name );
+            _HUD->name = NULL;
+        }
+
+        if ( LIKELY( _HUD->folder ) ) {
+            free( _HUD->folder );
+            _HUD->folder = NULL;
+        }
+
+        if ( LIKELY( _HUD->extension ) ) {
+            free( _HUD->extension );
+            _HUD->extension = NULL;
+        }
+
         _HUD->playerAmount = 0;
 
         l_returnValue = true;
@@ -292,7 +304,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
             l_returnValue = object_t$destroy( *_element );                    \
             if ( UNLIKELY( !l_returnValue ) ) {                               \
                 log$transaction$query( ( logLevel_t )error,                   \
-                                       "Destroying object" );                 \
+                                       "Destroying HUD " #_field );           \
                 goto EXIT;                                                    \
             }                                                                 \
         }                                                                     \
@@ -332,15 +344,6 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
                 goto EXIT;
             }
         }
-
-        free( _HUD->name );
-        _HUD->name = NULL;
-
-        free( _HUD->folder );
-        _HUD->folder = NULL;
-
-        free( _HUD->extension );
-        _HUD->extension = NULL;
 
         l_returnValue = true;
     }

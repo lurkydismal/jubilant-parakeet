@@ -23,7 +23,8 @@
       .remotePlayers = NULL,         \
       .logicalWidth = 1280,          \
       .logicalHeight = 720,          \
-      .totalFramesRendered = 0 }
+      .totalFramesRendered = 0,      \
+      .status = false }
 
 typedef struct {
     SDL_Window* window;
@@ -38,6 +39,7 @@ typedef struct {
     size_t logicalWidth;
     size_t logicalHeight;
     size_t totalFramesRendered;
+    bool status;
 } applicationState_t;
 
 applicationState_t applicationState_t$create( void );
