@@ -15,8 +15,8 @@ export BUILD_TYPE=${BUILD_TYPE:-0}
 
 export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
-export BUILD_C_FLAGS_RELEASE="-fprofile-use -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_PROFILE="-fprofile-generate -pg -Ofast -funroll-loops -fno-asynchronous-unwind-tables"
+export BUILD_C_FLAGS_RELEASE="-fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
+export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
 export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -Wno-enum-enum-conversion -Wno-deprecated"
@@ -99,30 +99,29 @@ export C_COMPILER="gcc"
 export CPP_COMPILER="g++"
 
 if [ ! -z "${ENABLE_MUSL+x}" ]; then
-    # Release
-        # Musl does not work with Clang
-        export DISABLE_CLANG=1
+    # Musl does not work with Clang
+    export DISABLE_CLANG=1
 
-        C_COMPILER="musl-gcc"
-        CPP_COMPILER="musl-g++"
+    C_COMPILER="musl-gcc"
+    CPP_COMPILER="musl-g++"
 
-        BUILD_C_FLAGS="${BUILD_C_FLAGS/-Wno-gcc-compat/}"
-        BUILD_CPP_FLAGS="${BUILD_CPP_FLAGS/-Wno-gcc-compat/}"
-        LINK_FLAGS="${LINK_FLAGS/-fuse-ld=mold/}"
+    BUILD_C_FLAGS="${BUILD_C_FLAGS/-Wno-gcc-compat/}"
+    BUILD_CPP_FLAGS="${BUILD_CPP_FLAGS/-Wno-gcc-compat/}"
+    LINK_FLAGS="${LINK_FLAGS/-fuse-ld=mold/}"
 
-        if [ -z "${ENABLE_MUSL_STATIC+x}" ]; then
-            LINK_FLAGS_RELEASE+=" -static"
-        fi
+    if [ -z "${ENABLE_MUSL_STATIC+x}" ]; then
+        LINK_FLAGS_RELEASE+=" -static"
+    fi
 fi
 
 if [ -z "${DISABLE_CLANG+x}" ]; then
-    # Not Release
-    if [ $BUILD_TYPE -ne 1 ]; then
-        C_COMPILER="clang"
-        CPP_COMPILER="clang++"
+    C_COMPILER="clang"
+    CPP_COMPILER="clang++"
 
-        BUILD_C_FLAGS+=" -Wno-c23-extensions"
+    BUILD_C_FLAGS+=" -Wno-c23-extensions"
 
+    # Debug or Tests
+    if [ $BUILD_TYPE -eq 0 ] || [ $BUILD_TYPE -eq 3 ]; then
         BUILD_C_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
         BUILD_C_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
 
@@ -131,17 +130,17 @@ if [ -z "${DISABLE_CLANG+x}" ]; then
 
         LINK_FLAGS_PROFILE+=" -fprofile-instr-generate -fcoverage-mapping"
         LINK_FLAGS_TESTS+=" -fprofile-instr-generate -fcoverage-mapping"
+    fi
 
-        if [ ! -z "${ENABLE_SANITIZERS+x}" ]; then
-            BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
-            BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
+    if [ ! -z "${ENABLE_SANITIZERS+x}" ]; then
+        BUILD_C_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+        BUILD_C_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
 
-            BUILD_CPP_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
-            BUILD_CPP_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
+        BUILD_CPP_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+        BUILD_CPP_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
 
-            LINK_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
-            LINK_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
-        fi
+        LINK_FLAGS_DEBUG+=" -fsanitize=address,undefined,leak"
+        LINK_FLAGS_TESTS+=" -fsanitize=address,undefined,leak"
     fi
 fi
 
