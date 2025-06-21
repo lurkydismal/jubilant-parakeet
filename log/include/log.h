@@ -77,7 +77,7 @@
 
 typedef enum { debug, info, warn, error, unknownLogLevel } logLevel_t;
 
-static FORCE_INLINE const char* log$level$convert$toString(
+static FORCE_INLINE const char* log$level$convert$toStaticString(
     const logLevel_t _logLevel ) {
     switch ( _logLevel ) {
         case ( logLevel_t )debug: {

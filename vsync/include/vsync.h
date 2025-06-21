@@ -7,7 +7,8 @@
 #include "stdfunc.h"
 #include "vsync_t.h"
 
-static FORCE_INLINE const char* vsync$convert$toString( const vsync_t _vsync ) {
+static FORCE_INLINE const char* vsync$convert$toStaticString(
+    const vsync_t _vsync ) {
     switch ( _vsync ) {
         case ( vsync_t )off: {
             return ( VSYNC_TYPE_AS_STRING_OFF );

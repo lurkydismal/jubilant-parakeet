@@ -71,10 +71,10 @@ static int lineHandler( void* _config,
     {
         config_t* l_config = ( config_t* )_config;
 
-        static char l_previouSsectionName[ PATH_MAX ] = { '\0' };
-        static char l_name[ PATH_MAX ] = { '\0' };
-        static char l_folder[ PATH_MAX ] = { '\0' };
-        static char l_extension[ PATH_MAX ] = { '\0' };
+        static char l_previouSsectionName[ NAME_MAX ] = { '\0' };
+        static char l_name[ NAME_MAX ] = { '\0' };
+        static char l_folder[ NAME_MAX ] = { '\0' };
+        static char l_extension[ NAME_MAX ] = { '\0' };
 
 #define MATCH_STRING( _string1, _string2 ) \
     ( ( _string1 ) && ( _string2 ) &&      \
@@ -83,7 +83,9 @@ static int lineHandler( void* _config,
         if ( _key && _value ) {
             const size_t l_valueLength = __builtin_strlen( _value );
 
-            if ( UNLIKELY( l_valueLength >= PATH_MAX ) ) {
+            // l_name or l_folder or l_extension
+            // Any is fine
+            if ( UNLIKELY( l_valueLength >= sizeof( l_name ) ) ) {
                 log$transaction$query( ( logLevel_t )error, "Value length" );
 
                 trap();
@@ -111,7 +113,7 @@ static int lineHandler( void* _config,
         } else if ( !_key && !_value ) {
             const size_t l_sectionNameLength = __builtin_strlen( _sectionName );
 
-            if ( UNLIKELY( l_sectionNameLength >= PATH_MAX ) ) {
+            if ( UNLIKELY( l_sectionNameLength >= sizeof( l_previouSsectionName ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
                                        "Section name length" );
 

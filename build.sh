@@ -25,7 +25,8 @@ export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE"
 export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE"
 export BUILD_CPP_FLAGS_TESTS="$BUILD_C_FLAGS_TESTS"
 
-export SCAN_BUILD_FLAGS="-enable-checker core"
+# TODO: checker alpha
+export SCAN_BUILD_FLAGS="-enable-checker core,security,nullability,deadcode,unix,optin"
 
 export declare BUILD_DEFINES=(
     "INI_ALLOW_INLINE_COMMENTS=1"

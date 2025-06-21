@@ -57,8 +57,8 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
         }
 
         {
-            char* l_logLevelWithBrackets =
-                duplicateString( log$level$convert$toString( _logLevel ) );
+            char* l_logLevelWithBrackets = duplicateString(
+                log$level$convert$toStaticString( _logLevel ) );
 
             concatBeforeAndAfterString( &l_logLevelWithBrackets, "[", "]" );
 
@@ -116,7 +116,7 @@ logLevel_t log$level$get( void ) {
 }
 
 const char* log$level$get$string( void ) {
-    return ( log$level$convert$toString( g_currentLogLevel ) );
+    return ( log$level$convert$toStaticString( g_currentLogLevel ) );
 }
 
 bool log$init( const char* restrict _fileName,
