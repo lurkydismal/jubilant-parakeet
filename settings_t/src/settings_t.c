@@ -85,8 +85,12 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
     }
 
     {
+#if defined( LOG_SETTINGS )
+
         log$transaction$query$format( ( logLevel_t )debug, "Settings size: %zu",
                                       _asset->size );
+
+#endif
 
         char* l_dataWithNull =
             ( char* )malloc( ( _asset->size + 1 ) * sizeof( char ) );
@@ -332,9 +336,13 @@ bool settings_t$load$fromPath( settings_t* restrict _settings,
     }
 
     {
+#if defined( LOG_SETTINGS )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Settings path: '%s.%s'", _fileName,
                                       _fileExtension );
+
+#endif
 
         // Parse settings file
         {
