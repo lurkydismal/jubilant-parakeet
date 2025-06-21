@@ -325,9 +325,13 @@ bool config_t$load$fromPath( config_t* restrict _config,
     }
 
     {
+#if defined( LOG_CONFIG )
+
         log$transaction$query$format( ( logLevel_t )debug,
                                       "Config path: '%s.%s'", _fileName,
                                       _fileExtension );
+
+#endif
 
         // Parse config file
         {
