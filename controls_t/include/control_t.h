@@ -18,4 +18,4 @@ control_t control_t$create( void );
 bool control_t$destroy( control_t* _control );
 
 SDL_Scancode control_t$scancode$convert$fromString( const char* _string );
-const char* control_t$scancode$convert$toString( SDL_Scancode _scancode );
+const char* control_t$scancode$convert$toStaticString( SDL_Scancode _scancode );

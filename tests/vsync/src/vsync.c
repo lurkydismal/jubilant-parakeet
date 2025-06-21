@@ -2,10 +2,11 @@
 
 #include "test.h"
 
-TEST( vsync$convert$toString ) {
+TEST( vsync$convert$toStaticString ) {
     // off - "OFF"
     {
-        const char* l_vsyncAsString = vsync$convert$toString( ( vsync_t )off );
+        const char* l_vsyncAsString =
+            vsync$convert$toStaticString( ( vsync_t )off );
 
         ASSERT_NOT_EQ( "%p", l_vsyncAsString, NULL );
         ASSERT_STRING_EQ( l_vsyncAsString, VSYNC_TYPE_AS_STRING_OFF );
@@ -14,7 +15,7 @@ TEST( vsync$convert$toString ) {
     // out-of-range ( negative ) - "UNKNOWN"
     {
         const char* l_vsyncAsString =
-            vsync$convert$toString( ( vsync_t )( -1 ) );
+            vsync$convert$toStaticString( ( vsync_t )( -1 ) );
 
         ASSERT_NOT_EQ( "%p", l_vsyncAsString, NULL );
         ASSERT_STRING_EQ( l_vsyncAsString, VSYNC_TYPE_AS_STRING_UNKNOWN );
@@ -22,7 +23,8 @@ TEST( vsync$convert$toString ) {
 
     // out-of-range ( arbitrary ) - "UNKNOWN"
     {
-        const char* l_vsyncAsString = vsync$convert$toString( ( vsync_t )42 );
+        const char* l_vsyncAsString =
+            vsync$convert$toStaticString( ( vsync_t )42 );
 
         ASSERT_NOT_EQ( "%p", l_vsyncAsString, NULL );
         ASSERT_STRING_EQ( l_vsyncAsString, VSYNC_TYPE_AS_STRING_UNKNOWN );

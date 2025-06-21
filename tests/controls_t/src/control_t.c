@@ -160,11 +160,11 @@ TEST( control_t$scancode$convert$fromString ) {
     }
 }
 
-TEST( control_t$scancode$convert$toString ) {
+TEST( control_t$scancode$convert$toStaticString ) {
     // Invalid - NULL input
     {
         const char* l_scancode =
-            control_t$scancode$convert$toString( SDL_SCANCODE_UNKNOWN );
+            control_t$scancode$convert$toStaticString( SDL_SCANCODE_UNKNOWN );
 
         ASSERT_STRING_EQ( l_scancode, CONTROL_AS_STRING_UNKNOWN );
     }
@@ -172,7 +172,7 @@ TEST( control_t$scancode$convert$toString ) {
     // Valid
     {
         FOR_RANGE( size_t, 0, arrayLengthNative( g_keyboardLayoutKeyNames ) ) {
-            const char* l_actual = control_t$scancode$convert$toString(
+            const char* l_actual = control_t$scancode$convert$toStaticString(
                 g_keyboardLayoutScancodes[ _index ] );
             const char* l_expected = g_keyboardLayoutKeyNames[ _index ];
 

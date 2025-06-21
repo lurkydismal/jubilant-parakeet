@@ -45,21 +45,21 @@
 
 #define SETTINGS_FORMAT_ARGUMENTS( _settings )               \
     ( _settings ).window.width, ( _settings ).window.height, \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.up.scancode ),            \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.down.scancode ),          \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.left.scancode ),          \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.right.scancode ),         \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.A.scancode ),             \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.B.scancode ),             \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.C.scancode ),             \
-        control_t$scancode$convert$toString(                 \
+        control_t$scancode$convert$toStaticString(           \
             ( _settings ).controls.D.scancode ),             \
         ( _settings ).backgroundIndex, ( _settings ).HUDIndex
 
@@ -82,7 +82,7 @@ static error_t parserForOption( int _key,
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
                     ( logLevel_t )error, "Setting log level to %s",
-                    log$level$convert$toString( l_logLevel ) );
+                    log$level$convert$toStaticString( l_logLevel ) );
 
                 l_returnValue = EPERM;
 
@@ -99,7 +99,7 @@ static error_t parserForOption( int _key,
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
                     ( logLevel_t )error, "Setting log level to %s",
-                    log$level$convert$toString( l_logLevel ) );
+                    log$level$convert$toStaticString( l_logLevel ) );
 
                 l_returnValue = EPERM;
 
@@ -442,7 +442,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
                     ( logLevel_t )error, "Setting log level to %s",
-                    log$level$convert$toString( l_logLevel ) );
+                    log$level$convert$toStaticString( l_logLevel ) );
 
                 goto EXIT;
             }

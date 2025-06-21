@@ -166,7 +166,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-const char* control_t$scancode$convert$toString( SDL_Scancode _scancode ) {
+const char* control_t$scancode$convert$toStaticString(
+    SDL_Scancode _scancode ) {
     FOR_RANGE( size_t, 0, arrayLengthNative( g_keyboardLayoutScancodes ) ) {
         if ( g_keyboardLayoutScancodes[ _index ] == _scancode ) {
             return ( g_keyboardLayoutKeyNames[ _index ] );

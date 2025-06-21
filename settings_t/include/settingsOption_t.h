@@ -55,7 +55,7 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
                             const char* restrict _key,
                             const char* restrict _value );
 
-static FORCE_INLINE const char* settingsOptionType_t$convert$toString(
+static FORCE_INLINE const char* settingsOptionType_t$convert$toStaticString(
     const settingsOptionType_t _settingsOptionType ) {
     switch ( _settingsOptionType ) {
         case ( boolean ): {

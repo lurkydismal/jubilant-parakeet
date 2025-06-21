@@ -2,11 +2,11 @@
 
 #include "test.h"
 
-TEST( log$level$convert$toString ) {
+TEST( log$level$convert$toStaticString ) {
     // debug - "DEBUG"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )debug );
+            log$level$convert$toStaticString( ( logLevel_t )debug );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_DEBUG );
@@ -15,7 +15,7 @@ TEST( log$level$convert$toString ) {
     // info - "INFO"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )info );
+            log$level$convert$toStaticString( ( logLevel_t )info );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_INFO );
@@ -24,7 +24,7 @@ TEST( log$level$convert$toString ) {
     // warn - "WARN"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )warn );
+            log$level$convert$toStaticString( ( logLevel_t )warn );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_WARN );
@@ -33,7 +33,7 @@ TEST( log$level$convert$toString ) {
     // error - "ERROR"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )error );
+            log$level$convert$toStaticString( ( logLevel_t )error );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_ERROR );
@@ -42,7 +42,7 @@ TEST( log$level$convert$toString ) {
     // out-of-range ( negative ) - "UNKNOWN"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )( -1 ) );
+            log$level$convert$toStaticString( ( logLevel_t )( -1 ) );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_UNKNOWN );
@@ -51,7 +51,7 @@ TEST( log$level$convert$toString ) {
     // out-of-range ( arbitrary ) - "UNKNOWN"
     {
         const char* l_logLevelAsString =
-            log$level$convert$toString( ( logLevel_t )42 );
+            log$level$convert$toStaticString( ( logLevel_t )42 );
 
         ASSERT_NOT_EQ( "%p", l_logLevelAsString, NULL );
         ASSERT_STRING_EQ( l_logLevelAsString, LOG_LEVEL_AS_STRING_UNKNOWN );
