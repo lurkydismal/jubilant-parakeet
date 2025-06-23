@@ -46,13 +46,15 @@ bool watch_t$destroy( watch_t* _watch ) {
     }
 
     {
-#define TRY_CLOSE_OR_EXIT( _descriptor )                        \
-    do {                                                        \
-        l_returnValue = ( close( _watch->_descriptor ) != -1 ); \
-        if ( UNLIKELY( !l_returnValue ) ) {                     \
-            goto EXIT;                                          \
-        }                                                       \
-        _watch->_descriptor = -1;                               \
+#define TRY_CLOSE_OR_EXIT( _descriptor )                           \
+    do {                                                           \
+        l_returnValue = ( close( _watch->_descriptor ) != -1 );    \
+        if ( UNLIKELY( !l_returnValue ) ) {                        \
+            log$transaction$query( ( logLevel_t )error,            \
+                                   "Closing watch" #_descriptor ); \
+            goto EXIT;                                             \
+        }                                                          \
+        _watch->_descriptor = -1;                                  \
     } while ( 0 )
 
         TRY_CLOSE_OR_EXIT( fileDescriptor );
@@ -122,6 +124,9 @@ bool watch_t$add$toPath( watch_t* _watch,
         free( l_path );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding watch to path" );
+
             goto EXIT;
         }
 
@@ -192,6 +197,9 @@ bool watch_t$remove( watch_t* _watch ) {
                   arrayLastElement( _watch->watchDescriptors ) ) != -1 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Removing watch from path" );
+
             goto EXIT;
         }
 
@@ -225,6 +233,8 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
         l_returnValue = ( l_eventAmount != -1 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Pulling epoll" );
+
             goto EXIT;
         }
 
@@ -268,19 +278,24 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                             }
                         }
 
-                        if ( UNLIKELY( !l_callback ) ) {
+                        l_returnValue = !!( l_callback );
+
+                        if ( UNLIKELY( !l_returnValue ) ) {
                             log$transaction$query( ( logLevel_t )error,
                                                    "Corrupted callback" );
 
                             trap();
 
-                            break;
+                            goto EXIT;
                         }
 
                         l_returnValue = l_callback( l_context, l_event->name,
                                                     l_event->cookie );
 
                         if ( UNLIKELY( !l_returnValue ) ) {
+                            log$transaction$query( ( logLevel_t )error,
+                                                   "Watch callback" );
+
                             goto EXIT;
                         }
 

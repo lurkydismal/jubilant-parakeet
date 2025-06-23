@@ -13,7 +13,7 @@
 
 typedef bool ( *watchCallback_t )( void* _context,
                                    const char* _fileName,
-                                   uint32_t _eventId );
+                                   uint32_t _cookie );
 
 typedef struct {
     int fileDescriptor;
