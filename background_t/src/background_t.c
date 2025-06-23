@@ -66,9 +66,70 @@ EXIT:
     return ( l_returnValue );
 }
 
+static FORCE_INLINE bool load( background_t* _background,
+                               SDL_Renderer* _renderer ) {
+    bool l_returnValue = false;
+
+    {
+        {
+            char* l_boxesGlob = NULL;
+
+            // Boxes
+            // folder/folder.boxes
+            {
+                l_boxesGlob = duplicateString( _background->folder );
+
+                concatBeforeAndAfterString( &l_boxesGlob, "/",
+                                            "." BOXES_FILE_EXTENSION );
+                concatBeforeAndAfterString( &l_boxesGlob, _background->folder,
+                                            NULL );
+            }
+
+            char* l_animationGlob = NULL;
+
+            // Animation
+            // folder/folder*.extension
+            {
+                l_animationGlob = duplicateString( "_*." );
+
+                concatBeforeAndAfterString( &l_animationGlob,
+                                            _background->folder,
+                                            _background->extension );
+                concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
+                concatBeforeAndAfterString( &l_animationGlob,
+                                            _background->folder, NULL );
+            }
+
+            l_returnValue = object_t$state$add$fromGlob(
+                &( _background->object ), _renderer, l_boxesGlob,
+                l_animationGlob, false, true );
+
+            free( l_boxesGlob );
+            free( l_animationGlob );
+        }
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Adding background state from glob" );
+
+            goto EXIT;
+        }
+
+        // Background always have only single state
+        _background->object.currentState =
+            arrayFirstElement( _background->object.states );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 // TODO: Add deletion
 static FORCE_INLINE bool background_t$reload$element( void* _context,
                                                       const char* _fileName,
+                                                      size_t _eventsMask,
                                                       uint32_t _cookie ) {
     bool l_returnValue = false;
 
@@ -85,9 +146,13 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
     }
 
     {
+#if defined( LOG_BACKGROUND )
+
         log$transaction$query$format( ( logLevel_t )info,
                                       "Background watch: file [ '%s' : '%u' ]",
-                                      _fileName, _cookie );
+                                      _fileName, _eventsMask, _cookie );
+
+#endif
 
         background_t* l_background = ( background_t* )_context;
 
@@ -139,26 +204,43 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
         if ( l_isAnimationFrame || l_isBoxes ) {
             state_t* l_state = arrayFirstElement( l_background->object.states );
 
-            char** l_paths = createArray( char* );
+            if ( _eventsMask & EVENT_DELETE ) {
+                SDL_Renderer* l_renderer = l_state->renderer;
 
-            char* l_path = duplicateString( "/" );
-
-            concatBeforeAndAfterString( &l_path, l_background->folder,
-                                        _fileName );
-
-            insertIntoArray( &l_paths, l_path );
-
-            if ( l_isAnimationFrame ) {
-                l_returnValue = animation_t$load$fromPaths(
-                    &( l_state->animation ), l_state->renderer, l_paths );
-
-            } else if ( l_isBoxes ) {
                 l_returnValue =
-                    boxes_t$load$fromPaths( &( l_state->boxes ), l_paths );
-            }
+                    object_t$state$remove( &( l_background->object ), l_state );
 
-            FREE_ARRAY_ELEMENTS( l_paths );
-            FREE_ARRAY( l_paths );
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Removing background state" );
+
+                    goto EXIT;
+                }
+
+                l_returnValue = load( l_background, l_renderer );
+
+            } else {
+                char** l_paths = createArray( char* );
+
+                char* l_path = duplicateString( "/" );
+
+                concatBeforeAndAfterString( &l_path, l_background->folder,
+                                            _fileName );
+
+                insertIntoArray( &l_paths, l_path );
+
+                if ( l_isAnimationFrame ) {
+                    l_returnValue = animation_t$load$fromPaths(
+                        &( l_state->animation ), l_state->renderer, l_paths );
+
+                } else if ( l_isBoxes ) {
+                    l_returnValue =
+                        boxes_t$load$fromPaths( &( l_state->boxes ), l_paths );
+                }
+
+                FREE_ARRAY_ELEMENTS( l_paths );
+                FREE_ARRAY( l_paths );
+            }
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format(
@@ -201,53 +283,14 @@ bool background_t$load( background_t* restrict _background,
             ( logLevel_t )info, "Loading background: '%s'", _background->name );
 
         {
-            const char* l_folder = _background->folder;
-
-            {
-                char* l_boxesGlob = NULL;
-
-                // Boxes
-                // folder/folder.boxes
-                {
-                    l_boxesGlob = duplicateString( l_folder );
-
-                    concatBeforeAndAfterString( &l_boxesGlob, "/",
-                                                "." BOXES_FILE_EXTENSION );
-                    concatBeforeAndAfterString( &l_boxesGlob, l_folder, NULL );
-                }
-
-                char* l_animationGlob = NULL;
-
-                // Animation
-                // folder/folder*.extension
-                {
-                    l_animationGlob = duplicateString( "_*." );
-
-                    concatBeforeAndAfterString( &l_animationGlob, l_folder,
-                                                _background->extension );
-                    concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
-                    concatBeforeAndAfterString( &l_animationGlob, l_folder,
-                                                NULL );
-                }
-
-                l_returnValue = object_t$state$add$fromGlob(
-                    &( _background->object ), _renderer, l_boxesGlob,
-                    l_animationGlob, false, true );
-
-                free( l_boxesGlob );
-                free( l_animationGlob );
-            }
+            l_returnValue = load( _background, _renderer );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Adding background state from glob" );
+                                       "Loading background" );
 
                 goto EXIT;
             }
-
-            // Background always have only single state
-            _background->object.currentState =
-                arrayFirstElement( _background->object.states );
 
 #if defined( DEBUG )
             // Watch

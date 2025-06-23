@@ -16,6 +16,12 @@ HUD_t HUD_t$create( void ) {
 
         l_returnValue.timerBackground = object_t$create();
         l_returnValue.timer = object_t$create();
+
+#if defined( DEBUG )
+
+        l_returnValue.watches = createArray( watch_t* );
+
+#endif
     }
 
     return ( l_returnValue );
@@ -200,6 +206,7 @@ EXIT:
 
 static FORCE_INLINE bool HUD_t$reload$element( void* _context,
                                                const char* _fileName,
+                                               size_t _eventsMask,
                                                uint32_t _cookie ) {
     bool l_returnValue = false;
 

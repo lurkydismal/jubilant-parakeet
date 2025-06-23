@@ -2,7 +2,6 @@
 
 #include <limits.h>
 #include <sys/epoll.h>
-#include <sys/inotify.h>
 
 #include "asset_t.h"
 #include "log.h"
@@ -109,6 +108,10 @@ bool watch_t$add$toPath( watch_t* _watch,
         // Set flags
         if ( _isDirectory ) {
             l_flags |= ( IN_MOVED_FROM | IN_MOVED_TO );
+            l_flags |= IN_DELETE;
+
+        } else {
+            l_flags |= IN_DELETE_SELF;
         }
 
         char* l_path = duplicateString( _path );
@@ -289,8 +292,9 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                             goto EXIT;
                         }
 
-                        l_returnValue = l_callback( l_context, l_event->name,
-                                                    l_event->cookie );
+                        l_returnValue =
+                            l_callback( l_context, l_event->name, l_event->mask,
+                                        l_event->cookie );
 
                         if ( UNLIKELY( !l_returnValue ) ) {
                             log$transaction$query( ( logLevel_t )error,
