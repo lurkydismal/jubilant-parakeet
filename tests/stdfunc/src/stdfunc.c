@@ -218,12 +218,13 @@ TEST( generateHash ) {
 TEST( duplicateString ) {
 #define duplicateStringTest( _string )         \
     do {                                       \
-        l_result = duplicateString( _string ); \
-        ASSERT_STRING_EQ( l_result, _string ); \
+        char* l_result = duplicateString( _string ); \
+        const size_t l_resultLength = __builtin_strlen( l_result );\
+        char* l_resultStatic[ l_resultLength ]; \
+        __builtin_strlcpy( l_resultStatic, l_result, l_resultLength ); \
         free( l_result );                      \
+        ASSERT_STRING_EQ( l_result, _string ); \
     } while ( 0 )
-
-    char* l_result;
 
     // Simple string
     duplicateStringTest( "Hello" );
@@ -237,7 +238,7 @@ TEST( duplicateString ) {
 
     // NULL input
     {
-        l_result = duplicateString( NULL );
+        char* l_result = duplicateString( NULL );
 
         // Should return NULL
         ASSERT_EQ( "%p", l_result, NULL );
@@ -295,8 +296,7 @@ TEST( findLastSymbolInString ) {
 TEST( concatBeforeAndAfterString ) {
 #define concatBeforeAndAfterStringTest( _string, _beforeString, _afterString ) \
     do {                                                                       \
-        l_string = ( char* )malloc( ( sizeof( _string ) * sizeof( char ) ) );  \
-        __builtin_strcpy( l_string, _string );                                 \
+        char* l_string = duplicateString( _string );                           \
         ASSERT_EQ(                                                             \
             "%zu",                                                             \
             ( size_t )( concatBeforeAndAfterString( &l_string, _beforeString,  \
@@ -308,8 +308,6 @@ TEST( concatBeforeAndAfterString ) {
         ASSERT_STRING_EQ( l_string, ( _beforeString _string _afterString ) );  \
         free( l_string );                                                      \
     } while ( 0 )
-
-    char* l_string;
 
     // Normal case
     concatBeforeAndAfterStringTest( "world", "Hello ", "!" );
@@ -328,7 +326,7 @@ TEST( concatBeforeAndAfterString ) {
         ASSERT_EQ( "%zu", concatBeforeAndAfterString( NULL, "A", "B" ),
                    ( size_t )0 );
 
-        l_string = NULL;
+        char* l_string = NULL;
 
         ASSERT_EQ( "%zu", concatBeforeAndAfterString( &l_string, "A", "B" ),
                    ( size_t )0 );
@@ -816,13 +814,11 @@ TEST( insertIntoArray ) {
 
         l_personFirst->id = 1;
         __builtin_strcpy( l_personFirst->name, "Alice" );
-        l_personFirst->nameAllocated = ( char* )malloc( 16 * sizeof( char ) );
-        __builtin_strcpy( l_personFirst->nameAllocated, "Alice_dyn" );
+        l_personFirst->nameAllocated = duplicateString( "Alice_dyn" );
 
         l_personSecond->id = 2;
         __builtin_strcpy( l_personSecond->name, "Bob" );
-        l_personSecond->nameAllocated = ( char* )malloc( 16 * sizeof( char ) );
-        __builtin_strcpy( l_personSecond->nameAllocated, "Bob_dyn" );
+        l_personSecond->nameAllocated = duplicateString( "Bob_dyn" );
 
         // Insert struct pointers into the array
         ASSERT_EQ( "%zu", insertIntoArray( &l_array, l_personFirst ),
