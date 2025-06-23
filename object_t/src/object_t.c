@@ -220,7 +220,7 @@ bool object_t$states$remove( object_t* restrict _object ) {
     }
 
     {
-        FOR_RANGE( size_t, 0, arrayLength( _object->states ) ) {
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _object->states ) ) {
             l_returnValue =
                 object_t$state$remove( _object, _object->states[ _index ] );
 

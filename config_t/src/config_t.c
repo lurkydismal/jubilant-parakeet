@@ -113,7 +113,8 @@ static int lineHandler( void* _config,
         } else if ( !_key && !_value ) {
             const size_t l_sectionNameLength = __builtin_strlen( _sectionName );
 
-            if ( UNLIKELY( l_sectionNameLength >= sizeof( l_previouSsectionName ) ) ) {
+            if ( UNLIKELY( l_sectionNameLength >=
+                           sizeof( l_previouSsectionName ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
                                        "Section name length" );
 

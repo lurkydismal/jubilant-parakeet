@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "object_t.h"
+#include "watch_t.h"
 
 #define DEFAULT_BACKGROUND      \
     { .object = DEFAULT_OBJECT, \
@@ -16,6 +17,12 @@ typedef struct {
     char* name;
     char* folder;
     char* extension;
+
+#if defined( DEBUG )
+
+    watch_t** watches;
+
+#endif
 } background_t;
 
 background_t background_t$create( void );

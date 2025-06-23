@@ -17,6 +17,7 @@ declare -a partsToBuild=(
     "background_t"
     "HUD_t"
     "asset_t"
+    "watch_t"
     "log"
     "stdfunc"
 )
@@ -38,6 +39,7 @@ declare -a testsToBuild=(
     # "background_t"
     # "HUD_t"
     "asset_t"
+    # "watch_t"
     "log"
     "stdfunc"
 )
@@ -47,10 +49,3 @@ declare -a staticParts=(
 
 export executableMainPackage='main'
 export testsMainPackage='test'
-
-if [ ! -z "${DISABLE_OPTIMIZATIONS+x}" ]; then
-    BUILD_C_FLAGS_DEBUG+=" -O0"
-    BUILD_C_FLAGS_RELEASE+=" -O0"
-    BUILD_C_FLAGS_PROFILE+=" -O0"
-    BUILD_C_FLAGS_TESTS+=" -O0"
-fi

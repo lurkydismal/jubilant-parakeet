@@ -53,6 +53,7 @@
 #define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
 
 // Utility functions ( side-effects )
+#define ASSUME( _expression ) __builtin_assume( _expression )
 #define CHECK_CONSTANT_ARGUMENT( _argument ) \
     ( __builtin_constant_p( _argument ) )
 #define CHECK_CONSTANT_ARGUMENT_CRITICAL( _argument )       \
@@ -407,6 +408,20 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         ( arrayLength( *( _array ) ) != l_arrayLengthCurrent );                \
     } )
 
+#define removeLastArray( _array )                                              \
+    do {                                                                       \
+        arrayLength_t* l_arrayAllocationCurrent =                              \
+            arrayAllocationPointer( *( _array ) );                             \
+        const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
+        const arrayLength_t l_arrayLengthNew = ( l_arrayLengthCurrent - 1 );   \
+        arrayLength_t* l_arrayAllocationNew = ( arrayLength_t* )realloc(       \
+            l_arrayAllocationCurrent,                                          \
+            ( sizeof( arrayLength_t ) +                                        \
+              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) );      \
+        *l_arrayAllocationNew = l_arrayLengthNew;                              \
+        *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
+    } while ( 0 )
+
 ssize_t findStringInArray( const char** restrict _array,
                            const size_t _arrayLength,
                            const char* restrict _value );
@@ -493,8 +508,9 @@ static FORCE_INLINE void dumpCallback( void* _callback,
         char* l_fieldName = duplicateString( va_arg( l_arguments, char* ) );
 
         // Field name
-        bool l_result = ( ( bool ( * )( char*, void* ) )_callback )(
-            l_fieldName, _context );
+        bool l_result =
+            ( ( bool ( * )( char* _fieldName, void* _context ) )_callback )(
+                l_fieldName, _context );
 
         free( l_fieldName );
 

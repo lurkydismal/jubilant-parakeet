@@ -135,7 +135,6 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             free( _applicationState );
         }
 
-        // TODO: Make application actually return success not on failure
         // Report application result
         if ( _result != ( result_t )success ) {
             const char* l_SDLErrorMessage = SDL_GetError();

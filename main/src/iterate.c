@@ -22,36 +22,6 @@ static FORCE_INLINE bool iterate(
     }
 
     {
-        static bool x = false;
-
-        if ( !x ) {
-            x = true;
-
-#if 0
-            {
-                char** files = createArray( char* );
-
-                insertIntoArray( &files, "test1.boxes" );
-                insertIntoArray( &files, "test_100x100_1-2.png" );
-
-                bool ret = player_t$state$add$fromPaths(
-                    &( _applicationState->localPlayer ),
-                    _applicationState->renderer, files, false, false );
-
-                _applicationState->localPlayer.object.worldXMax =
-                    ( _applicationState->logicalWidth - 100 );
-                _applicationState->localPlayer.object.worldYMax =
-                    ( _applicationState->logicalHeight - 100 );
-
-                FREE_ARRAY( files );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-#endif
-        }
-
         l_returnValue = vsync$begin();
 
         if ( UNLIKELY( !l_returnValue ) ) {
@@ -59,6 +29,17 @@ static FORCE_INLINE bool iterate(
 
             goto EXIT;
         }
+
+#if defined( DEBUG )
+        // Hot reload
+        {
+            // Background
+            FOR_ARRAY( watch_t* const*,
+                       _applicationState->background->watches ) {
+                watch_t$check( *_element, false );
+            }
+        }
+#endif
 
         camera_t$update( &( _applicationState->camera ),
                          &( _applicationState->localPlayer ) );
@@ -93,17 +74,7 @@ static FORCE_INLINE bool iterate(
                 }
             }
 
-#if 0
-            if ( x ) {
-                bool ret = player_t$render(
-                    &( _applicationState->localPlayer ),
-                    &( _applicationState->camera.rectangle ), true );
-
-                if ( !ret ) {
-                    goto EXIT;
-                }
-            }
-#endif
+            // TODO: Players
 
             SDL_RenderPresent( _applicationState->renderer );
         }
@@ -134,6 +105,8 @@ static FORCE_INLINE bool iterate(
                     goto EXIT;
                 }
             }
+
+            // TODO: Players
         }
 
         l_returnValue = vsync$end();
