@@ -3,6 +3,11 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/inotify.h>
+
+#define EVENT_WRITE IN_CLOSE_WRITE
+#define EVENT_DELETE IN_DELETE
+#define EVENT_RENAME ( IN_MOVED_FROM | IN_MOVED_TO )
 
 #define DEFAULT_wATCH           \
     { .fileDescriptor = -1,     \
@@ -13,6 +18,7 @@
 
 typedef bool ( *watchCallback_t )( void* _context,
                                    const char* _fileName,
+                                   size_t _eventsMask,
                                    uint32_t _cookie );
 
 typedef struct {
