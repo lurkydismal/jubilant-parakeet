@@ -140,7 +140,8 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             {
                 l_boxesGlbb = duplicateString( _fieldName );
 
-                concatBeforeAndAfterString( &l_boxesGlbb, "/", ".boxes" );
+                concatBeforeAndAfterString( &l_boxesGlbb, "/",
+                                            "." BOXES_FILE_EXTENSION );
                 concatBeforeAndAfterString( &l_boxesGlbb, l_folder, NULL );
             }
 
@@ -188,6 +189,141 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             _element->worldY = l_boxesKeyFramesFirstElement->y;
             _element->worldYMin = l_boxesKeyFramesFirstElement->y;
             _element->worldYMax = l_boxesKeyFramesFirstElement->y;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool HUD_t$reload$element( void* _context,
+                                               const char* _fileName,
+                                               uint32_t _cookie ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_context ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_fileName ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        log$transaction$query$format( ( logLevel_t )info,
+                                      "Background watch: file [ '%s' : '%u' ]",
+                                      _fileName, _cookie );
+
+        HUD_t* l_HUD = ( HUD_t* )_context;
+
+        bool l_isAnimationFrame = false;
+        bool l_isBoxes = false;
+
+        {
+            const ssize_t l_fileExtensionStartIndex =
+                findLastSymbolInString( _fileName, '.' );
+
+            l_returnValue = ( l_fileExtensionStartIndex != -1 );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )warn,
+                                       "No file extension" );
+
+                l_returnValue = true;
+
+                goto EXIT;
+            }
+
+            const char* l_fileExtension =
+                ( _fileName + l_fileExtensionStartIndex + 1 );
+
+            if ( ( __builtin_strcmp( l_fileExtension, l_HUD->extension ) ==
+                   0 ) &&
+                 // File name
+                 ( ( __builtin_strncmp( _fileName, l_HUD->folder,
+                                        __builtin_strlen( l_HUD->folder ) ) ==
+                     0 ) &&
+                   ( _fileName[ __builtin_strlen( l_HUD->folder ) ] ==
+                     '_' ) ) ) {
+                l_isAnimationFrame = true;
+
+            } else {
+                char* l_boxesFileName = duplicateString( l_HUD->folder );
+
+                concatBeforeAndAfterString( &l_boxesFileName, NULL,
+                                            "." BOXES_FILE_EXTENSION );
+
+                if ( __builtin_strcmp( _fileName, l_boxesFileName ) == 0 ) {
+                    l_isBoxes = true;
+                }
+
+                free( l_boxesFileName );
+            }
+        }
+
+        if ( l_isAnimationFrame || l_isBoxes ) {
+            object_t* l_object = NULL;
+
+            // TODO: Add other
+#define MACRO( _field )                                                       \
+    do {                                                                      \
+        const size_t l_##_field##Length = __builtin_strlen( #_field );        \
+        if ( ( __builtin_strncmp( _fileName, #_field, l_##_field##Length ) == \
+               0 ) &&                                                         \
+             ( _fileName[ l_##_field##Length ] == '_' ) ) {                   \
+            l_object = &( l_HUD->_field );                                    \
+        }                                                                     \
+    } while ( 0 )
+
+            MACRO( timer );
+            MACRO( timerBackground );
+
+#undef MACRO
+
+            if ( UNLIKELY( !l_object ) ) {
+                // TODO: Improve
+                log$transaction$query( ( logLevel_t )error,
+                                       "Converting X to X" );
+
+                goto EXIT;
+            }
+
+            state_t* l_state = arrayFirstElement( l_object->states );
+
+            char** l_paths = createArray( char* );
+
+            char* l_path = duplicateString( "/" );
+
+            concatBeforeAndAfterString( &l_path, l_HUD->folder, _fileName );
+
+            insertIntoArray( &l_paths, l_path );
+
+            if ( l_isAnimationFrame ) {
+                l_returnValue = animation_t$load$fromPaths(
+                    &( l_state->animation ), l_state->renderer, l_paths );
+
+            } else if ( l_isBoxes ) {
+                l_returnValue =
+                    boxes_t$load$fromPaths( &( l_state->boxes ), l_paths );
+            }
+
+            FREE_ARRAY_ELEMENTS( l_paths );
+            FREE_ARRAY( l_paths );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error, "Loading HUD state %s from path: '%s'",
+                    ( ( l_isAnimationFrame ) ? ( "animation" ) : ( "boxes" ) ),
+                    _fileName );
+
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;
@@ -269,6 +405,25 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
                 goto EXIT;
             }
         }
+
+#if defined( DEBUG )
+        // Watch
+        {
+            watch_t l_watch = watch_t$create();
+
+            l_returnValue = watch_t$add$toPath(
+                &l_watch, _HUD->folder, HUD_t$reload$element, _HUD, true );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Adding HUD watch" );
+
+                goto EXIT;
+            }
+
+            insertIntoArray( &( _HUD->watches ), clone( &l_watch ) );
+        }
+#endif
 
         l_returnValue = true;
     }

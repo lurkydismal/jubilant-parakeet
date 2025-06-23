@@ -216,14 +216,14 @@ TEST( generateHash ) {
 }
 
 TEST( duplicateString ) {
-#define duplicateStringTest( _string )         \
-    do {                                       \
-        char* l_result = duplicateString( _string ); \
-        const size_t l_resultLength = __builtin_strlen( l_result );\
-        char* l_resultStatic[ l_resultLength ]; \
-        __builtin_strlcpy( l_resultStatic, l_result, l_resultLength ); \
-        free( l_result );                      \
-        ASSERT_STRING_EQ( l_result, _string ); \
+#define duplicateStringTest( _string )                                 \
+    do {                                                               \
+        char* l_result = duplicateString( _string );                   \
+        const size_t l_resultLength = __builtin_strlen( l_result );    \
+        char l_resultStatic[ l_resultLength + 1 ];                     \
+        strlcpy( l_resultStatic, l_result, sizeof( l_resultStatic ) ); \
+        free( l_result );                                              \
+        ASSERT_STRING_EQ( l_resultStatic, _string );                   \
     } while ( 0 )
 
     // Simple string

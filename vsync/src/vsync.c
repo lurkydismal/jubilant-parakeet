@@ -6,18 +6,24 @@
 #include "FPS.h"
 #include "log.h"
 
-static size_t g_desiredFPS = 0;
+static float16_t g_desiredFPS = 0;
 static vsync_t g_vsync = VSYNC_LEVEL_DEFAULT;
 
 static struct timespec g_sleepTime, g_startTime, g_endTime;
 
 bool vsync$init( const vsync_t _vsync,
-                 const size_t _desiredFPS,
+                 const float16_t _desiredFPS,
                  SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_renderer ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( g_desiredFPS ) ) {
+        log$transaction$query( ( logLevel_t )error, "Alraedy initialized" );
 
         goto EXIT;
     }
@@ -29,7 +35,7 @@ bool vsync$init( const vsync_t _vsync,
         if ( _vsync == ( vsync_t )off ) {
             g_sleepTime.tv_sec = 0;
             g_sleepTime.tv_nsec = MILLISECONDS_TO_NANOSECONDS(
-                ONE_SECOND_IN_MILLISECONDS / _desiredFPS );
+                ONE_SECOND_IN_MILLISECONDS / ( float )_desiredFPS );
 
             l_returnValue = SDL_SetRenderVSync(
                 _renderer, SDL_WINDOW_SURFACE_VSYNC_DISABLED );

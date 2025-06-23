@@ -33,11 +33,21 @@ static FORCE_INLINE bool iterate(
 #if defined( DEBUG )
         // Hot reload
         {
-            // Background
-            FOR_ARRAY( watch_t* const*,
-                       _applicationState->background->watches ) {
-                watch_t$check( *_element, false );
-            }
+#define TRY_CHECK_WATCH_OR_EXIT( _field )                                  \
+    do {                                                                   \
+        FOR_ARRAY( watch_t* const*, _applicationState->_field->watches ) { \
+            l_returnValue = watch_t$check( *_element, false );             \
+            if ( UNLIKELY( !l_returnValue ) ) {                            \
+                log$transaction$query( ( logLevel_t )error,                \
+                                       "Checking " #_field " watch" );     \
+                goto EXIT;                                                 \
+            }                                                              \
+        }                                                                  \
+    } while ( 0 )
+
+            TRY_CHECK_WATCH_OR_EXIT( background );
+
+#undef TRY_CHECK_WATCH_OR_EXIT
         }
 #endif
 

@@ -40,6 +40,8 @@
 #define ONE_MILLISECOND_IN_NANOSECONDS ( ( size_t )( 1000000 ) )
 
 // Utility macros ( no side-effects )
+#define SECONDS_TO_MILLISECONDS( _seconds ) \
+    ( ( _seconds ) * ONE_SECOND_IN_MILLISECONDS )
 #define MILLISECONDS_TO_NANOSECONDS( _milliseconds ) \
     ( ( _milliseconds ) * ONE_MILLISECOND_IN_NANOSECONDS )
 #define BITS_TO_BYTES( _bits ) ( ( size_t )( ( _bits ) / 8 ) )

@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include "object_t.h"
+#include "watch_t.h"
 
 #define DEFAULT_HUD                      \
     { .logos = NULL,                     \
@@ -31,6 +32,12 @@ typedef struct {
     char* folder;
     char* extension;
     size_t playerAmount;
+
+#if defined( DEBUG )
+
+    watch_t** watches;
+
+#endif
 } HUD_t;
 
 HUD_t HUD_t$create( void );

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "stdfloat16.h"
 #include "stdfunc.h"
 #include "vsync_t.h"
 
@@ -35,7 +36,7 @@ vsync_t$convert$fromString( const char* restrict _string ) {
 }
 
 bool vsync$init( const vsync_t _vsync,
-                 const size_t _desiredFPS,
+                 const float16_t _desiredFPS,
                  SDL_Renderer* _renderer );
 bool vsync$quit( void );
 

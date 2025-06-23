@@ -6,6 +6,8 @@
 #include "asset_t.h"
 #include "color_t.h"
 
+#define BOXES_FILE_EXTENSION "boxes"
+
 #define DEFAULT_BOXES    \
     { .keyFrames = NULL, \
       .frames = NULL,    \
