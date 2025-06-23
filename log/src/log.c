@@ -398,9 +398,8 @@ bool log$transaction$commit( void ) {
 #endif
         }
 
-        // Log to stdout
 #if defined( DEBUG )
-
+        // Log to stdout
         {
             g_transactionString[ g_transactionSize ] = '\0';
 
@@ -422,7 +421,6 @@ bool log$transaction$commit( void ) {
 
 #endif
         }
-
 #endif
 
         g_transactionSize = 0;

@@ -70,6 +70,7 @@ export declare BUILD_INCLUDES=(
     "background_t/include"
     "HUD_t/include"
     "asset_t/include"
+    "watch_t/include"
     "log/include"
     "stdfunc/include"
     "cpp_compatibility/include"
@@ -98,6 +99,13 @@ export declare LIBRARIES_TO_LINK_TESTS=(
 )
 export C_COMPILER="gcc"
 export CPP_COMPILER="g++"
+
+if [ ! -z "${DISABLE_OPTIMIZATIONS+x}" ]; then
+    BUILD_C_FLAGS_DEBUG+=" -O0"
+    BUILD_C_FLAGS_RELEASE+=" -O0"
+    BUILD_C_FLAGS_PROFILE+=" -O0"
+    BUILD_C_FLAGS_TESTS+=" -O0"
+fi
 
 if [ ! -z "${ENABLE_MUSL+x}" ]; then
     # Musl does not work with Clang

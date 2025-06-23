@@ -8,6 +8,12 @@ background_t background_t$create( void ) {
 
     {
         l_returnValue.object = object_t$create();
+
+#if defined( DEBUG )
+
+        l_returnValue.watches = createArray( watch_t* );
+
+#endif
     }
 
     return ( l_returnValue );
@@ -47,11 +53,28 @@ bool background_t$destroy( background_t* restrict _background ) {
             _background->extension = NULL;
         }
 
+#if defined( DEBUG )
+
+        FREE_ARRAY( _background->watches );
+
+#endif
+
         l_returnValue = true;
     }
 
 EXIT:
     return ( l_returnValue );
+}
+
+static FORCE_INLINE bool background_t$reload$element( void* _context,
+                                                      const char* _fileName,
+                                                      uint32_t _eventId ) {
+    background_t* l_background = ( background_t* )_context;
+
+    log$transaction$query$format( ( logLevel_t )error, "CB %s %u %s", _fileName,
+                                  _eventId, l_background->folder );
+
+    return ( false );
 }
 
 bool background_t$load( background_t* restrict _background,
@@ -79,36 +102,39 @@ bool background_t$load( background_t* restrict _background,
         {
             const char* l_folder = _background->folder;
 
-            char* l_boxesGlob = NULL;
-
-            // Boxes
-            // folder/folder.boxes
             {
-                l_boxesGlob = duplicateString( l_folder );
+                char* l_boxesGlob = NULL;
 
-                concatBeforeAndAfterString( &l_boxesGlob, "/", ".boxes" );
-                concatBeforeAndAfterString( &l_boxesGlob, l_folder, NULL );
+                // Boxes
+                // folder/folder.boxes
+                {
+                    l_boxesGlob = duplicateString( l_folder );
+
+                    concatBeforeAndAfterString( &l_boxesGlob, "/", ".boxes" );
+                    concatBeforeAndAfterString( &l_boxesGlob, l_folder, NULL );
+                }
+
+                char* l_animationGlob = NULL;
+
+                // Animation
+                // folder/folder*.extension
+                {
+                    l_animationGlob = duplicateString( "*." );
+
+                    concatBeforeAndAfterString( &l_animationGlob, l_folder,
+                                                _background->extension );
+                    concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
+                    concatBeforeAndAfterString( &l_animationGlob, l_folder,
+                                                NULL );
+                }
+
+                l_returnValue = object_t$state$add$fromGlob(
+                    &( _background->object ), _renderer, l_boxesGlob,
+                    l_animationGlob, false, true );
+
+                free( l_boxesGlob );
+                free( l_animationGlob );
             }
-
-            char* l_animationGlob = NULL;
-
-            // Animation
-            // folder/folder*.extension
-            {
-                l_animationGlob = duplicateString( "*." );
-
-                concatBeforeAndAfterString( &l_animationGlob, l_folder,
-                                            _background->extension );
-                concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
-                concatBeforeAndAfterString( &l_animationGlob, l_folder, NULL );
-            }
-
-            l_returnValue = object_t$state$add$fromGlob(
-                &( _background->object ), _renderer, l_boxesGlob,
-                l_animationGlob, false, true );
-
-            free( l_boxesGlob );
-            free( l_animationGlob );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -120,6 +146,26 @@ bool background_t$load( background_t* restrict _background,
             // Background always have only single state
             _background->object.currentState =
                 arrayFirstElement( _background->object.states );
+
+#if defined( DEBUG )
+            // Watch
+            {
+                watch_t l_watch = watch_t$create();
+
+                l_returnValue = watch_t$add$toPath( &l_watch, l_folder,
+                                                    background_t$reload$element,
+                                                    _background, true );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Adding background watch" );
+
+                    goto EXIT;
+                }
+
+                insertIntoArray( &( _background->watches ), clone( &l_watch ) );
+            }
+#endif
         }
 
         l_returnValue = true;
@@ -149,6 +195,28 @@ bool background_t$unload( background_t* restrict _background ) {
         }
 
         _background->object.currentState = NULL;
+
+#if defined( DEBUG )
+        // Watch
+        {
+            FOR_RANGE( arrayLength_t, 0, arrayLength( _background->watches ) ) {
+                watch_t* l_watch = _background->watches[ _index ];
+
+                l_returnValue = watch_t$destroy( l_watch );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Destroying background watch" );
+
+                    goto EXIT;
+                }
+
+                free( l_watch );
+
+                pluckArray( &( _background->watches ), l_watch );
+            }
+        }
+#endif
 
         l_returnValue = true;
     }

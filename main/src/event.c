@@ -85,7 +85,11 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
                 int l_keysAmount = 0;
                 const bool* l_keysState = SDL_GetKeyboardState( &l_keysAmount );
 
-                FOR_RANGE( int, 0, l_keysAmount ) {
+                ASSUME( l_keysAmount == SDL_SCANCODE_COUNT );
+
+                const size_t l_SDLScancodeFirst = SDL_SCANCODE_A;
+
+                FOR_RANGE( int, l_SDLScancodeFirst, l_keysAmount ) {
                     // If pressed
                     if ( l_keysState[ _index ] ) {
                         SDL_Scancode l_scancode = _index;
