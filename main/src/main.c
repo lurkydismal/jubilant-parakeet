@@ -28,11 +28,7 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             event_t l_event;
 
-            l_returnValue = SDL_PollEvent( &l_event );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
+            SDL_PollEvent( &l_event );
 
             l_returnValue = event( &l_applicationState, &l_event );
 
