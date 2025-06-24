@@ -146,11 +146,13 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
     }
 
     {
-#if defined( LOG_BACKGROUND )
+#define LOG_WATCH
+#if defined( LOG_WATCH )
 
-        log$transaction$query$format( ( logLevel_t )info,
-                                      "Background watch: file [ '%s' : '%u' ]",
-                                      _fileName, _eventsMask, _cookie );
+        log$transaction$query$format(
+            ( logLevel_t )info,
+            "Background watch: file [ '%s' : '%zu' : '%u' ]", _fileName,
+            _eventsMask, _cookie );
 
 #endif
 
@@ -176,71 +178,39 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
 
             const char* l_fileExtension =
                 ( _fileName + l_fileExtensionStartIndex + 1 );
+            const size_t l_folderLength =
+                __builtin_strlen( l_background->folder );
 
-            if ( ( __builtin_strcmp( l_fileExtension,
-                                     l_background->extension ) == 0 ) &&
-                 // File name
-                 ( ( __builtin_strncmp(
-                         _fileName, l_background->folder,
-                         __builtin_strlen( l_background->folder ) ) == 0 ) &&
-                   ( _fileName[ __builtin_strlen( l_background->folder ) ] ==
-                     '_' ) ) ) {
-                l_isAnimationFrame = true;
+            if ( __builtin_strncmp( _fileName, l_background->folder,
+                                    l_folderLength ) == 0 ) {
+                if ( ( __builtin_strcmp( l_fileExtension,
+                                         l_background->extension ) == 0 ) &&
+                     ( _fileName[ l_folderLength ] == '_' ) ) {
+                    l_isAnimationFrame = true;
 
-            } else {
-                char* l_boxesFileName = duplicateString( l_background->folder );
-
-                concatBeforeAndAfterString( &l_boxesFileName, NULL,
-                                            "." BOXES_FILE_EXTENSION );
-
-                if ( __builtin_strcmp( _fileName, l_boxesFileName ) == 0 ) {
+                } else if ( __builtin_strcmp( l_fileExtension,
+                                              BOXES_FILE_EXTENSION ) == 0 ) {
                     l_isBoxes = true;
                 }
-
-                free( l_boxesFileName );
             }
         }
 
         if ( l_isAnimationFrame || l_isBoxes ) {
             state_t* l_state = arrayFirstElement( l_background->object.states );
 
-            if ( _eventsMask & EVENT_DELETE ) {
-                SDL_Renderer* l_renderer = l_state->renderer;
+            SDL_Renderer* l_renderer = l_state->renderer;
 
-                l_returnValue =
-                    object_t$state$remove( &( l_background->object ), l_state );
+            l_returnValue =
+                object_t$state$remove( &( l_background->object ), l_state );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Removing background state" );
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Removing background state" );
 
-                    goto EXIT;
-                }
-
-                l_returnValue = load( l_background, l_renderer );
-
-            } else {
-                char** l_paths = createArray( char* );
-
-                char* l_path = duplicateString( "/" );
-
-                concatBeforeAndAfterString( &l_path, l_background->folder,
-                                            _fileName );
-
-                insertIntoArray( &l_paths, l_path );
-
-                if ( l_isAnimationFrame ) {
-                    l_returnValue = animation_t$load$fromPaths(
-                        &( l_state->animation ), l_state->renderer, l_paths );
-
-                } else if ( l_isBoxes ) {
-                    l_returnValue =
-                        boxes_t$load$fromPaths( &( l_state->boxes ), l_paths );
-                }
-
-                FREE_ARRAY_ELEMENTS( l_paths );
-                FREE_ARRAY( l_paths );
+                goto EXIT;
             }
+
+            l_returnValue = load( l_background, l_renderer );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format(
@@ -251,6 +221,12 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
 
                 goto EXIT;
             }
+
+            log$transaction$query$format(
+                ( logLevel_t )debug,
+                "Loaded background state %s from path: '%s'",
+                ( ( l_isAnimationFrame ) ? ( "animation" ) : ( "boxes" ) ),
+                _fileName );
         }
 
         l_returnValue = true;
