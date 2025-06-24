@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
@@ -186,31 +188,6 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
 
         l_returnValue = true;
     }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-SDL_AppResult SDL_AppEvent( void* _applicationState, SDL_Event* _event ) {
-    SDL_AppResult l_returnValue = SDL_APP_FAILURE;
-
-    applicationState_t* l_applicationState =
-        ( applicationState_t* )_applicationState;
-
-    event_t* l_event = ( event_t* )_event;
-
-    if ( UNLIKELY( !event( l_applicationState, l_event ) ) ) {
-        if ( l_applicationState->status ) {
-            l_returnValue = SDL_APP_SUCCESS;
-
-        } else {
-            l_returnValue = SDL_APP_FAILURE;
-        }
-
-        goto EXIT;
-    }
-
-    l_returnValue = SDL_APP_CONTINUE;
 
 EXIT:
     return ( l_returnValue );

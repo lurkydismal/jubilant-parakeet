@@ -1,3 +1,5 @@
+#pragma once
+
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
@@ -507,8 +509,8 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             // Configuration
             {
                 // Backgrounds
-                // TODO: Implement
                 // UI
+                // TODO: Implement
                 // Characters
                 if ( UNLIKELY( !config_t$load$fromPath(
                          &( _applicationState->config ), CONFIG_FILE_NAME,
@@ -645,33 +647,6 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
         }
 
         l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-SDL_AppResult SDL_AppInit( void** _applicationState,
-                           int _argumentCount,
-                           char** _argumentVector ) {
-    SDL_AppResult l_returnValue = SDL_APP_FAILURE;
-
-    {
-        applicationState_t* l_applicationState =
-            ( applicationState_t* )malloc( sizeof( applicationState_t ) );
-
-        __builtin_memset( l_applicationState, 0, sizeof( applicationState_t ) );
-
-        if ( UNLIKELY( !init( l_applicationState, _argumentCount,
-                              _argumentVector ) ) ) {
-            free( l_applicationState );
-
-            goto EXIT;
-        }
-
-        *_applicationState = l_applicationState;
-
-        l_returnValue = SDL_APP_CONTINUE;
     }
 
 EXIT:
