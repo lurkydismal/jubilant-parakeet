@@ -46,6 +46,7 @@ static FORCE_INLINE bool iterate(
     } while ( 0 )
 
             TRY_CHECK_WATCH_OR_EXIT( background );
+            TRY_CHECK_WATCH_OR_EXIT( HUD );
 
 #undef TRY_CHECK_WATCH_OR_EXIT
         }
