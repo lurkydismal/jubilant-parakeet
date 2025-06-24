@@ -55,7 +55,7 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
         FREE_ARRAY( _HUD->meterBars );
         _HUD->meterBars = NULL;
 
-#define MACRO( _field )                                        \
+#define TRY_DESTROY_OR_EXIT( _field )                          \
     do {                                                       \
         l_returnValue = object_t$destroy( &( _HUD->_field ) ); \
         if ( UNLIKELY( !l_returnValue ) ) {                    \
@@ -65,10 +65,10 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
         }                                                      \
     } while ( 0 )
 
-        MACRO( timerBackground );
-        MACRO( timer );
+        TRY_DESTROY_OR_EXIT( timerBackground );
+        TRY_DESTROY_OR_EXIT( timer );
 
-#undef MACRO
+#undef TRY_DESTROY_OR_EXIT
 
         if ( LIKELY( _HUD->name ) ) {
             free( _HUD->name );
@@ -255,7 +255,7 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
         }
 
         if ( l_isAnimationFrame || l_isBoxes ) {
-#define MACRO( _field )                                                        \
+#define TRY_LOAD_ONE_OR_EXIT( _field )                                         \
     do {                                                                       \
         const size_t l_##_field##Length = __builtin_strlen( #_field );         \
         if ( ( __builtin_strncmp( _fileName, #_field, l_##_field##Length ) ==  \
@@ -281,10 +281,10 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
         }                                                                      \
     } while ( 0 )
 
-            MACRO( timer );
-            MACRO( timerBackground );
+            TRY_LOAD_ONE_OR_EXIT( timer );
+            TRY_LOAD_ONE_OR_EXIT( timerBackground );
 
-#undef MACRO
+#undef TRY_LOAD_ONE_OR_EXIT
 
             log$transaction$query$format(
                 ( logLevel_t )debug, "Loaded HUD state %s from path: '%s'",
@@ -325,7 +325,7 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         log$transaction$query$format( ( logLevel_t )info, "Loading HUD: '%s'",
                                       _HUD->name );
 
-#define TRY_LOAD_OR_EXIT( _field )                                        \
+#define TRY_LOAD_MANY_OR_EXIT( _field )                                   \
     do {                                                                  \
         FOR_RANGE( size_t, 0, _HUD->playerAmount ) {                      \
             object_t l_element = object_t$create();                       \
@@ -341,11 +341,11 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
     } while ( 0 )
 
         // TODO: Fix
-        // TRY_LOAD_OR_EXIT( logos );
+        // TRY_LOAD_MANY_OR_EXIT( logos );
 
-#undef TRY_LOAD_OR_EXIT
+#undef TRY_LOAD_MANY_OR_EXIT
 
-#define MACRO( _field )                                                  \
+#define TRY_LOAD_ONE_OR_EXIT( _field )                                   \
     do {                                                                 \
         l_returnValue = HUD_t$element$load$one( &( _HUD->_field ), _HUD, \
                                                 _renderer, #_field );    \
@@ -356,10 +356,10 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         }                                                                \
     } while ( 0 )
 
-        MACRO( timerBackground );
-        MACRO( timer );
+        TRY_LOAD_ONE_OR_EXIT( timerBackground );
+        TRY_LOAD_ONE_OR_EXIT( timer );
 
-#undef MACRO
+#undef TRY_LOAD_ONE_OR_EXIT
 
 #if defined( DEBUG )
         // Watch
@@ -430,7 +430,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
 #undef REMOVE_STATES_AND_FREE_OR_EXIT
 
-#define MACRO( _field )                                              \
+#define TRY_REMOVE_OR_EXIT( _field )                                 \
     do {                                                             \
         l_returnValue = object_t$states$remove( &( _HUD->_field ) ); \
         if ( UNLIKELY( !l_returnValue ) ) {                          \
@@ -440,10 +440,10 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
         }                                                            \
     } while ( 0 )
 
-        MACRO( timerBackground );
-        MACRO( timer );
+        TRY_REMOVE_OR_EXIT( timerBackground );
+        TRY_REMOVE_OR_EXIT( timer );
 
-#undef MACRO
+#undef TRY_REMOVE_OR_EXIT
 
         l_returnValue = true;
     }
@@ -483,7 +483,7 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
 
 #undef STEP_OBJECTS_OR_EXIT
 
-#define MACRO( _field )                                                        \
+#define TRY_STEP_OR_EXIT( _field )                                             \
     do {                                                                       \
         l_returnValue = object_t$step( &( _HUD->_field ), 0, 0 );              \
         if ( UNLIKELY( !l_returnValue ) ) {                                    \
@@ -492,10 +492,10 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
         }                                                                      \
     } while ( 0 )
 
-        MACRO( timerBackground );
-        MACRO( timer );
+        TRY_STEP_OR_EXIT( timerBackground );
+        TRY_STEP_OR_EXIT( timer );
 
-#undef MACRO
+#undef TRY_STEP_OR_EXIT
 
         l_returnValue = true;
     }
@@ -539,7 +539,7 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
 
 #undef RENDER_OBJECTS_OR_EXIT
 
-#define MACRO( _field )                                                       \
+#define TRY_RENDER_OR_EXIT( _field )                                          \
     do {                                                                      \
         l_returnValue = object_t$render( &( _HUD->_field ),                   \
                                          &l_cameraRectangle, l_doDrawBoxes ); \
@@ -550,10 +550,10 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         }                                                                     \
     } while ( 0 )
 
-        MACRO( timerBackground );
-        MACRO( timer );
+        TRY_RENDER_OR_EXIT( timerBackground );
+        TRY_RENDER_OR_EXIT( timer );
 
-#undef MACRO
+#undef TRY_RENDER_OR_EXIT
 
         l_returnValue = true;
     }

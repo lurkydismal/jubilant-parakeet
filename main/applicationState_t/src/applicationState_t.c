@@ -68,7 +68,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool applicationState_t$load( applicationState_t* _applicationState ) {
+bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
@@ -103,7 +103,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool applicationState_t$unload( applicationState_t* _applicationState ) {
+bool applicationState_t$unload(
+    applicationState_t* restrict _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {

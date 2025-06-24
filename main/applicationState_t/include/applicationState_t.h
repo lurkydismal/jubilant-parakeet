@@ -24,6 +24,7 @@
       .logicalWidth = 1280,          \
       .logicalHeight = 720,          \
       .totalFramesRendered = 0,      \
+      .isPaused = false,             \
       .status = false }
 
 typedef struct {
@@ -39,6 +40,7 @@ typedef struct {
     size_t logicalWidth;
     size_t logicalHeight;
     size_t totalFramesRendered;
+    bool isPaused;
     bool status;
 } applicationState_t;
 
@@ -46,5 +48,6 @@ applicationState_t applicationState_t$create( void );
 bool applicationState_t$destroy(
     applicationState_t* restrict _applicationState );
 
-bool applicationState_t$load( applicationState_t* _applicationState );
-bool applicationState_t$unload( applicationState_t* _applicationState );
+bool applicationState_t$load( applicationState_t* restrict _applicationState );
+bool applicationState_t$unload(
+    applicationState_t* restrict _applicationState );

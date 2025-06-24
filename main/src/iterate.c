@@ -52,8 +52,10 @@ static FORCE_INLINE bool iterate(
         }
 #endif
 
-        camera_t$update( &( _applicationState->camera ),
-                         &( _applicationState->localPlayer ) );
+        if ( !_applicationState->isPaused ) {
+            camera_t$update( &( _applicationState->camera ),
+                             &( _applicationState->localPlayer ) );
+        }
 
         // Render
         {
@@ -90,34 +92,36 @@ static FORCE_INLINE bool iterate(
             SDL_RenderPresent( _applicationState->renderer );
         }
 
-        // Step
-        {
-            // Background
+        if ( !_applicationState->isPaused ) {
+            // Step
             {
-                l_returnValue =
-                    background_t$step( _applicationState->background );
+                // Background
+                {
+                    l_returnValue =
+                        background_t$step( _applicationState->background );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Stepping background" );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Stepping background" );
 
-                    goto EXIT;
+                        goto EXIT;
+                    }
                 }
-            }
 
-            // HUD
-            {
-                l_returnValue = HUD_t$step( _applicationState->HUD );
+                // HUD
+                {
+                    l_returnValue = HUD_t$step( _applicationState->HUD );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Stepping HUD" );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Stepping HUD" );
 
-                    goto EXIT;
+                        goto EXIT;
+                    }
                 }
-            }
 
-            // TODO: Players
+                // TODO: Players
+            }
         }
 
         l_returnValue = vsync$end();
