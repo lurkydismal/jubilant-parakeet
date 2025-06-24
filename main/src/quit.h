@@ -1,13 +1,8 @@
+#pragma once
+
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
-
-#if defined( __SANITIZE_LEAK__ )
-
-#include <sanitizer/lsan_interface.h>
-
-#endif
-
 #include <stdlib.h>
 
 #include "FPS.h"
@@ -18,23 +13,6 @@
 #include "vsync.h"
 
 typedef enum { failure, success } result_t;
-
-static FORCE_INLINE result_t
-result_t$convert$fromSDL_AppResult( SDL_AppResult _appRunResult ) {
-    switch ( _appRunResult ) {
-        case SDL_APP_SUCCESS: {
-            return ( ( result_t )success );
-        }
-
-        case SDL_APP_FAILURE: {
-            return ( ( result_t )failure );
-        }
-
-        default: {
-            return ( ( result_t )failure );
-        }
-    }
-}
 
 static FORCE_INLINE const char* result_t$convert$toStaticString(
     const result_t _result ) {
@@ -131,8 +109,6 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
                 log$transaction$query( ( logLevel_t )error,
                                        "Destroying application state" );
             }
-
-            free( _applicationState );
         }
 
         // Report application result
@@ -161,22 +137,4 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
 EXIT:
     return ( l_returnValue );
-}
-
-void SDL_AppQuit( void* _applicationState, SDL_AppResult _appRunResult ) {
-    applicationState_t* l_applicationState =
-        ( applicationState_t* )_applicationState;
-
-    const result_t l_result =
-        result_t$convert$fromSDL_AppResult( _appRunResult );
-
-    quit( l_applicationState, l_result );
-
-    SDL_Quit();
-
-#if defined( __SANITIZE_LEAK__ )
-
-    __lsan_do_leak_check();
-
-#endif
 }
