@@ -1,3 +1,9 @@
+#if defined( __SANITIZE_LEAK__ )
+
+#include <sanitizer/lsan_interface.h>
+
+#endif
+
 #include <dlfcn.h>
 #include <elf.h>
 #include <errno.h>
@@ -12,17 +18,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "plthook.h"
-
-#if defined( __SANITIZE_LEAK__ )
-
-#include <sanitizer/lsan_interface.h>
-
-#endif
-
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
+#include "plthook.h"
 #include "quit.h"
 #include "stdfunc.h"
 
