@@ -1,9 +1,12 @@
 #!/bin/bash
 shopt -s nullglob
 
+trap 'echo "Line $LINENO: $BASH_COMMAND"' ERR
+trap 'printf " \n"' EXIT
+
 export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-export BUILD_DIRECTORY_NAME='out'
-export TESTS_DIRECTORY_NAME='tests'
+export BUILD_DIRECTORY_NAME="out"
+export TESTS_DIRECTORY_NAME="tests"
 export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
 export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
 
@@ -29,6 +32,7 @@ export BUILD_CPP_FLAGS_TESTS="$BUILD_C_FLAGS_TESTS"
 export SCAN_BUILD_FLAGS="-enable-checker core,security,nullability,deadcode,unix,optin"
 
 export declare BUILD_DEFINES=(
+    "_GNU_SOURCE"
     "INI_ALLOW_INLINE_COMMENTS=1"
     "INI_STOP_ON_FIRST_ERROR=1"
     "INI_CALL_HANDLER_ON_NEW_SECTION=1"
@@ -73,7 +77,8 @@ export declare BUILD_INCLUDES=(
     "watch_t/include"
     "log/include"
     "stdfunc/include"
-    "cpp_compatibility/include"
+    "inih/include"
+    "plthook/include"
 )
 
 export declare BUILD_INCLUDES_TESTS=(
@@ -88,6 +93,7 @@ export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
 
 export declare LIBRARIES_TO_LINK=(
     "mimalloc"
+    "elf"
 )
 export declare EXTERNAL_LIBRARIES_TO_LINK=(
     "snappy"
@@ -182,7 +188,50 @@ export SKIPPING_PART_IN_BUILD_COLOR="$GREEN_LIGHT_COLOR"
 export BUILT_EXECUTABLE_COLOR="$GREEN_LIGHT_COLOR"
 export SECTIONS_TO_STRIP_COLOR="$RED_LIGHT_COLOR"
 
+source 'show_progress.sh'
+
 clear
+
+# TODO: Improve
+PIPE='/tmp/build_output_fifo'
+
+rm -f "$PIPE"
+mkfifo "$PIPE"
+
+printer() {
+    # Save cursor position and terminal size
+    local lines=$(tput lines)
+    local cols=$(tput cols)
+
+    # Clear the screen or scroll if you want
+    clear
+
+    # Buffer for progress bar line
+    local progress_line=""
+
+    while IFS= read -r line; do
+        # Check if line is a special progress bar update (e.g., starts with PROGRESS:)
+        if [[ "$line" == PROGRESS:* ]]; then
+            progress_line="${line#PROGRESS:}"
+
+            # Move cursor to last line
+            tput sc
+            tput cup $((lines-1)) 0
+            tput el
+            printf "%s" "$progress_line"
+            tput rc
+        else
+            # Normal output: print above progress bar line
+            # Move cursor to before last line, insert line, scroll progress bar down
+            echo "$line"
+        fi
+    done < "$PIPE"
+}
+
+printer < "$PIPE" &
+PRINTER_PID=$!
+
+show_progress
 
 source './config.sh' && {
 
@@ -195,7 +244,7 @@ mkdir -p "$BUILD_DIRECTORY"
         fd -I '\.o$' -x rm {}
 
     else
-        if [[ -n "${array[@]}" ]]; then
+        if [[ -n "${staticParts[@]}" ]]; then
             printf -v staticPartsAsExcludeString -- "-E %s " "${staticParts[@]}"
 
         else
@@ -302,7 +351,10 @@ if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     unset externalLibrariesAsString
 fi
 
+total=$(( ${#partsToBuild[@]} + 1 ))
+
 processedFiles=()
+declare -A processedFilesHashes=()
 processIDs=()
 processStatuses=()
 BUILD_STATUS=0
@@ -317,6 +369,7 @@ for partToBuild in "${partsToBuild[@]}"; do
         OUTPUT_FILE='lib'"$partToBuild"'.a'
 
         processedFiles+=("$OUTPUT_FILE")
+        processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
 
         OUTPUT_FILE="$OUTPUT_FILE" \
             './build_general.sh' \
@@ -342,8 +395,9 @@ if [ $BUILD_STATUS -eq 0 ]; then
             OUTPUT_FILE='lib'"$staticPart"'.a'
 
             processedFiles+=("$OUTPUT_FILE")
+            processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
 
-            if [ -z "${NEED_REBUILD_STATIC_PARTS+x}" ]; then
+            if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
                 if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
                     echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping static '$staticPart' — '$OUTPUT_FILE' already exists.""$RESET_COLOR"
 
@@ -368,6 +422,8 @@ fi
 for processID in "${processIDs[@]}"; do
     wait "$processID"
 
+    show_progress
+
     processStatuses+=($?)
 done
 
@@ -384,15 +440,23 @@ done
 processIDs=()
 processStatuses=()
 
+if [ $BUILD_STATUS -ne 0 ]; then
+    exit
+fi
+
 # Convert to shared objects
 # Debug
 if [ $BUILD_TYPE -eq 0 ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
         if [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
             for processedFile in "${processedFiles[@]}"; do
-                $COMPILER $LINK_FLAGS -shared -Wl,--whole-archive "$BUILD_DIRECTORY/$processedFile" -Wl,--no-whole-archive $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""${processedFile%.a}.so" &
+                if [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                    ((total++))
 
-                processIDs+=($!)
+                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""${processedFile%.a}.so" &
+
+                    processIDs+=($!)
+                fi
             done
         fi
     fi
@@ -400,6 +464,8 @@ fi
 
 for processID in "${processIDs[@]}"; do
     wait "$processID"
+
+    show_progress
 
     processStatuses+=($?)
 done
@@ -414,6 +480,7 @@ for processStatus in "${processStatuses[@]}"; do
     fi
 done
 
+processedFilesHashes=()
 processIDs=()
 processStatuses=()
 
@@ -450,7 +517,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 if [ $BUILD_TYPE -eq 0 ]; then
                     cd "$BUILD_DIRECTORY"
 
-                    $COMPILER $LINK_FLAGS '-Wl,--unresolved-symbols=ignore-in-shared-libs' "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
                     cd - > '/dev/null'
 
@@ -464,7 +531,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
 
-                if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
+                if [ ! -z "${STRIP_EXECUTABLE+x}" ]; then
                     if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
                         printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
                         echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
@@ -561,7 +628,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
             if [ $BUILD_STATUS -eq 0 ]; then
                 echo  -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
 
-                if [ ! -z "${NEED_STRIP_EXECUTABLE+x}" ]; then
+                if [ ! -z "${STRIP_EXECUTABLE+x}" ]; then
                     if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
                         printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
                         echo  -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
@@ -575,5 +642,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
         fi
     fi
 fi
+
+show_progress
 
 }

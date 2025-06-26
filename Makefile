@@ -64,10 +64,12 @@ $(SUBDIRS): dummy
 DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
 
 .c.o:
-	$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
+	@tput el; echo "Compiling $<"
+	@$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
 
 .rc.res:
-	$(RC) $(RCFLAGS) $(RCEXTRA) $(DEFINCL) -fo$@ $<
+	@tput el; echo "Compiling resource $<"
+	@$(RC) $(RCFLAGS) $(RCEXTRA) $(DEFINCL) -fo$@ $<
 
 # Rules for cleaning
 
@@ -75,8 +77,8 @@ CLEAN_FILES     = y.tab.c y.tab.h lex.yy.c core *.orig *.rej \
                   \\\#*\\\# *~ *% .\\\#*
 
 clean:: $(SUBDIRS:%=%/__clean__) $(EXTRASUBDIRS:%=%/__clean__)
-	$(RM) $(CLEAN_FILES) $(RC_SRCS:.rc=.res) $(SRCS:.c=.o)
-	$(RM) $(DLLS:%=%.so) $(LIBS) $(EXES) $(EXES:%=%.so)
+	@$(RM) $(CLEAN_FILES) $(RC_SRCS:.rc=.res) $(SRCS:.c=.o)
+	@$(RM) $(DLLS:%=%.so) $(LIBS) $(EXES) $(EXES:%=%.so)
 
 $(SUBDIRS:%=%/__clean__): dummy
 	cd `dirname $@` && $(MAKE) clean
@@ -88,6 +90,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
 $(libfile_a_MODULE): $(libfile_a_OBJS)
-	$(AR) $(libfile_a_ARFLAGS) $@ $(libfile_a_OBJS)
+	@tput el; echo "Archiving $<"
+	@$(AR) $(libfile_a_ARFLAGS) $@ $(libfile_a_OBJS)
 
 
