@@ -245,7 +245,7 @@ EXIT:
 }
 
 bool player_t$input$add( player_t* restrict _player,
-                         const input_t _input,
+                         const input_t* _input,
                          const size_t _frame ) {
     bool l_returnValue = false;
 

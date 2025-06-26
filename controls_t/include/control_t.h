@@ -7,7 +7,8 @@
 
 #define CONTROL_AS_STRING_UNKNOWN "UNKNOWN"
 
-#define DEFAULT_CONTROL { .scancode = SDL_SCANCODE_UNKNOWN, .input = 0 }
+#define DEFAULT_CONTROL \
+    { .scancode = SDL_SCANCODE_UNKNOWN, .input = DEFAULT_INPUT }
 
 typedef struct {
     SDL_Scancode scancode;

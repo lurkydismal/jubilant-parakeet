@@ -41,9 +41,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-input_t inputBuffer_t$inputsSequence$getInput$last(
+input_t* inputBuffer_t$inputsSequence$getInput$last(
     inputBuffer_t* _inputBuffer ) {
-    input_t l_returnValue = 0;
+    input_t* l_returnValue = NULL;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
@@ -53,7 +53,7 @@ input_t inputBuffer_t$inputsSequence$getInput$last(
 
     {
         l_returnValue =
-            _inputBuffer->inputs[ _inputBuffer->previousBufferIndex ];
+            &( _inputBuffer->inputs[ _inputBuffer->previousBufferIndex ] );
     }
 
 EXIT:
@@ -80,7 +80,7 @@ EXIT:
 }
 
 bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
-                           input_t _input,
+                           const input_t* _input,
                            size_t _frame ) {
     bool l_returnValue = false;
 
@@ -112,16 +112,32 @@ bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
             }
         }
 
-        const size_t l_currentBufferIndex = _inputBuffer->currentBufferIndex;
+        input_t* l_lastInput =
+            inputBuffer_t$inputsSequence$getInput$last( _inputBuffer );
 
-        _inputBuffer->inputs[ l_currentBufferIndex ] = _input;
-        _inputBuffer->frames[ l_currentBufferIndex ] = _frame;
+        if ( UNLIKELY( !l_lastInput ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Corrupted last input" );
 
-        _inputBuffer->currentBufferIndex =
-            ( ( l_currentBufferIndex + 1 ) %
-              arrayLengthNative( _inputBuffer->inputs ) );
+            goto EXIT;
+        }
 
-        _inputBuffer->previousBufferIndex = l_currentBufferIndex;
+        if ( l_lastInput->data == _input->data ) {
+            l_lastInput->duration++;
+
+        } else {
+            const size_t l_currentBufferIndex =
+                _inputBuffer->currentBufferIndex;
+
+            _inputBuffer->inputs[ l_currentBufferIndex ] = *_input;
+            _inputBuffer->frames[ l_currentBufferIndex ] = _frame;
+
+            _inputBuffer->currentBufferIndex =
+                ( ( l_currentBufferIndex + 1 ) %
+                  arrayLengthNative( _inputBuffer->inputs ) );
+
+            _inputBuffer->previousBufferIndex = l_currentBufferIndex;
+        }
 
         l_returnValue = true;
     }
@@ -191,17 +207,21 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
         // Previous to begin
         {
             FOR_RANGE_REVERSE( ssize_t, l_previousBufferIndex, ( 0 - 1 ) ) {
-                input_t* l_input = &( _inputBuffer->inputs[ _index ] );
                 if ( UNLIKELY( !l_amountLeft ) ) {
                     goto EXIT;
                 }
 
+                input_t* l_input = &( _inputBuffer->inputs[ _index ] );
                 const size_t l_frame = _inputBuffer->frames[ _index ];
 
-                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS ) <
+                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS + 1 ) <
                      l_previousFrame ) {
-                    goto EXIT;
+                    break;
                 }
+
+                // if ( !l_input->data ) {
+                //     continue;
+                // }
 
                 insertIntoArray( &l_returnValue, l_input );
 
@@ -223,16 +243,29 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
                 input_t* l_input = &( _inputBuffer->inputs[ _index ] );
                 const size_t l_frame = _inputBuffer->frames[ _index ];
 
-                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS ) <
+                if ( ( l_frame + MAX_DELAY_BETWEEN_INPUTS + 1 ) <
                      l_previousFrame ) {
-                    goto EXIT;
+                    break;
                 }
+
+                // if ( !l_input->data ) {
+                //     continue;
+                // }
 
                 insertIntoArray( &l_returnValue, l_input );
 
                 l_previousFrame = l_frame;
 
                 l_amountLeft--;
+            }
+        }
+
+        if ( !arrayLength( l_returnValue ) ) {
+            input_t* l_lastInput =
+                inputBuffer_t$inputsSequence$getInput$last( _inputBuffer );
+
+            if ( l_lastInput->data ) {
+                insertIntoArray( &l_returnValue, l_lastInput );
             }
         }
     }

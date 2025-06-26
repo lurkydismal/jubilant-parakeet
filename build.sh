@@ -127,7 +127,7 @@ if [ -z "${DISABLE_CLANG+x}" ]; then
     C_COMPILER="clang"
     CPP_COMPILER="clang++"
 
-    BUILD_C_FLAGS+=" -Wno-c23-extensions"
+    BUILD_C_FLAGS+=" -Wno-c23-extensions -Wno-gnu-folding-constant"
 
     # Debug or Tests
     if [ $BUILD_TYPE -eq 0 ] || [ $BUILD_TYPE -eq 3 ]; then

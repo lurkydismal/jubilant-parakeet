@@ -118,6 +118,10 @@ static const char* g_keyboardLayoutKeyNames[] = {
 control_t control_t$create( void ) {
     control_t l_returnValue = DEFAULT_CONTROL;
 
+    {
+        l_returnValue.input = input_t$create();
+    }
+
     return ( l_returnValue );
 }
 
@@ -132,7 +136,14 @@ bool control_t$destroy( control_t* _control ) {
 
     {
         _control->scancode = SDL_SCANCODE_UNKNOWN;
-        _control->input = 0;
+
+        l_returnValue = input_t$destroy( &( _control->input ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Destroying input" );
+
+            goto EXIT;
+        }
 
         l_returnValue = true;
     }

@@ -87,6 +87,12 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
         _HUD->playerAmount = 0;
 
+#if defined( DEBUG )
+
+        FREE_ARRAY( _HUD->watches );
+
+#endif
+
         l_returnValue = true;
     }
 
@@ -444,6 +450,28 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
         TRY_REMOVE_OR_EXIT( timer );
 
 #undef TRY_REMOVE_OR_EXIT
+
+#if defined( DEBUG )
+        // Watch
+        {
+            FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->watches ) ) {
+                watch_t* l_watch = _HUD->watches[ _index ];
+
+                l_returnValue = watch_t$destroy( l_watch );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Destroying background watch" );
+
+                    goto EXIT;
+                }
+
+                free( l_watch );
+
+                pluckArray( &( _HUD->watches ), l_watch );
+            }
+        }
+#endif
 
         l_returnValue = true;
     }

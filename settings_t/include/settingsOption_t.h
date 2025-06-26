@@ -58,27 +58,27 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
 static FORCE_INLINE const char* settingsOptionType_t$convert$toStaticString(
     const settingsOptionType_t _settingsOptionType ) {
     switch ( _settingsOptionType ) {
-        case ( boolean ): {
+        case boolean: {
             return ( "boolean" );
         }
 
-        case ( size ): {
+        case size: {
             return ( "size" );
         }
 
-        case ( float16 ): {
+        case float16: {
             return ( "float16" );
         }
 
-        case ( string ): {
+        case string: {
             return ( "string" );
         }
 
-        case ( scancode ): {
+        case scancode: {
             return ( "scancode" );
         }
 
-        case ( vsync ): {
+        case vsync: {
             return ( "vsync" );
         }
 

@@ -29,18 +29,18 @@ controls_t controls_t$create( void ) {
 
         // Directions
         {
-            l_returnValue.up.input = UP;
-            l_returnValue.down.input = DOWN;
-            l_returnValue.left.input = LEFT;
-            l_returnValue.right.input = RIGHT;
+            l_returnValue.up.input.data = UP;
+            l_returnValue.down.input.data = DOWN;
+            l_returnValue.left.input.data = LEFT;
+            l_returnValue.right.input.data = RIGHT;
         }
 
         // Buttons
         {
-            l_returnValue.A.input = A;
-            l_returnValue.B.input = B;
-            l_returnValue.C.input = C;
-            l_returnValue.D.input = D;
+            l_returnValue.A.input.data = A;
+            l_returnValue.B.input.data = B;
+            l_returnValue.C.input.data = C;
+            l_returnValue.D.input.data = D;
         }
     }
 
