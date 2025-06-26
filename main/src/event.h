@@ -59,17 +59,10 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
-                                SDL_Scancode _scancode ) {
+static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    if ( UNLIKELY( !_scancode ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -81,7 +74,7 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
             _applicationState->totalFramesRendered;
 
         if ( l_lastInputFrame < l_totalFramesRendered ) {
-            input_t l_input = 0;
+            input_t l_input = input_t$create();
 
             {
                 int l_keysAmount = 0;
@@ -102,23 +95,58 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
                                 l_scancode );
 
                         if ( l_control ) {
-                            l_input |= l_control->input;
+                            l_input.data |= l_control->input.data;
                         }
                     }
                 }
             }
 
-            if ( l_input ) {
-                l_returnValue =
-                    player_t$input$add( &( _applicationState->localPlayer ),
-                                        l_input, l_totalFramesRendered );
+            l_returnValue =
+                player_t$input$add( &( _applicationState->localPlayer ),
+                        &l_input, l_totalFramesRendered );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Adding player input" );
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                        "Adding player input" );
 
-                    goto EXIT;
+                goto EXIT;
+            }
+
+            {
+                // TODO: Fix
+#if 1
+                input_t** l_inputs = player_t$inputsSequences$get$withLimit(
+                        &( _applicationState->localPlayer ),
+                        _applicationState->totalFramesRendered + 1, 8 );
+
+                if ( arrayLength( l_inputs ) ) {
+                    static bool asd = false;
+                    static char* l_result = NULL;
+
+                    if ( !asd ) {
+                        asd = true;
+
+                        l_result = ( char* )malloc( 100 );
+                    }
+
+                    size_t l_len = 0;
+
+                    FOR_ARRAY_REVERSE( input_t* const*, l_inputs ) {
+                        const char* s = input_t$convert$toStaticString( *_element );
+                        const size_t sl = __builtin_strlen( s );
+
+                        __builtin_memcpy( ( l_result + l_len ), s, sl );
+
+                        l_len += sl;
+                    }
+
+                    l_result[ l_len ] = '\0';
+
+                    log$transaction$query$format( ( logLevel_t )debug, "SEQ %s", l_result );
                 }
+
+                FREE_ARRAY( l_inputs );
+#endif
             }
         }
 
@@ -143,7 +171,7 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
 
     {
         switch ( _event->type ) {
-            case ( SDL_EVENT_QUIT ): {
+            case SDL_EVENT_QUIT: {
                 _applicationState->status = true;
 
                 l_returnValue = false;
@@ -168,21 +196,16 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
                 break;
             }
 
-            case SDL_EVENT_KEY_DOWN: {
+            default: {
                 l_returnValue =
-                    onKey( _applicationState, _event->key.scancode );
+                    handleKeyboardState( _applicationState );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Handling key press" );
+                                           "Handling keyboard state" );
 
                     goto EXIT;
                 }
-
-                break;
-            }
-
-            default: {
             }
         }
 

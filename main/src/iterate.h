@@ -133,40 +133,7 @@ static FORCE_INLINE bool iterate(
             goto EXIT;
         }
 
-        // TODO: Fix
-        input_t** l_inputs = player_t$inputsSequences$get$withLimit(
-            &( _applicationState->localPlayer ),
-            _applicationState->totalFramesRendered, 8 );
-
-        if ( arrayLength( l_inputs ) ) {
-            static bool asd = false;
-            static char* l_result = NULL;
-
-            if ( !asd ) {
-                asd = true;
-
-                l_result = ( char* )malloc( 100 );
-            }
-
-            size_t l_len = 0;
-
-            FOR_ARRAY( input_t* const*, l_inputs ) {
-                const char* s = input_t$convert$toStaticString( **_element );
-                const size_t sl = __builtin_strlen( s );
-
-                __builtin_memcpy( ( l_result + l_len ), s, sl );
-
-                l_len += sl;
-            }
-
-            l_result[ l_len ] = '\0';
-
-            log$transaction$query$format( ( logLevel_t )debug, "%s", l_result );
-        }
-
-        FREE_ARRAY( l_inputs );
-
-        if ( ( _applicationState->totalFramesRendered % 60 ) == 0 ) {
+        if ( ( _applicationState->totalFramesRendered % 2 ) == 0 ) {
             log$transaction$commit();
         }
 

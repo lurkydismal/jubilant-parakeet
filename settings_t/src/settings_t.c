@@ -233,7 +233,7 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                 }
 
                 FOR_ARRAY( char* const*, l_lines ) {
-                    const char* l_line = sanitizeString( *_element );
+                    char* l_line = sanitizeString( *_element );
 
                     if ( ( l_line ) && ( __builtin_strlen( l_line ) ) ) {
                         char** l_keyAndValue =
@@ -278,6 +278,8 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                         FREE_ARRAY_ELEMENTS( l_keyAndValue );
                         FREE_ARRAY( l_keyAndValue );
                     }
+
+                    free( l_line );
                 }
 
                 FOR_ARRAY( settingsOption_t* const*, l_settingsOptions ) {

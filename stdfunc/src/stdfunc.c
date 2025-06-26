@@ -232,7 +232,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-ssize_t findStringInArray( const char** restrict _array,
+ssize_t findStringInArray( const char* restrict* restrict _array,
                            const size_t _arrayLength,
                            const char* restrict _value ) {
     ssize_t l_returnValue = -1;

@@ -22,25 +22,23 @@ int main( int _argumentCount, char** _argumentVector ) {
         goto EXIT;
     }
 
-    {
-        while ( true ) {
-            SDL_PumpEvents();
+    while ( true ) {
+        SDL_PumpEvents();
 
-            event_t l_event;
+        event_t l_event;
 
-            SDL_PollEvent( &l_event );
+        SDL_PollEvent( &l_event );
 
-            l_returnValue = event( &l_applicationState, &l_event );
+        l_returnValue = event( &l_applicationState, &l_event );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
+        if ( UNLIKELY( !l_returnValue ) ) {
+            break;
+        }
 
-            l_returnValue = iterate( &l_applicationState );
+        l_returnValue = iterate( &l_applicationState );
 
-            if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
-            }
+        if ( UNLIKELY( !l_returnValue ) ) {
+            break;
         }
     }
 

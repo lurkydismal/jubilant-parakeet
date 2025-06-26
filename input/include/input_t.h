@@ -1,23 +1,38 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "button_t.h"
 #include "direction_t.h"
+#include "stdfunc.h"
+
+#define MAX_DURATION_LENGTH ( lengthOfNumber( SIZE_MAX ) )
 
 #define MAKE_INPUT( _direction, _button )                      \
     ( ( input_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
                    ( ( _button ) & INPUT_BUTTON_MASK ) ) )
 
 #define GET_DIRECTION( _input ) \
-    ( ( direction_t )( ( _input ) & INPUT_DIRECTION_MASK ) )
-#define GET_BUTTON( _input ) ( ( button_t )( ( _input ) & INPUT_BUTTON_MASK ) )
+    ( ( direction_t )( ( _input )->data & INPUT_DIRECTION_MASK ) )
+#define GET_BUTTON( _input ) \
+    ( ( button_t )( ( _input )->data & INPUT_BUTTON_MASK ) )
+#define GET_DURATION( _input ) ( ( _input )->duration )
 
-typedef uint8_t input_t;
+#define DEFAULT_INPUT { .data = 0, .duration = 0 }
+
+typedef struct {
+    uint8_t data;
+    size_t duration;
+} input_t;
+
+input_t input_t$create( void );
+bool input_t$destroy( input_t* restrict _input );
 
 static FORCE_INLINE const char* input_t$convert$toStaticString(
-    const input_t _input ) {
-    static char l_returnValue[ ( BUTTON_COUNT + DIRECTIONS_COUNT + 1 ) ];
+    const input_t* restrict _input ) {
+    static char l_returnValue[ BUTTON_COUNT + DIRECTIONS_COUNT + 1 +
+                               MAX_DURATION_LENGTH + 1 + 1 ];
 
     size_t l_length = 0;
 
@@ -49,6 +64,30 @@ static FORCE_INLINE const char* input_t$convert$toStaticString(
                           l_buttonAsStringLength );
 
         l_length += l_buttonAsStringLength;
+    }
+
+    // Duration
+    {
+        const size_t l_duration = GET_DURATION( _input );
+
+        if ( LIKELY( l_duration ) ) {
+            l_returnValue[ l_length ] = '[';
+            l_length++;
+
+            char* l_durationAsString = numberToString( l_duration );
+            const size_t l_durationAsStringLength =
+                lengthOfNumber( l_duration );
+
+            __builtin_memcpy( ( l_returnValue + l_length ), l_durationAsString,
+                              l_durationAsStringLength );
+
+            free( l_durationAsString );
+
+            l_length += l_durationAsStringLength;
+
+            l_returnValue[ l_length ] = ']';
+            l_length++;
+        }
     }
 
     l_returnValue[ l_length ] = '\0';

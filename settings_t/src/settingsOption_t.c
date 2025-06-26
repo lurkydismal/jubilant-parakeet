@@ -126,35 +126,35 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
         }
 
         switch ( _settingsOption->type ) {
-            case ( boolean ): {
+            case boolean: {
                 *( ( bool* )( _settingsOption->storage ) ) =
                     stringToBool( _value );
 
                 break;
             }
 
-            case ( size ): {
+            case size: {
                 *( ( size_t* )( _settingsOption->storage ) ) =
                     strtoull( _value, NULL, 10 );
 
                 break;
             }
 
-            case ( float16 ): {
+            case float16: {
                 *( ( float16_t* )( _settingsOption->storage ) ) =
                     strtof( _value, NULL );
 
                 break;
             }
 
-            case ( scancode ): {
+            case scancode: {
                 *( ( SDL_Scancode* )( _settingsOption->storage ) ) =
                     control_t$scancode$convert$fromString( _value );
 
                 break;
             }
 
-            case ( string ): {
+            case string: {
                 free( *( _settingsOption->storage ) );
 
                 *( ( char** )( _settingsOption->storage ) ) =
@@ -163,7 +163,7 @@ bool settingsOption_t$bind( settingsOption_t* restrict _settingsOption,
                 break;
             }
 
-            case ( vsync ): {
+            case vsync: {
                 *( ( vsync_t* )( _settingsOption->storage ) ) =
                     vsync_t$convert$fromString( _value );
 

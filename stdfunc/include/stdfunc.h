@@ -97,7 +97,7 @@
     ( arrayLastElementPointer( _array ) - arrayFirstElementPointer( _array ) )
 
 #define randomValueFromArray( _array ) \
-    ( ( _array )[ randomNumber() % arrayLength( ( _array ) ) ] )
+    ( ( _array )[ randomNumber() % arrayLength( _array ) ] )
 
 #define arrayLengthNative( _array ) \
     ( sizeof( ( _array ) ) / sizeof( ( _array )[ 0 ] ) )
@@ -116,7 +116,7 @@
       arrayFirstElementPointerNative( _array ) )
 
 #define randomValueFromArrayNative( _array ) \
-    ( ( _array )[ randomNumber() % arrayLengthNative( ( _array ) ) ] )
+    ( ( _array )[ randomNumber() % arrayLengthNative( _array ) ] )
 
 // Native array iteration FOR
 #define FOR( _type, _array )                                       \
@@ -187,38 +187,57 @@ static FORCE_INLINE float clamp$float( float _value,
         __builtin_fminf( __builtin_fmaxf( _value, _valueMin ), _valueMax ) );
 }
 
-static FORCE_INLINE void trim( char** restrict _string,
+static FORCE_INLINE void trim( char* restrict* restrict _string,
                                const size_t _from,
                                const size_t _to ) {
     ( *_string ) += _from;
     ( *_string )[ _to ] = '\0';
 }
 
-static FORCE_INLINE size_t lengthOfNumber( size_t _number ) {
-    // clang-format off
-    return (
-        ( (_number < 10ULL) ) ? ( 1 ) :
-        ( (_number < 100ULL) ) ? ( 2 ) :
-        ( (_number < 1000ULL) ) ? ( 3 ) :
-        ( (_number < 10000ULL) ) ? ( 4 ) :
-        ( (_number < 100000ULL) ) ? ( 5 ) :
-        ( (_number < 1000000ULL) ) ? ( 6 ) :
-        ( (_number < 10000000ULL) ) ? ( 7 ) :
-        ( (_number < 100000000ULL) ) ? ( 8 ) :
-        ( (_number < 1000000000ULL) ) ? ( 9 ) :
-        ( (_number < 10000000000ULL) ) ? ( 10 ) :
-        ( (_number < 100000000000ULL) ) ? ( 11 ) :
-        ( (_number < 1000000000000ULL) ) ? ( 12 ) :
-        ( (_number < 10000000000000ULL) ) ? ( 13 ) :
-        ( (_number < 100000000000000ULL) ) ? ( 14 ) :
-        ( (_number < 1000000000000000ULL) ) ? ( 15 ) :
-        ( (_number < 10000000000000000ULL) ) ? ( 16 ) :
-        ( (_number < 100000000000000000ULL) ) ? ( 17 ) :
-        ( (_number < 1000000000000000000ULL) ) ? ( 18 ) :
-        ( (_number < 10000000000000000000ULL) ) ? ( 19 ) :
-        ( 20 )
-    );
-    // clang-format on
+// clang-format off
+#define lengthOfNumber( _number ) ( {\
+    ( (_number < 10ULL) ) ? ( 1 ) :\
+    ( (_number < 100ULL) ) ? ( 2 ) :\
+    ( (_number < 1000ULL) ) ? ( 3 ) :\
+    ( (_number < 10000ULL) ) ? ( 4 ) :\
+    ( (_number < 100000ULL) ) ? ( 5 ) :\
+    ( (_number < 1000000ULL) ) ? ( 6 ) :\
+    ( (_number < 10000000ULL) ) ? ( 7 ) :\
+    ( (_number < 100000000ULL) ) ? ( 8 ) :\
+    ( (_number < 1000000000ULL) ) ? ( 9 ) :\
+    ( (_number < 10000000000ULL) ) ? ( 10 ) :\
+    ( (_number < 100000000000ULL) ) ? ( 11 ) :\
+    ( (_number < 1000000000000ULL) ) ? ( 12 ) :\
+    ( (_number < 10000000000000ULL) ) ? ( 13 ) :\
+    ( (_number < 100000000000000ULL) ) ? ( 14 ) :\
+    ( (_number < 1000000000000000ULL) ) ? ( 15 ) :\
+    ( (_number < 10000000000000000ULL) ) ? ( 16 ) :\
+    ( (_number < 100000000000000000ULL) ) ? ( 17 ) :\
+    ( (_number < 1000000000000000000ULL) ) ? ( 18 ) :\
+    ( (_number < 10000000000000000000ULL) ) ? ( 19 ) :\
+    ( 20 );\
+} )
+// clang-format on
+
+static FORCE_INLINE char* numberToString( size_t _number ) {
+    char* l_returnValue = NULL;
+
+    {
+        const size_t l_numberLength = lengthOfNumber( _number );
+
+        l_returnValue =
+            ( char* )malloc( ( l_numberLength + 1 ) * sizeof( char ) );
+
+        FOR_RANGE_REVERSE( ssize_t, ( l_numberLength - 1 ), ( 0 - 1 ) ) {
+            l_returnValue[ _index ] = ( ( _number % 10 ) + '0' );
+
+            _number /= 10;
+        }
+
+        l_returnValue[ l_numberLength ] = '\0';
+    }
+
+    return ( l_returnValue );
 }
 
 #define RANDOM_NUMBER_MAX SIZE_MAX
@@ -424,7 +443,7 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
     } while ( 0 )
 
-ssize_t findStringInArray( const char** restrict _array,
+ssize_t findStringInArray( const char* restrict* restrict _array,
                            const size_t _arrayLength,
                            const char* restrict _value );
 
@@ -432,7 +451,7 @@ ssize_t findInArray( const size_t* restrict _array,
                      const size_t _arrayLength,
                      const size_t _value );
 
-static FORCE_INLINE bool containsString( const char** restrict _array,
+static FORCE_INLINE bool containsString( const char* restrict* restrict _array,
                                          const size_t _arrayLength,
                                          const char* restrict _value ) {
     return ( findStringInArray( _array, _arrayLength, _value ) >= 0 );
@@ -445,8 +464,9 @@ static FORCE_INLINE bool contains( const size_t* restrict _array,
 }
 
 // Utility functions ( no side-effects ) wrappers for non-naitve array
-static FORCE_INLINE ssize_t _findStringInArray( const char** restrict _array,
-                                                const char* restrict _value ) {
+static FORCE_INLINE ssize_t
+_findStringInArray( const char* restrict* restrict _array,
+                    const char* restrict _value ) {
     return ( findStringInArray(
                  ( const char** )( arrayFirstElementPointer( _array ) ),
                  arrayLength( _array ), _value ) +
@@ -459,7 +479,7 @@ static FORCE_INLINE ssize_t _findInArray( const size_t* restrict _array,
                           arrayLength( _array ), _value ) );
 }
 
-static FORCE_INLINE bool _containsString( const char** restrict _array,
+static FORCE_INLINE bool _containsString( const char* restrict* restrict _array,
                                           const char* restrict _value ) {
     return (
         containsString( ( const char** )( arrayFirstElementPointer( _array ) ),
@@ -482,7 +502,7 @@ char** getPathsByGlob( const char* restrict _glob,
 // format - "%s%s %s = %p'
 static FORCE_INLINE void dumpCallback( void* _callback,
                                        void* _context,
-                                       const char* _format,
+                                       const char* restrict _format,
                                        ... )
     __attribute__( ( format( printf,
                              3, // Format index

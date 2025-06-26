@@ -23,13 +23,13 @@ typedef struct {
 inputBuffer_t inputBuffer_t$create( void );
 bool inputBuffer_t$destroy( inputBuffer_t* _inputBuffer );
 
-input_t inputBuffer_t$inputsSequence$getInput$last(
+input_t* inputBuffer_t$inputsSequence$getInput$last(
     inputBuffer_t* _inputBuffer );
 size_t inputBuffer_t$inputsSequence$getFrame$last(
     inputBuffer_t* _inputBuffer );
 
 bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
-                           input_t _input,
+                           const input_t* _input,
                            size_t _frame );
 
 input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,

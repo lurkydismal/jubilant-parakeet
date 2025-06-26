@@ -77,7 +77,7 @@ static FORCE_INLINE control_t* controls_t$control_t$convert$fromScancode(
 
 static FORCE_INLINE control_t* controls_t$control_t$convert$fromInput(
     controls_t* _controls,
-    const input_t _input ) {
+    const input_t* _input ) {
     if ( UNLIKELY( !_controls ) ) {
         return ( NULL );
     }
@@ -87,11 +87,11 @@ static FORCE_INLINE control_t* controls_t$control_t$convert$fromInput(
     }
 
     {
-#define RETURN_IF_INPUT_MATCHES( _field )          \
-    do {                                           \
-        if ( _controls->_field.input == _input ) { \
-            return ( &( _controls->_field ) );     \
-        }                                          \
+#define RETURN_IF_INPUT_MATCHES( _field )                     \
+    do {                                                      \
+        if ( _controls->_field.input.data == _input->data ) { \
+            return ( &( _controls->_field ) );                \
+        }                                                     \
     } while ( 0 )
 
         // Directions

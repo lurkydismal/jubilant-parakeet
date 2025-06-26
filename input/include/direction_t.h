@@ -46,7 +46,7 @@ static FORCE_INLINE const char* direction_t$convert$toStaticString(
         if ( ( _matchExactly ) ? ( ( ( _direction ) & ( _directionType ) ) == \
                                    ( _directionType ) )                       \
                                : ( ( _direction ) & ( _directionType ) ) ) {  \
-            ( _buffer )[ ( _bufferLength ) ] =                                \
+            ( _buffer )[ _bufferLength ] =                                    \
                 DIRECTION_TYPE_TO_CHAR( _directionType );                     \
             ( _direction ) &= ~( _directionType );                            \
             ( _bufferLength )++;                                              \
