@@ -81,7 +81,7 @@ export declare BUILD_INCLUDES_TESTS=(
 )
 
 export LINK_FLAGS="-flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
-export LINK_FLAGS_DEBUG=""
+export LINK_FLAGS_DEBUG="-Wl,-rpath,\$ORIGIN"
 export LINK_FLAGS_RELEASE="-s"
 export LINK_FLAGS_PROFILE=""
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
@@ -302,18 +302,23 @@ if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     unset externalLibrariesAsString
 fi
 
+processedFiles=()
 processIDs=()
 processStatuses=()
 BUILD_STATUS=0
 
 if [ ${#partsToBuild[@]} -ne 0 ]; then
-    printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s.a " "${partsToBuild[@]}"
+    printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s"".a " "${partsToBuild[@]}"
     echo -e "$PARTS_TO_BUILD_COLOR""$partsToBuildAsString""$RESET_COLOR"
 fi
 
 for partToBuild in "${partsToBuild[@]}"; do
     source "$partToBuild/config.sh" && {
-        OUTPUT_FILE='lib'"$partToBuild"'.a' \
+        OUTPUT_FILE='lib'"$partToBuild"'.a'
+
+        processedFiles+=("$OUTPUT_FILE")
+
+        OUTPUT_FILE="$OUTPUT_FILE" \
             './build_general.sh' \
                 "$partToBuild" \
                 "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
@@ -335,6 +340,8 @@ if [ $BUILD_STATUS -eq 0 ]; then
     for staticPart in "${staticParts[@]}"; do
         source "$staticPart/config.sh" && {
             OUTPUT_FILE='lib'"$staticPart"'.a'
+
+            processedFiles+=("$OUTPUT_FILE")
 
             if [ -z "${NEED_REBUILD_STATIC_PARTS+x}" ]; then
                 if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
@@ -377,12 +384,47 @@ done
 processIDs=()
 processStatuses=()
 
+# Convert to shared objects
+# Debug
+if [ $BUILD_TYPE -eq 0 ]; then
+    if [ $BUILD_STATUS -eq 0 ]; then
+        if [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
+            for processedFile in "${processedFiles[@]}"; do
+                $COMPILER $LINK_FLAGS -shared -Wl,--whole-archive "$BUILD_DIRECTORY/$processedFile" -Wl,--no-whole-archive $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""${processedFile%.a}.so" &
+
+                processIDs+=($!)
+            done
+        fi
+    fi
+fi
+
+for processID in "${processIDs[@]}"; do
+    wait "$processID"
+
+    processStatuses+=($?)
+done
+
+BUILD_STATUS=0
+
+for processStatus in "${processStatuses[@]}"; do
+    if [[ "$processStatus" -ne 0 ]]; then
+        BUILD_STATUS=$processStatus
+
+        break
+    fi
+done
+
+processIDs=()
+processStatuses=()
+
 # Build main executable
 if [ $BUILD_STATUS -eq 0 ]; then
     # Build executable main package
     if [ $BUILD_STATUS -eq 0 ]; then
         source "$executableMainPackage/config.sh" && {
-            OUTPUT_FILE='lib'"$executableMainPackage"'.a' \
+            OUTPUT_FILE='lib'"$executableMainPackage"'.a'
+
+            OUTPUT_FILE="$OUTPUT_FILE" \
                 './build_general.sh' \
                     "$executableMainPackage" \
                     "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
@@ -404,7 +446,17 @@ if [ $BUILD_STATUS -eq 0 ]; then
             fi
 
             if [ -z "${SCAN_BUILD+x}" ]; then
-                $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -lSDL3 -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+                # Debug
+                if [ $BUILD_TYPE -eq 0 ]; then
+                    cd "$BUILD_DIRECTORY"
+
+                    $COMPILER $LINK_FLAGS '-Wl,--unresolved-symbols=ignore-in-shared-libs' "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+
+                    cd - > '/dev/null'
+
+                else
+                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+                fi
 
                 BUILD_STATUS=$?
             fi
@@ -438,7 +490,9 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
         for testToBuild in "${testsToBuild[@]}"; do
             source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
-                OUTPUT_FILE='lib'"$testToBuild"'_test.a' \
+                OUTPUT_FILE='lib'"$testToBuild"'_test.a'
+
+                OUTPUT_FILE="$OUTPUT_FILE" \
                     './build_general.sh' \
                         "$TESTS_DIRECTORY/$testToBuild" \
                         "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
