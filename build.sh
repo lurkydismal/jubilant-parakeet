@@ -192,45 +192,6 @@ source 'show_progress.sh'
 
 clear
 
-# TODO: Improve
-PIPE='/tmp/build_output_fifo'
-
-rm -f "$PIPE"
-mkfifo "$PIPE"
-
-printer() {
-    # Save cursor position and terminal size
-    local lines=$(tput lines)
-    local cols=$(tput cols)
-
-    # Clear the screen or scroll if you want
-    clear
-
-    # Buffer for progress bar line
-    local progress_line=""
-
-    while IFS= read -r line; do
-        # Check if line is a special progress bar update (e.g., starts with PROGRESS:)
-        if [[ "$line" == PROGRESS:* ]]; then
-            progress_line="${line#PROGRESS:}"
-
-            # Move cursor to last line
-            tput sc
-            tput cup $((lines-1)) 0
-            tput el
-            printf "%s" "$progress_line"
-            tput rc
-        else
-            # Normal output: print above progress bar line
-            # Move cursor to before last line, insert line, scroll progress bar down
-            echo "$line"
-        fi
-    done < "$PIPE"
-}
-
-printer < "$PIPE" &
-PRINTER_PID=$!
-
 show_progress
 
 source './config.sh' && {
