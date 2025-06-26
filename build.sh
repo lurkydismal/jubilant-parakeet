@@ -411,10 +411,13 @@ if [ $BUILD_TYPE -eq 0 ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
         if [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
             for processedFile in "${processedFiles[@]}"; do
-                if [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                outputFile="${processedFile%.a}.so"
+                if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                     ((total++))
 
-                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""${processedFile%.a}.so" &
+                    echo "Linking $outputFile"
+
+                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
 
                     processIDs+=($!)
                 fi

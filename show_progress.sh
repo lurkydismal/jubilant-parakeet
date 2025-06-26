@@ -8,7 +8,10 @@ BAR_DIV=$(( ${#BAR_CHARS[@]} - 1 ))
 export total=1
 counter=-1
 
+# TODO: Fix
 show_progress() {
+    return
+
     if (( counter >= total )); then
         return
     fi

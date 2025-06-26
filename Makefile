@@ -64,11 +64,11 @@ $(SUBDIRS): dummy
 DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
 
 .c.o:
-	@tput el; echo "Compiling $<"
+	@echo "Compiling $<"
 	@$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
 
 .rc.res:
-	@tput el; echo "Compiling resource $<"
+	@echo "Compiling resource $<"
 	@$(RC) $(RCFLAGS) $(RCEXTRA) $(DEFINCL) -fo$@ $<
 
 # Rules for cleaning
@@ -90,7 +90,7 @@ $(EXTRASUBDIRS:%=%/__clean__): dummy
 DEFLIB = $(LIBRARY_PATH) $(LIBRARIES) $(DLL_PATH) $(DLL_IMPORTS:%=-l%)
 
 $(libfile_a_MODULE): $(libfile_a_OBJS)
-	@tput el; echo "Archiving $<"
+	@echo "Archiving $<"
 	@$(AR) $(libfile_a_ARFLAGS) $@ $(libfile_a_OBJS)
 
 
