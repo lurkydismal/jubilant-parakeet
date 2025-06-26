@@ -1,3 +1,19 @@
+#include <dlfcn.h>
+#include <elf.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <gelf.h>
+#include <libelf.h>
+#include <limits.h>
+#include <link.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "plthook.h"
+
 #if defined( __SANITIZE_LEAK__ )
 
 #include <sanitizer/lsan_interface.h>

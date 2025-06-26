@@ -1,7 +1,6 @@
 #include "config_t.h"
 
-#include <ini.h>
-
+#include "ini.h"
 #include "log.h"
 #include "stdfunc.h"
 
@@ -217,8 +216,8 @@ bool config_t$load$fromString( config_t* restrict _config,
     }
 
     {
-        const int l_errorLineNumber =
-            ini_parse_string( _string, lineHandler, _config );
+        const int l_errorLineNumber = ini_parse_string_length(
+            _string, __builtin_strlen( _string ), lineHandler, _config );
 
         l_returnValue = ( l_errorLineNumber == 0 );
 
