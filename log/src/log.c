@@ -69,11 +69,11 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
 
             concatBeforeAndAfterString( _string, " ", NULL );
 
-            concatBeforeAndAfterString( _string, l_logLevelWithBrackets, NULL );
+            // Length of string with log level
+            l_returnValue = concatBeforeAndAfterString(
+                _string, l_logLevelWithBrackets, NULL );
 
             free( l_logLevelWithBrackets );
-
-            l_returnValue = true;
         }
     }
 

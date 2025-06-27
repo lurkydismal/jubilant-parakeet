@@ -201,7 +201,7 @@ mkdir -p "$BUILD_DIRECTORY"
 {
     # Release
     if [ $BUILD_TYPE -eq 1 ]; then
-        fd -I '\.o$' -x rm {}
+        fd -I -e o -x rm {}
 
     else
         if [[ -n "${staticParts[@]}" ]]; then
@@ -211,7 +211,7 @@ mkdir -p "$BUILD_DIRECTORY"
             staticPartsAsExcludeString=""
         fi
 
-        fd -I '\.o$' $staticPartsAsExcludeString -x rm {}
+        fd -I -e o $staticPartsAsExcludeString -x rm {}
 
         unset staticPartsAsExcludeString
     fi
@@ -418,22 +418,20 @@ fi
 
 # Convert to shared objects
 # Debug
-if [ $BUILD_TYPE -eq 0 ]; then
+if [ $BUILD_TYPE -eq 0 ] && [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
-        if [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
-            for processedFile in "${processedFiles[@]}"; do
-                outputFile="${processedFile%.a}.so"
-                if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
-                    ((total++))
+        for processedFile in "${processedFiles[@]}"; do
+            outputFile="${processedFile%.a}.so"
+            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                ((total++))
 
-                    echo "Linking $outputFile"
+                echo "Linking $outputFile"
 
-                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
 
-                    processIDs+=($!)
-                fi
-            done
-        fi
+                processIDs+=($!)
+            fi
+        done
     fi
 fi
 
@@ -489,18 +487,20 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
             if [ -z "${SCAN_BUILD+x}" ]; then
                 # Debug
-                if [ $BUILD_TYPE -eq 0 ]; then
+                if [ $BUILD_TYPE -eq 0 ] && [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
                     cd "$BUILD_DIRECTORY"
 
                     $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+
+                    BUILD_STATUS=$?
 
                     cd - > '/dev/null'
 
                 else
                     $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-                fi
 
-                BUILD_STATUS=$?
+                    BUILD_STATUS=$?
+                fi
             fi
 
             if [ $BUILD_STATUS -eq 0 ]; then
