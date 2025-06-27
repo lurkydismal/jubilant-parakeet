@@ -333,7 +333,10 @@ for partToBuild in "${partsToBuild[@]}"; do
         OUTPUT_FILE='lib'"$partToBuild"'.a'
 
         processedFiles+=("$OUTPUT_FILE")
-        processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+
+        if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
+            processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+        fi
 
         OUTPUT_FILE="$OUTPUT_FILE" \
             './build_general.sh' \
@@ -361,7 +364,10 @@ if [ $BUILD_STATUS -eq 0 ]; then
             OUTPUT_FILE='lib'"$staticPart"'.a'
 
             processedFiles+=("$OUTPUT_FILE")
-            processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+
+            if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
+                processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+            fi
 
             if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
                 if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
