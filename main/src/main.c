@@ -21,7 +21,6 @@
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
-#include "plthook.h"
 #include "quit.h"
 #include "stdfunc.h"
 

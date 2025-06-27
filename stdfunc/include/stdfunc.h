@@ -6,6 +6,7 @@
 #define XXH_NO_STREAM
 #define XXH_STATIC_LINKING_ONLY
 
+#include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -14,6 +15,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 #include <xxhash.h>
 
 // Function attributes
@@ -493,7 +495,46 @@ static FORCE_INLINE bool _contains( const size_t* restrict _array,
 }
 
 // Utility OS specific functions ( no side-effects )
-char* getApplicationDirectoryAbsolutePath( void );
+static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {
+    char* l_returnValue = NULL;
+
+    {
+        char* l_executablePath = ( char* )malloc( PATH_MAX * sizeof( char ) );
+
+        // Get executable path
+        {
+            ssize_t l_executablePathLength = readlink(
+                "/proc/self/exe", l_executablePath, ( PATH_MAX - 1 ) );
+
+            if ( UNLIKELY( l_executablePathLength == -1 ) ) {
+                free( l_executablePath );
+
+                goto EXIT;
+            }
+
+            l_executablePath[ l_executablePathLength ] = '\0';
+        }
+
+        char* l_directoryPath = NULL;
+
+        // Get directory path
+        {
+            l_directoryPath = l_executablePath;
+
+            // Do not move the beginning
+            trim( &l_directoryPath, 0,
+                  findLastSymbolInString( l_executablePath, '/' ) );
+
+            concatBeforeAndAfterString( &l_directoryPath, NULL, "/" );
+        }
+
+        l_returnValue = l_directoryPath;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 char** getPathsByGlob( const char* restrict _glob,
                        const char* restrict _directory,
                        const bool _needSort );

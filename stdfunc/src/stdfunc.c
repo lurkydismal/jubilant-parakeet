@@ -8,9 +8,7 @@
 
 #include <ctype.h>
 #include <glob.h>
-#include <limits.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "asset_t.h"
 #include "log.h"
@@ -314,64 +312,6 @@ ssize_t findInArray( const size_t* restrict _array,
         }
 
         l_returnValue = l_index;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-char* getApplicationDirectoryAbsolutePath( void ) {
-    char* l_returnValue = NULL;
-
-    {
-        char* l_executablePath = ( char* )malloc( PATH_MAX * sizeof( char ) );
-
-        // Get executable path
-        {
-            ssize_t l_executablePathLength = readlink(
-                "/proc/self/exe", l_executablePath, ( PATH_MAX - 1 ) );
-
-            if ( UNLIKELY( l_executablePathLength == -1 ) ) {
-                log$transaction$query( ( logLevel_t )error, "readlink" );
-
-                free( l_executablePath );
-
-                goto EXIT;
-            }
-
-            l_executablePath[ l_executablePathLength ] = '\0';
-        }
-
-        char* l_directoryPath = NULL;
-
-        // Get directory path
-        {
-            char* l_lastSlash = __builtin_strrchr( l_executablePath, '/' );
-
-            if ( UNLIKELY( !l_lastSlash ) ) {
-                log$transaction$query$format( ( logLevel_t )error,
-                                              "Extracting directory: '%s'",
-                                              l_executablePath );
-
-                goto EXIT;
-            }
-
-            const ssize_t l_lastSlashIndex = ( l_lastSlash - l_executablePath );
-
-            l_directoryPath = l_executablePath;
-
-            // Do not move the beginning
-            trim( &l_directoryPath, 0, l_lastSlashIndex );
-
-            if ( UNLIKELY( !concatBeforeAndAfterString( &l_directoryPath, NULL,
-                                                        "/" ) ) ) {
-                free( l_directoryPath );
-
-                goto EXIT;
-            }
-        }
-
-        l_returnValue = l_directoryPath;
     }
 
 EXIT:

@@ -45,7 +45,6 @@ declare -a testsToBuild=(
 )
 declare -a staticParts=(
     "inih"
-    "plthook"
 )
 
 export executableMainPackage='main'
