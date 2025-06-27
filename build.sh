@@ -2,7 +2,6 @@
 shopt -s nullglob
 
 trap 'echo "Line $LINENO: $BASH_COMMAND"' ERR
-trap 'printf " \n"' EXIT
 
 export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export BUILD_DIRECTORY_NAME="out"
