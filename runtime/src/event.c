@@ -1,18 +1,13 @@
-#pragma once
+#include "event.h"
 
-#include <SDL3/SDL_events.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
-#include <stdbool.h>
 #include <stddef.h>
 
-#include "applicationState_t.h"
 #include "controls_t.h"
 #include "inputBuffer_t.h"
 #include "log.h"
 #include "stdfunc.h"
-
-typedef SDL_Event event_t;
 
 static FORCE_INLINE bool onWindowResize(
     applicationState_t* restrict _applicationState,
@@ -59,7 +54,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _applicationState ) {
+static FORCE_INLINE bool handleKeyboardState(
+    applicationState_t* restrict _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
@@ -103,11 +99,11 @@ static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _appl
 
             l_returnValue =
                 player_t$input$add( &( _applicationState->localPlayer ),
-                        &l_input, l_totalFramesRendered );
+                                    &l_input, l_totalFramesRendered );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                        "Adding player input" );
+                                       "Adding player input" );
 
                 goto EXIT;
             }
@@ -116,8 +112,8 @@ static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _appl
                 // TODO: Fix
 #if 1
                 input_t** l_inputs = player_t$inputsSequences$get$withLimit(
-                        &( _applicationState->localPlayer ),
-                        _applicationState->totalFramesRendered + 1, 8 );
+                    &( _applicationState->localPlayer ),
+                    _applicationState->totalFramesRendered + 1, 8 );
 
                 if ( arrayLength( l_inputs ) ) {
                     static bool asd = false;
@@ -132,7 +128,8 @@ static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _appl
                     size_t l_len = 0;
 
                     FOR_ARRAY_REVERSE( input_t* const*, l_inputs ) {
-                        const char* s = input_t$convert$toStaticString( *_element );
+                        const char* s =
+                            input_t$convert$toStaticString( *_element );
                         const size_t sl = __builtin_strlen( s );
 
                         __builtin_memcpy( ( l_result + l_len ), s, sl );
@@ -142,7 +139,8 @@ static FORCE_INLINE bool handleKeyboardState( applicationState_t* restrict _appl
 
                     l_result[ l_len ] = '\0';
 
-                    log$transaction$query$format( ( logLevel_t )debug, "SEQ %s", l_result );
+                    log$transaction$query$format( ( logLevel_t )debug, "SEQ %s",
+                                                  l_result );
                 }
 
                 FREE_ARRAY( l_inputs );
@@ -159,8 +157,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool event( applicationState_t* _applicationState,
-                                event_t* _event ) {
+bool event( applicationState_t* restrict _applicationState,
+            const event_t* restrict _event ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
@@ -197,8 +195,7 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
             }
 
             default: {
-                l_returnValue =
-                    handleKeyboardState( _applicationState );
+                l_returnValue = handleKeyboardState( _applicationState );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,

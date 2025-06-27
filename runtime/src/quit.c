@@ -1,4 +1,4 @@
-#pragma once
+#include "quit.h"
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
@@ -6,29 +6,18 @@
 #include <stdlib.h>
 
 #include "FPS.h"
-#include "applicationState_t.h"
 #include "asset_t.h"
 #include "log.h"
 #include "stdfunc.h"
 #include "vsync.h"
 
-typedef enum { failure, success } result_t;
-
-static FORCE_INLINE const char* result_t$convert$toStaticString(
-    const result_t _result ) {
-    switch ( _result ) {
-        case success: {
-            return ( "SUCCESS" );
-        }
-
-        default: {
-            return ( "FAILURE" );
-        }
-    }
+static FORCE_INLINE const char* result$convert$toStaticString(
+    const bool _result ) {
+    return ( ( _result ) ? ( "SUCCESS" ) : ( "FAILURE" ) );
 }
 
-static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
-                               const result_t _result ) {
+bool quit( applicationState_t* restrict _applicationState,
+           const bool _result ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
@@ -45,7 +34,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
                 log$transaction$query$format(
                     ( logLevel_t )error, "Application exited with %s: '%s'",
-                    result_t$convert$toStaticString( _result ),
+                    result$convert$toStaticString( _result ),
                     l_SDLErrorMessage );
             }
         }
@@ -112,13 +101,13 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         }
 
         // Report application result
-        if ( _result != ( result_t )success ) {
+        if ( !_result ) {
             const char* l_SDLErrorMessage = SDL_GetError();
 
             if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
                 log$transaction$query$format(
                     ( logLevel_t )error, "Application shutdown with %s: '%s'",
-                    result_t$convert$toStaticString( _result ),
+                    result$convert$toStaticString( _result ),
                     l_SDLErrorMessage );
             }
         }
@@ -136,5 +125,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
     }
 
 EXIT:
+    SDL_Quit();
+
     return ( l_returnValue );
 }

@@ -1,5 +1,6 @@
 #!/bin/bash
 declare -a partsToBuild=(
+    "runtime"
     "controls_t"
     "input"
     "FPS"
@@ -22,6 +23,7 @@ declare -a partsToBuild=(
     "stdfunc"
 )
 declare -a testsToBuild=(
+    "runtime"
     "controls_t"
     # "input"
     "FPS"

@@ -55,7 +55,8 @@ export declare BUILD_DEFINES_TESTS=(
 )
 
 export declare BUILD_INCLUDES=(
-    "main/applicationState_t/include"
+    "runtime/include"
+    "runtime/applicationState_t/include"
     "controls_t/include"
     "input/include"
     "FPS/include"
@@ -422,14 +423,30 @@ if [ $BUILD_TYPE -eq 0 ] && [ -z "${DISABLE_HOT_RELOAD+x}" ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
         for processedFile in "${processedFiles[@]}"; do
             outputFile="${processedFile%.a}.so"
+
             if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                 ((total++))
 
-                echo "Linking $outputFile"
+                if [ ! -z "${SINGLE+x}" ]; then
+                    outputFile="single.so"
 
-                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+                    echo "Linking $outputFile"
 
-                processIDs+=($!)
+                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+
+                    processedFiles=("$outputFile")
+
+                    processIDs+=($!)
+
+                    break
+
+                else
+                    echo "Linking $outputFile"
+
+                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+
+                    processIDs+=($!)
+                fi
             fi
         done
     fi

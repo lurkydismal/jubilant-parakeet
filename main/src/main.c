@@ -15,9 +15,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "applicationState_t.h"
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
@@ -28,11 +30,9 @@
 // --- Plugin definition ---
 
 typedef struct {
-    const char* path;     // original path as given (may be relative)
-    char* canon_path;     // canonical absolute path via realpath
-    time_t last_mtime;    // last seen modification time
-    const char** symbols; // array of symbol names to reload/patch
-    size_t symbol_count;
+    const char* path;  // original path as given (may be relative)
+    char* canon_path;  // canonical absolute path via realpath
+    time_t last_mtime; // last seen modification time
 } plugin_t;
 
 typedef struct {
@@ -192,6 +192,10 @@ static export_symbol_t* collect_exports( const char* so_path,
     return arr;
 }
 
+static inline void patch_got_entry( void** got_addr, void* new_func ) {
+    *got_addr = new_func;
+}
+
 // Callback for dl_iterate_phdr: only patch if info->dlpi_name equals
 // plugin_path
 static int patch_phdr_callback( struct dl_phdr_info* info,
@@ -226,9 +230,15 @@ static int patch_phdr_callback( struct dl_phdr_info* info,
     while ( plthook_enum( plthook, &idx, &symname, &got_addr ) == 0 ) {
         for ( size_t j = 0; j < ctx->count; j++ ) {
             if ( strcmp( symname, ctx->names[ j ] ) == 0 ) {
-                *got_addr = ctx->addrs[ j ];
-                printf( "[patch] %s in %s -> %p\n", symname, obj_path,
-                        ctx->addrs[ j ] );
+                void* newAddr = ctx->addrs[ j ];
+
+                printf( "[before patch] %s in %s -> %p [ %p ]\n", symname,
+                        obj_path, newAddr, *got_addr );
+
+                patch_got_entry( got_addr, newAddr );
+
+                printf( "[after patch] %s in %s -> %p [ %p ]\n", symname,
+                        obj_path, newAddr, *got_addr );
                 break;
             }
         }
@@ -255,7 +265,6 @@ static int reload_plugin_if_needed( plugin_t* plug ) {
 
     // dlopen (or dlmopen) the plugin .so
     void* handle = NULL;
-#if defined( LM_ID_NEWLM )
     dlerror();
     handle = dlmopen( LM_ID_NEWLM, plug->canon_path, RTLD_NOW | RTLD_LOCAL );
     if ( !handle ) {
@@ -265,9 +274,6 @@ static int reload_plugin_if_needed( plugin_t* plug ) {
         dlerror();
         handle = dlopen( plug->canon_path, RTLD_NOW | RTLD_LOCAL );
     }
-#else
-    handle = dlopen( plug->canon_path, RTLD_NOW | RTLD_LOCAL );
-#endif
     if ( !handle ) {
         fprintf( stderr, "[reload] dlopen(%s) failed: %s\n", plug->canon_path,
                  dlerror() );
@@ -408,23 +414,13 @@ static void check_and_reload_all( plugin_t* plugins, size_t plugin_count ) {
 
 // --- Example usage ---
 
-// Suppose we have plugin paths and their symbol lists:
-const char* plugin1_symbols[] = {
-    "plugin_tick",
-};
-
 int main( int _argumentCount, char** _argumentVector ) {
     bool l_returnValue = false;
-    // getApplicationDirectoryAbsolutePath
 
-    // Example: override paths via argv if desired
     plugin_t plugins[] = {
-        { .path = "./out/libanimation_t.so",
-          .symbols = plugin1_symbols,
-          .symbol_count =
-              sizeof( plugin1_symbols ) / sizeof( plugin1_symbols[ 0 ] ) },
+        { .path = "./out/single.so" },
     };
-    size_t plugin_count = sizeof( plugins ) / sizeof( plugins[ 0 ] );
+    size_t plugin_count = arrayLengthNative( plugins );
 
     init_plugins( plugins, plugin_count );
 
@@ -465,7 +461,7 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             l_iterationCount++;
 
-            if ( ( l_iterationCount % 600 ) == 0 ) {
+            if ( ( l_iterationCount % 60 ) == 0 ) {
                 check_and_reload_all( plugins, plugin_count );
             }
         }
@@ -473,8 +469,6 @@ int main( int _argumentCount, char** _argumentVector ) {
 
 EXIT:
     quit( &l_applicationState, l_returnValue );
-
-    SDL_Quit();
 
     free_plugins( plugins, plugin_count );
 

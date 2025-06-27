@@ -219,13 +219,13 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
                     break;
                 }
 
+                l_previousFrame = l_frame;
+
                 // if ( !l_input->data ) {
                 //     continue;
                 // }
 
                 insertIntoArray( &l_returnValue, l_input );
-
-                l_previousFrame = l_frame;
 
                 l_amountLeft--;
             }
@@ -248,13 +248,13 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
                     break;
                 }
 
+                l_previousFrame = l_frame;
+
                 // if ( !l_input->data ) {
                 //     continue;
                 // }
 
                 insertIntoArray( &l_returnValue, l_input );
-
-                l_previousFrame = l_frame;
 
                 l_amountLeft--;
             }
