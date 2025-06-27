@@ -1,19 +1,16 @@
-#pragma once
+#include "iterate.h"
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
-#include <stdbool.h>
 
 #include "FPS.h"
 #include "HUD_t.h"
-#include "applicationState_t.h"
 #include "log.h"
 #include "player_t.h"
 #include "stdfunc.h"
 
-static FORCE_INLINE bool iterate(
-    applicationState_t* restrict _applicationState ) {
+bool iterate( applicationState_t* restrict _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {

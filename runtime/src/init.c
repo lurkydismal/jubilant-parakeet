@@ -1,4 +1,4 @@
-#pragma once
+#include "init.h"
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
@@ -7,7 +7,6 @@
 #include <stdlib.h>
 
 #include "FPS.h"
-#include "applicationState_t.h"
 #include "asset_t.h"
 #include "config_t.h"
 #include "log.h"
@@ -402,9 +401,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
-                               int _argumentCount,
-                               char** restrict _argumentVector ) {
+bool init( applicationState_t* restrict _applicationState,
+           int _argumentCount,
+           char** _argumentVector ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
