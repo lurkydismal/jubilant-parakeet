@@ -282,13 +282,15 @@ fi
 
 if [ ${#BUILD_INCLUDES[@]} -ne 0 ]; then
     printf -v includesAsString -- "-I $SCRIPT_DIRECTORY/%s " "${BUILD_INCLUDES[@]}"
-    echo -e "$INCLUDES_COLOR""$includesAsString""$RESET_COLOR"
+    echo -en "$INCLUDES_COLOR"
+    printf -- "-I %s " "${BUILD_INCLUDES[@]}"
+    echo -e "$RESET_COLOR"
 fi
 
 if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     printf -v externalLibrariesAsString -- "%s " "${EXTERNAL_LIBRARIES_TO_LINK[@]}"
 
-    echo -e "$EXTERNAL_LIBRARIES_COLOR""$externalLibrariesAsString""$RESET_COLOR"
+    echo -e '\n'"$EXTERNAL_LIBRARIES_COLOR""$externalLibrariesAsString""$RESET_COLOR"
     externalLibrariesBuildCFlagsAsString="$(pkg-config --static --cflags $externalLibrariesAsString)"' '
 
     SEARCH_STATUS=$?
@@ -320,8 +322,10 @@ processStatuses=()
 BUILD_STATUS=0
 
 if [ ${#partsToBuild[@]} -ne 0 ]; then
-    printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s"".a " "${partsToBuild[@]}"
-    echo -e "$PARTS_TO_BUILD_COLOR""$partsToBuildAsString""$RESET_COLOR"
+    printf -v partsToBuildAsString -- "$BUILD_DIRECTORY/lib%s"'.a ' "${partsToBuild[@]}"
+    echo -en "$PARTS_TO_BUILD_COLOR"
+    printf -- "lib%s"'.a ' "${partsToBuild[@]}"
+    echo -e "$RESET_COLOR"
 fi
 
 for partToBuild in "${partsToBuild[@]}"; do
@@ -347,7 +351,9 @@ done
 if [ $BUILD_STATUS -eq 0 ]; then
     if [ ${#staticParts[@]} -ne 0 ]; then
         printf -v staticPartsAsString -- "$BUILD_DIRECTORY/lib%s.a " "${staticParts[@]}"
-        echo -e "$PARTS_TO_BUILD_COLOR""$staticPartsAsString""$RESET_COLOR"
+        echo -en "$PARTS_TO_BUILD_COLOR"
+        printf -- "lib%s"'.a ' "${staticParts[@]}"
+        echo -e "$RESET_COLOR"
     fi
 
     for staticPart in "${staticParts[@]}"; do
