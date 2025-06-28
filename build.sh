@@ -188,11 +188,7 @@ export SKIPPING_PART_IN_BUILD_COLOR="$GREEN_LIGHT_COLOR"
 export BUILT_EXECUTABLE_COLOR="$GREEN_LIGHT_COLOR"
 export SECTIONS_TO_STRIP_COLOR="$RED_LIGHT_COLOR"
 
-source 'show_progress.sh'
-
 clear
-
-show_progress
 
 source './config.sh' && {
 
@@ -314,8 +310,6 @@ if [ ${#EXTERNAL_LIBRARIES_TO_LINK[@]} -ne 0 ]; then
     unset externalLibrariesAsString
 fi
 
-total=$(( ${#partsToBuild[@]} + 1 ))
-
 processedFiles=()
 processedFilesStatic=()
 declare -A processedFilesHashes=()
@@ -396,8 +390,6 @@ fi
 for processID in "${processIDs[@]}"; do
     wait "$processID"
 
-    show_progress
-
     processStatuses+=($?)
 done
 
@@ -418,113 +410,107 @@ if [ $BUILD_STATUS -ne 0 ]; then
     exit
 fi
 
-# Convert static to shared objects
-if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
-    if [ $BUILD_STATUS -eq 0 ]; then
-        if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
-            for processedFile in "${processedFilesStatic[@]}"; do
-                outputFile="${processedFile%.a}.so"
-
-                if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
-                    ((total++))
-
-                    echo "Linking static $outputFile"
-
-                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
-
-                    processIDs+=($!)
-                fi
-            done
-        fi
-    fi
-fi
-
-for processID in "${processIDs[@]}"; do
-    wait "$processID"
-
-    show_progress
-
-    processStatuses+=($?)
-done
-
-BUILD_STATUS=0
-
-for processStatus in "${processStatuses[@]}"; do
-    if [[ "$processStatus" -ne 0 ]]; then
-        BUILD_STATUS=$processStatus
-
-        break
-    fi
-done
-
-processIDs=()
-processStatuses=()
-
-temp=("${processedFilesStatic[@]/%.a/.so}")
-temp=("${temp[@]/#/$BUILD_DIRECTORY/}")
-
-# Convert to shared objects
 # Debug
 if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
+        # Convert static to shared objects
+        for processedFile in "${processedFilesStatic[@]}"; do
+            outputFile="${processedFile%.a}.so"
+
+            if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
+                if [ -f "$BUILD_DIRECTORY/$outputFile" ]; then
+                    continue
+                fi
+            fi
+
+            if [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                echo "Linking static $outputFile"
+
+                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+
+                processIDs+=($!)
+            fi
+        done
+
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
+
+            processStatuses+=($?)
+        done
+
+        BUILD_STATUS=0
+
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
+
+        processIDs=()
+        processStatuses=()
+
+        # Convert to shared objects
         for processedFile in "${processedFiles[@]}"; do
             outputFile="${processedFile%.a}.so"
 
             if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
-                ((total++))
+                echo "Linking $outputFile"
 
-                if [ ! -z "${SINGLE_SHARED_OBJECT+x}" ]; then
-                    outputFile="single.so"
+                cd "$BUILD_DIRECTORY"
 
-                    echo "Linking $outputFile ${processedFilesStatic[@]/%.a/.so}"
+                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' ${processedFilesStatic[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
 
-                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' $partsToBuildAsString '-Wl,--no-whole-archive' $temp $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+                cd - > '/dev/null'
 
-                    processedFiles=("$outputFile")
-
-                    processIDs+=($!)
-
-                    break
-
-                else
-                    echo "Linking $outputFile"
-
-                    cd "$BUILD_DIRECTORY"
-
-                    $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $temp $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
-
-                    cd - > '/dev/null'
-
-                    processIDs+=($!)
-                fi
+                processIDs+=($!)
             fi
         done
+
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
+
+            processStatuses+=($?)
+        done
+
+        BUILD_STATUS=0
+
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
+
+        processIDs=()
+        processStatuses=()
+
+        # Link stub that will have DT_NEEDED for all shared objects
+        outputFile="root.so"
+
+        echo "Linking $outputFile"
+
+        cd "$BUILD_DIRECTORY"
+
+        $COMPILER -shared -nostdlib '-Wl,-O1' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/""$outputFile"
+
+        cd - > '/dev/null'
+
+        unset outputFile
     fi
 fi
 
-unset temp
-
-for processID in "${processIDs[@]}"; do
-    wait "$processID"
-
-    show_progress
-
-    processStatuses+=($?)
-done
-
-BUILD_STATUS=0
-
-for processStatus in "${processStatuses[@]}"; do
-    if [[ "$processStatus" -ne 0 ]]; then
-        BUILD_STATUS=$processStatus
-
-        break
-    fi
-done
-
-processedFilesHashes=()
-processIDs=()
-processStatuses=()
+unset processedFilesHashes
 
 # Build main executable
 if [ $BUILD_STATUS -eq 0 ]; then
@@ -559,7 +545,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
                 if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
                     cd "$BUILD_DIRECTORY"
 
-                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
                     BUILD_STATUS=$?
 
@@ -632,6 +618,10 @@ if [ $BUILD_STATUS -eq 0 ]; then
             fi
         done
 
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
+
         processIDs=()
         processStatuses=()
 
@@ -686,7 +676,5 @@ if [ $BUILD_STATUS -eq 0 ]; then
         fi
     fi
 fi
-
-show_progress
 
 }
