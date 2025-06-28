@@ -470,14 +470,12 @@ int main( int _argumentCount, char** _argumentVector ) {
 
     {
         /* 3) enumerate all imported (PLT) symbols */
-        printf( "Imported functions (no @…):\n" );
         unsigned int idx = 0;
         const char* symname;
         void** got_addr;
         while ( plthook_enum( ph, &idx, &symname, &got_addr ) == 0 ) {
             if ( strchr( symname, '@' ) )
                 continue;
-            printf( "%s\n", symname );
             insertIntoArray( &funcs_to_patch, duplicateString( symname ) );
         }
     }
