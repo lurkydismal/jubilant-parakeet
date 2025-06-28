@@ -27,6 +27,7 @@
 #include "quit.h"
 #include "stdfunc.h"
 
+#if 0
 // --- Plugin definition ---
 
 typedef struct {
@@ -411,12 +412,12 @@ static void check_and_reload_all( plugin_t* plugins, size_t plugin_count ) {
         // res==0: not changed; res<0: error printed
     }
 }
-
-// --- Example usage ---
+#endif
 
 int main( int _argumentCount, char** _argumentVector ) {
     bool l_returnValue = false;
 
+#if 0
     plugin_t plugins[] = {
         { .path = "./out/single.so" },
     };
@@ -427,6 +428,7 @@ int main( int _argumentCount, char** _argumentVector ) {
     printf( "Plugin hot-reload manager started.\n" );
     // Initial load
     check_and_reload_all( plugins, plugin_count );
+#endif
 
     applicationState_t l_applicationState;
 
@@ -461,16 +463,20 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             l_iterationCount++;
 
+#if 0
             if ( ( l_iterationCount % 60 ) == 0 ) {
                 check_and_reload_all( plugins, plugin_count );
             }
+#endif
         }
     }
 
 EXIT:
     quit( &l_applicationState, l_returnValue );
 
+#if 0
     free_plugins( plugins, plugin_count );
+#endif
 
 #if defined( __SANITIZE_LEAK__ )
 
