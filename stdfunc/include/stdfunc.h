@@ -522,10 +522,9 @@ static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {
             l_directoryPath = l_executablePath;
 
             // Do not move the beginning
+            // Keep last '/'
             trim( &l_directoryPath, 0,
-                  findLastSymbolInString( l_executablePath, '/' ) );
-
-            concatBeforeAndAfterString( &l_directoryPath, NULL, "/" );
+                  ( findLastSymbolInString( l_executablePath, '/' ) + 1 ) );
         }
 
         l_returnValue = l_directoryPath;
