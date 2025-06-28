@@ -27,6 +27,8 @@
 #include "quit.h"
 #include "stdfunc.h"
 
+#define HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME "root"
+
 #if 0
 // --- Plugin definition ---
 
@@ -49,6 +51,7 @@ typedef struct {
     void** addrs;            // array of new addresses
     size_t count;
 } patch_ctx_t;
+
 // Collect all dynamic-exported functions from so_path on disk, resolve their
 // addresses via dlsym(new_handle). Returns an allocated array of
 // export_symbol_t (caller must free); sets *out_count. On error or no exports,
@@ -378,29 +381,6 @@ static int reload_plugin_if_needed( plugin_t* plug ) {
     return 1;
 }
 
-// Initialize plugin array: fill canon_path via realpath, set last_mtime=0
-static void init_plugins( plugin_t* plugins, size_t plugin_count ) {
-    for ( size_t i = 0; i < plugin_count; i++ ) {
-        char buf[ PATH_MAX ];
-        if ( realpath( plugins[ i ].path, buf ) != NULL ) {
-            plugins[ i ].canon_path = strdup( buf );
-        } else {
-            // If realpath fails, fall back to the given path
-            fprintf( stderr, "[init] realpath(%s) failed: %s; using as-is\n",
-                     plugins[ i ].path, strerror( errno ) );
-            plugins[ i ].canon_path = strdup( plugins[ i ].path );
-        }
-        plugins[ i ].last_mtime = 0;
-    }
-}
-
-// Free canonical paths if needed
-static void free_plugins( plugin_t* plugins, size_t plugin_count ) {
-    for ( size_t i = 0; i < plugin_count; i++ ) {
-        free( plugins[ i ].canon_path );
-    }
-}
-
 // Check all plugins, reload if needed
 static void check_and_reload_all( plugin_t* plugins, size_t plugin_count ) {
     for ( size_t i = 0; i < plugin_count; i++ ) {
@@ -414,20 +394,153 @@ static void check_and_reload_all( plugin_t* plugins, size_t plugin_count ) {
 }
 #endif
 
+static bool check( const char* _soPath ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_soPath ) ) {
+        goto EXIT;
+    }
+
+    {
+        static long l_lastModificationTime = 0;
+
+        struct stat st;
+        if ( stat( _soPath, &st ) != 0 ) {
+            fprintf( stderr, "[reload] stat(%s) failed: %s\n", _soPath,
+                     strerror( errno ) );
+        }
+
+        if ( st.st_mtime <= l_lastModificationTime ) {
+            goto EXIT;
+        }
+
+        l_lastModificationTime = st.st_mtime;
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static void* reload( const char* _soPath ) {
+    if ( check( _soPath ) ) {
+        printf( "[reload] Detected change in %s\n", _soPath );
+
+        void* handle = dlmopen( LM_ID_NEWLM, _soPath, RTLD_NOW | RTLD_LOCAL );
+
+        void* new_iter = dlsym( handle, "iterate" );
+        printf( "new@%p old@%p\n", new_iter, dlsym( NULL, "iterate" ) );
+
+        printf( "%s %p %s\n", _soPath, handle, dlerror() );
+
+        return ( handle );
+    }
+
+    return ( NULL );
+}
+
+static int patch_main_plt( const char* sym, void* new_addr, plthook_t* ph ) {
+    int res = plthook_replace( ph, sym, new_addr, NULL );
+    if ( res != 0 ) {
+        fprintf( stderr, "patch %s: %s\n", sym, plthook_error() );
+        return -1;
+    } else if ( res == 0 ) {
+        printf( "patch %s: %p\n", sym, new_addr );
+    }
+    return 0;
+}
+
 int main( int _argumentCount, char** _argumentVector ) {
     bool l_returnValue = false;
 
-#if 0
-    plugin_t plugins[] = {
-        { .path = "./out/single.so" },
-    };
-    size_t plugin_count = arrayLengthNative( plugins );
+    char** funcs_to_patch = createArray( char* );
 
-    init_plugins( plugins, plugin_count );
+    plthook_t* ph;
+    /* 1) get a handle to the main executable */
+    void* main_h = dlopen( NULL, RTLD_NOW );
+    if ( !main_h ) {
+        return 1;
+    }
 
-    printf( "Plugin hot-reload manager started.\n" );
-    // Initial load
-    check_and_reload_all( plugins, plugin_count );
+    /* 2) open plthook on that handle */
+    if ( plthook_open_by_handle( &ph, main_h ) != 0 ) {
+        return 1;
+    }
+
+    {
+        /* 3) enumerate all imported (PLT) symbols */
+        printf( "Imported functions (no @…):\n" );
+        unsigned int idx = 0;
+        const char* symname;
+        void** got_addr;
+        while ( plthook_enum( ph, &idx, &symname, &got_addr ) == 0 ) {
+            if ( strchr( symname, '@' ) )
+                continue;
+            printf( "%s\n", symname );
+            insertIntoArray( &funcs_to_patch, duplicateString( symname ) );
+        }
+    }
+
+    insertIntoArray( &funcs_to_patch, NULL );
+
+#if defined( HOT_RELOAD )
+
+    char* l_rootSharedObjectPath =
+        duplicateString( HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME ".so" );
+
+    {
+        char* l_directoryPath = getApplicationDirectoryAbsolutePath();
+
+        concatBeforeAndAfterString( &l_rootSharedObjectPath, l_directoryPath,
+                                    NULL );
+
+        free( l_directoryPath );
+    }
+
+    char* dirPath = getApplicationDirectoryAbsolutePath();
+
+    void* newHandle = reload( l_rootSharedObjectPath );
+
+    struct link_map* root_lm;
+    if ( dlinfo( newHandle, RTLD_DI_LINKMAP, &root_lm ) != 0 ) {
+        perror( "dlinfo" );
+        return 1;
+    }
+
+    for ( struct link_map* lm = root_lm; lm; lm = lm->l_next ) {
+        if ( lm->l_name == NULL || lm->l_name[ 0 ] == '\0' )
+            continue; /* skip anonymous mappings */
+
+        void* so_h = dlopen( lm->l_name, RTLD_NOW | RTLD_NOLOAD );
+        if ( !so_h )
+            continue;
+
+        /* 5) For each symbol in your list, lookup & patch */
+        for ( char** p = funcs_to_patch; *p; ++p ) {
+            // void* new_addr = dlsym( so_h, *p );
+            void* new_addr = dlsym( newHandle, *p );
+
+            // find out which .so this new_addr lives in
+            Dl_info info;
+            if ( !dladdr( new_addr, &info ) || !info.dli_fname )
+                continue;
+
+            // only patch if that .so path starts with dirPath
+            if ( strncmp( info.dli_fname, dirPath, strlen( dirPath ) ) != 0 )
+                continue;
+
+            if ( new_addr ) {
+                if ( __builtin_strcmp( "iterate", *p ) == 0 ) {
+                    patch_main_plt( *p, new_addr, ph );
+                }
+            }
+            /* else: symbol not in this .so, that’s fine */
+        }
+
+        dlclose( so_h );
+    }
+
 #endif
 
     applicationState_t l_applicationState;
@@ -440,7 +553,11 @@ int main( int _argumentCount, char** _argumentVector ) {
     }
 
     {
+#if defined( HOT_RELOAD )
+
         size_t l_iterationCount = 0;
+
+#endif
 
         while ( true ) {
             SDL_PumpEvents();
@@ -461,11 +578,49 @@ int main( int _argumentCount, char** _argumentVector ) {
                 break;
             }
 
+#if defined( HOT_RELOAD )
+
             l_iterationCount++;
 
-#if 0
             if ( ( l_iterationCount % 60 ) == 0 ) {
-                check_and_reload_all( plugins, plugin_count );
+                newHandle = reload( l_rootSharedObjectPath );
+
+                if ( dlinfo( newHandle, RTLD_DI_LINKMAP, &root_lm ) != 0 ) {
+                    perror( "dlinfo" );
+                    return 1;
+                }
+
+                for ( struct link_map* lm = root_lm; lm; lm = lm->l_next ) {
+                    if ( lm->l_name == NULL || lm->l_name[ 0 ] == '\0' )
+                        continue; /* skip anonymous mappings */
+
+                    void* so_h = dlopen( lm->l_name, RTLD_NOW | RTLD_NOLOAD );
+                    if ( !so_h )
+                        continue;
+
+                    /* 5) For each symbol in your list, lookup & patch */
+                    for ( char** p = funcs_to_patch; *p; ++p ) {
+                        // void* new_addr = dlsym( so_h, *p );
+                        void* new_addr = dlsym( newHandle, *p );
+
+                        // find out which .so this new_addr lives in
+                        Dl_info info;
+                        if ( !dladdr( new_addr, &info ) || !info.dli_fname )
+                            continue;
+
+                        // only patch if that .so path starts with dirPath
+                        if ( strncmp( info.dli_fname, dirPath,
+                                      strlen( dirPath ) ) != 0 )
+                            continue;
+
+                        if ( new_addr ) {
+                            patch_main_plt( *p, new_addr, ph );
+                        }
+                        /* else: symbol not in this .so, that’s fine */
+                    }
+
+                    dlclose( so_h );
+                }
             }
 #endif
         }
@@ -474,8 +629,10 @@ int main( int _argumentCount, char** _argumentVector ) {
 EXIT:
     quit( &l_applicationState, l_returnValue );
 
-#if 0
-    free_plugins( plugins, plugin_count );
+#if defined( HOT_RELOAD )
+
+    free( l_rootSharedObjectPath );
+
 #endif
 
 #if defined( __SANITIZE_LEAK__ )

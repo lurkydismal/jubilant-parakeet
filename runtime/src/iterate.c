@@ -130,7 +130,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
             goto EXIT;
         }
 
-        if ( ( _applicationState->totalFramesRendered % 2 ) == 0 ) {
+        if ( ( _applicationState->totalFramesRendered % 60 ) == 0 ) {
             log$transaction$commit();
         }
 

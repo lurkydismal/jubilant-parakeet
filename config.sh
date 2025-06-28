@@ -49,6 +49,7 @@ declare -a staticParts=(
     "inih"
     "plthook"
 )
+declare -a rootSharedObjectName="root"
 
 export executableMainPackage='main'
 export testsMainPackage='test'

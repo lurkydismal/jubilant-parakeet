@@ -54,6 +54,10 @@ export declare BUILD_DEFINES_TESTS=(
     "TESTS"
 )
 
+export declare BUILD_DEFINES_HOT_RELOAD=(
+    "HOT_RELOAD"
+)
+
 export declare BUILD_INCLUDES=(
     "runtime/include"
     "runtime/applicationState_t/include"
@@ -90,6 +94,7 @@ export LINK_FLAGS_DEBUG="-Wl,-rpath,\$ORIGIN"
 export LINK_FLAGS_RELEASE="-s"
 export LINK_FLAGS_PROFILE=""
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
+export LINK_FLAGS_HOT_RELOAD=""
 
 export declare LIBRARIES_TO_LINK=(
     "mimalloc"
@@ -251,6 +256,14 @@ elif [ $BUILD_TYPE -eq 3 ]; then
     BUILD_DEFINES+=( "${BUILD_DEFINES_TESTS[@]}" )
 fi
 
+# Hot reload
+if [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
+    echo -e "$BUILD_TYPE_COLOR"'Building with hot reload'"$RESET_COLOR"
+
+    LINK_FLAGS="$LINK_FLAGS $LINK_FLAGS_HOT_RELOAD"
+    BUILD_DEFINES+=( "${BUILD_DEFINES_HOT_RELOAD[@]}" )
+fi
+
 # Set BUILD_FLAGS and COMPILER
 if [ ! -z "${CPP_PROJECT+x}" ]; then
     BUILD_FLAGS="$BUILD_CPP_FLAGS"
@@ -345,6 +358,12 @@ for partToBuild in "${partsToBuild[@]}"; do
 
         unset FILES_TO_INCLUDE FILES_TO_COMPILE
     }
+
+    BUILD_STATUS=$?
+
+    if [ $BUILD_STATUS -ne 0 ]; then
+        exit
+    fi
 done
 
 if [ $BUILD_STATUS -eq 0 ]; then
@@ -384,6 +403,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
+
+        BUILD_STATUS=$?
+
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
     done
 fi
 
@@ -495,18 +520,46 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
         processIDs=()
         processStatuses=()
 
-        # Link stub that will have DT_NEEDED for all shared objects
-        outputFile="root.so"
+        # TODO: Improve
+        # Link root that will have DT_NEEDED for all shared objects
+        source "$rootSharedObjectName/config.sh" && {
+            OUTPUT_FILE="$rootSharedObjectName"'.a'
 
-        echo "Linking $outputFile"
+            if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
+                hashOld="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE")"
+            fi
 
-        cd "$BUILD_DIRECTORY"
+            OUTPUT_FILE="$OUTPUT_FILE" \
+                './build_general.sh' \
+                "$rootSharedObjectName" \
+                "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                "$definesAsString" \
+                "$includesAsString"
 
-        $COMPILER -shared -nostdlib '-Wl,-O1' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/""$outputFile"
+            if [ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ] || [ "$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)" != "$hashOld" ]; then
+                outputFile="$rootSharedObjectName"'.so'
 
-        cd - > '/dev/null'
+                echo "Linking $outputFile"
 
-        unset outputFile
+                cd "$BUILD_DIRECTORY"
+
+                $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$outputFile"
+
+                BUILD_STATUS=$?
+
+                cd - > '/dev/null'
+
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
+                fi
+            fi
+        }
+
+        BUILD_STATUS=$?
+
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
     fi
 fi
 
@@ -528,8 +581,18 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
             BUILD_STATUS=$?
 
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
+            fi
+
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
+
+        BUILD_STATUS=$?
+
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
+        fi
     fi
 
     # Not Tests
@@ -600,6 +663,12 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
                 unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
+
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
+            fi
         done
 
         for processID in "${processIDs[@]}"; do
@@ -637,8 +706,18 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
                 BUILD_STATUS=$?
 
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
+                fi
+
                 unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
+
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
+            fi
         fi
 
         if [ $BUILD_STATUS -eq 0 ]; then
