@@ -419,7 +419,7 @@ if [ $BUILD_STATUS -ne 0 ]; then
 fi
 
 # Convert static to shared objects
-if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
+if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
         if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
             for processedFile in "${processedFilesStatic[@]}"; do
@@ -437,7 +437,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
             done
         fi
     fi
-    fi
+fi
 
 for processID in "${processIDs[@]}"; do
     wait "$processID"
@@ -465,7 +465,7 @@ temp=("${temp[@]/#/$BUILD_DIRECTORY/}")
 
 # Convert to shared objects
 # Debug
-if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
+if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
     if [ $BUILD_STATUS -eq 0 ]; then
         for processedFile in "${processedFiles[@]}"; do
             outputFile="${processedFile%.a}.so"
@@ -476,7 +476,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
                 if [ ! -z "${SINGLE_SHARED_OBJECT+x}" ]; then
                     outputFile="single.so"
 
-                    echo "Linking $outputFile"
+                    echo "Linking $outputFile ${processedFilesStatic[@]/%.a/.so}"
 
                     $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' $partsToBuildAsString '-Wl,--no-whole-archive' $temp $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
 
@@ -489,7 +489,11 @@ if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
                 else
                     echo "Linking $outputFile"
 
+                    cd "$BUILD_DIRECTORY"
+
                     $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $temp $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+
+                    cd - > '/dev/null'
 
                     processIDs+=($!)
                 fi
@@ -552,7 +556,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
 
             if [ -z "${SCAN_BUILD+x}" ]; then
                 # Debug
-                if [ $BUILD_TYPE -eq 0 ] && [ -z "${ENABLE_HOT_RELOAD+x}" ]; then
+                if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
                     cd "$BUILD_DIRECTORY"
 
                     $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
