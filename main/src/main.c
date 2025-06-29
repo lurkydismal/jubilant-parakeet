@@ -72,23 +72,104 @@ static bool reload( const char* _soPath ) {
 
     {
         if ( check( _soPath ) ) {
-            static void* baseHandle = NULL;
-
-            if ( UNLIKELY( !baseHandle ) ) {
-                baseHandle = dlmopen( LM_ID_BASE, NULL, RTLD_NOW );
-            }
-
             printf( "[reload] Detected change in %s\n", _soPath );
 
             void* handle =
                 dlmopen( LM_ID_NEWLM, _soPath, RTLD_LAZY | RTLD_DEEPBIND );
             printf( "%s %p %s\n", _soPath, handle, dlerror() );
 
-#if 0
-            void* new_iter = dlsym( handle, "iterate" );
-            printf( "new@%p old@%p\n", new_iter,
-                    dlsym( baseHandle, "iterate" ) );
-#endif
+            Lmid_t nsid;
+            if ( dlinfo( handle, RTLD_DI_LMID, &nsid ) != 0 ) {
+                // error, usually invalid handle
+                perror( "dlinfo" );
+            } else {
+                printf( "Namespace ID: %lu\n", ( unsigned long )nsid );
+            }
+
+            struct link_map* lm;
+            dlinfo( handle, RTLD_DI_LINKMAP, &lm );
+
+            void* newA = NULL;
+
+            const char* names[] = {
+                "snappy_max_compressed_length",
+                "snappy_compress",
+                "snappy_validate_compressed_buffer",
+                "snappy_uncompressed_length",
+                "snappy_uncompress",
+                "ini_parse_string_length",
+                "SDL_SetRenderVSync",
+                "SDL_GetError",
+                "SDL_GetRenderDrawColor",
+                "SDL_SetRenderDrawColor",
+                "SDL_RenderRect",
+                "SDL_RenderFillRect",
+                "SDL_GetError",
+                "SDL_IOFromConstMem",
+                "IMG_LoadTexture_IO",
+                "SDL_CloseIO",
+                "SDL_DestroyTexture",
+                "SDL_RenderTexture",
+                "SDL_GetError",
+                "SDL_GetKeyboardState",
+                "SDL_SetRenderScale",
+                "SDL_GetError",
+                "SDL_SetAppMetadata",
+                "SDL_Init",
+                "SDL_CreateWindowAndRenderer",
+                "SDL_SetDefaultTextureScaleMode",
+                "SDL_HasGamepad",
+                "SDL_RenderClear",
+                "SDL_RenderPresent",
+                "SDL_DestroyRenderer",
+                "SDL_DestroyWindow",
+                "SDL_Quit",
+            };
+
+            for ( struct link_map* m = lm; m; m = m->l_next ) {
+                if ( !( m->l_name ) || !( *( m->l_name ) ) ) {
+                    continue;
+                }
+
+                void* existing =
+                    dlmopen( nsid, m->l_name, RTLD_LAZY | RTLD_NOLOAD );
+
+                plthook_t* ph;
+
+                if ( plthook_open_by_handle( &ph, existing ) == 0 ) {
+                    FOR( const char* const*, names ) {
+                        void* old;
+                        if ( plthook_replace( ph, *_element,
+                                              dlsym( RTLD_DEFAULT, *_element ),
+                                              &old ) == 0 ) {
+                            void* p = dlsym( existing, "iterate" );
+
+                            if ( p ) {
+                                newA = p;
+                            }
+
+                            printf( "new    %p , %p\n", newA, old );
+                        }
+                    }
+
+                    plthook_close( ph );
+                }
+            }
+
+            void* main_handle = dlopen( NULL, RTLD_NOW );
+
+            plthook_t* ph;
+
+            if ( plthook_open_by_handle( &ph, main_handle ) != 0 ) {
+                fprintf( stderr, "plthook_open: %s\n", plthook_error() );
+            }
+
+            void* old = NULL;
+            if ( plthook_replace( ph, "iterate", newA, &old ) == 0 ) {
+                printf( "newO    %p , %p\n", newA, old );
+            }
+
+            plthook_close( ph );
         }
 
         l_returnValue = true;
