@@ -451,7 +451,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
             if [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                 echo "Linking static $outputFile"
 
-                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+                $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
                 processIDs+=($!)
             fi
@@ -489,7 +489,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
 
                 cd "$BUILD_DIRECTORY"
 
-                $COMPILER $LINK_FLAGS -shared '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' ${processedFilesStatic[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/""$outputFile" &
+                $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
                 cd - > '/dev/null'
 
@@ -525,33 +525,27 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
         source "$rootSharedObjectName/config.sh" && {
             OUTPUT_FILE="$rootSharedObjectName"'.a'
 
-            if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-                hashOld="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE")"
-            fi
-
             OUTPUT_FILE="$OUTPUT_FILE" \
                 './build_general.sh' \
                 "$rootSharedObjectName" \
-                "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                "$BUILD_FLAGS" \
                 "$definesAsString" \
                 "$includesAsString"
 
-            if [ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ] || [ "$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)" != "$hashOld" ]; then
-                outputFile="$rootSharedObjectName"'.so'
+            outputFile="$rootSharedObjectName"'.so'
 
-                echo "Linking $outputFile"
+            echo "Linking $outputFile"
 
-                cd "$BUILD_DIRECTORY"
+            cd "$BUILD_DIRECTORY"
 
-                $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$outputFile"
+            $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
 
-                BUILD_STATUS=$?
+            BUILD_STATUS=$?
 
-                cd - > '/dev/null'
+            cd - > '/dev/null'
 
-                if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
-                fi
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
             fi
         }
 
