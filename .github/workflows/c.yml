@@ -60,17 +60,8 @@ jobs:
         create-symlink: true
         key: ${{ matrix.build_type }}
 
-#     - name: configure
-#       run: ./configure
-
-#    - name: make ${{ matrix.build_type }}
-#      run: make ${{ matrix.build_type }}
-
-#     - name: make check
-#       run: make check
-
-#     - name: make distcheck
-#       run: make distcheck
+    - name: mold
+      uses: rui314/setup-mold@v1
 
     - name: Build ${{ matrix.build_type }}
       run: TERM=xterm ./build.sh ${{ matrix.build_type }}
