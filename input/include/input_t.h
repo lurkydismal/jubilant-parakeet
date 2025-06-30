@@ -9,9 +9,10 @@
 
 #define MAX_DURATION_LENGTH ( lengthOfNumber( SIZE_MAX ) )
 
-#define MAKE_INPUT( _direction, _button )                      \
-    ( ( input_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
-                   ( ( _button ) & INPUT_BUTTON_MASK ) ) )
+#define MAKE_INPUT( _direction, _button )                                \
+    { .data = ( ( uint8_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
+                             ( ( _button ) & INPUT_BUTTON_MASK ) ) ),    \
+      .duration = 0 }
 
 #define GET_DIRECTION( _input ) \
     ( ( direction_t )( ( _input )->data & INPUT_DIRECTION_MASK ) )

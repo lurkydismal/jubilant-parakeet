@@ -85,9 +85,6 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
 
 #endif
 
-        // TODO: Improve
-        _endIndex++;
-
         // Key frame
         size_t l_keyFrameIndex = insertIntoArray(
             &( _boxes->keyFrames ), clone( ( SDL_FRect* )_targetRectangle ) );
@@ -99,9 +96,9 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
                 const arrayLength_t l_framesAmount =
                     arrayLength( _boxes->frames );
 
-                if ( LIKELY( _endIndex > l_framesAmount ) ) {
+                if ( LIKELY( _endIndex >= l_framesAmount ) ) {
                     int64_t l_preallocationAmount =
-                        ( _endIndex - l_framesAmount - 1 );
+                        ( _endIndex - l_framesAmount );
 
                     preallocateArray( &( _boxes->frames ),
                                       l_preallocationAmount );
@@ -120,7 +117,7 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
             }
 
             // Fill key frame index in frames
-            FOR_RANGE( size_t, _startIndex, _endIndex ) {
+            FOR_RANGE( size_t, _startIndex, ( _endIndex + 1 ) ) {
                 insertIntoArray( &( _boxes->frames[ _index - 1 ] ),
                                  l_keyFrameIndex );
             }
@@ -224,7 +221,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                             "Invalid index format, expected Start-End got '%s'",
                             l_boxProperties[ 4 ] );
 
-                        goto EXIT_LOADING2;
+                        goto EXIT_PARSING_INDEX_AND_LOADING;
                     }
 
                     {
@@ -240,8 +237,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                                               l_startIndex, l_endIndex );
                     }
 
-                    // TODO: Improve
-                EXIT_LOADING2:
+                EXIT_PARSING_INDEX_AND_LOADING:
                     FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
                     FREE_ARRAY( l_startAndEndIndexAsString );
                 }

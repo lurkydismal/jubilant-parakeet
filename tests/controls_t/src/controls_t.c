@@ -78,9 +78,12 @@ TEST( controls_t$control_t$convert$fromInput ) {
     controls_t l_controls = controls_t$create();
 
     const input_t l_inputs[] = {
-        UP,       DOWN, LEFT, RIGHT, A, B, C, D,
-        UP_RIGHT, // Not mapped
-        0         // Invalid input
+        MAKE_INPUT( UP, 0 ),       MAKE_INPUT( DOWN, 0 ),
+        MAKE_INPUT( LEFT, 0 ),     MAKE_INPUT( RIGHT, 0 ),
+        MAKE_INPUT( 0, A ),        MAKE_INPUT( 0, B ),
+        MAKE_INPUT( 0, C ),        MAKE_INPUT( 0, D ),
+        MAKE_INPUT( UP_RIGHT, 0 ), // Not mapped
+        MAKE_INPUT( 0, 0 )         // Invalid input
     };
 
     const control_t* l_expectedControl[] = {
@@ -98,7 +101,7 @@ TEST( controls_t$control_t$convert$fromInput ) {
 
     FOR_RANGE( size_t, 0, arrayLengthNative( l_inputs ) ) {
         const control_t* l_actual = controls_t$control_t$convert$fromInput(
-            &l_controls, l_inputs[ _index ] );
+            &l_controls, &( l_inputs[ _index ] ) );
         const control_t* l_expected = l_expectedControl[ _index ];
 
         ASSERT_EQ( "%p", l_actual, l_expected );

@@ -126,7 +126,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Add deletion
 static FORCE_INLINE bool background_t$reload$element( void* _context,
                                                       const char* _fileName,
                                                       size_t _eventsMask,

@@ -74,11 +74,26 @@
 
 #if ( defined( DEBUG ) && !defined( TESTS ) )
 
+#if defined( assert )
+
+#undef assert
+
+#endif
+
 #define trap() __builtin_trap()
+
+#define assert( _expression, _message )                                     \
+    do {                                                                    \
+        if ( !_expression ) {                                               \
+            write( STDERR_FILENO, _message, __builtin_strlen( _message ) ); \
+            trap();                                                         \
+        }                                                                   \
+    } while ( 0 )
 
 #else
 
 #define trap() ( ( void )0 )
+#define assert( _message ) ( ( void )0 )
 
 #endif
 
@@ -528,6 +543,27 @@ static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {
         }
 
         l_returnValue = l_directoryPath;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool isPathDirectory( const char* restrict _path ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
+        struct stat l_pathStats;
+
+        if ( UNLIKELY( stat( _path, &l_pathStats ) != 0 ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = S_ISDIR( l_pathStats.st_mode );
     }
 
 EXIT:

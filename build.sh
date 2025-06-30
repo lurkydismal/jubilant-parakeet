@@ -520,7 +520,6 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
         processIDs=()
         processStatuses=()
 
-        # TODO: Improve
         # Link root that will have DT_NEEDED for all shared objects
         source "$rootSharedObjectName/config.sh" && {
             OUTPUT_FILE="$rootSharedObjectName"'.a'

@@ -2,6 +2,7 @@
 
 #include <limits.h>
 #include <sys/epoll.h>
+#include <sys/stat.h>
 
 #include "asset_t.h"
 #include "log.h"
@@ -114,21 +115,25 @@ bool watch_t$add$toPath( watch_t* _watch,
             l_flags |= IN_DELETE_SELF;
         }
 
-        char* l_path = duplicateString( _path );
+        int l_watchDescriptor = -1;
 
-        concatBeforeAndAfterString(
-            &l_path, asset_t$loader$assetsDirectory$get(), NULL );
+        {
+            char* l_path = duplicateString( _path );
 
-        const int l_watchDescriptor =
-            inotify_add_watch( _watch->fileDescriptor, l_path, l_flags );
+            concatBeforeAndAfterString(
+                &l_path, asset_t$loader$assetsDirectory$get(), NULL );
 
-        l_returnValue = ( l_watchDescriptor != -1 );
+            int l_watchDescriptor =
+                inotify_add_watch( _watch->fileDescriptor, l_path, l_flags );
 
-        free( l_path );
+            l_returnValue = ( l_watchDescriptor != -1 );
+
+            free( l_path );
+        }
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Adding watch to path" );
+            log$transaction$query$format( ( logLevel_t )error,
+                                          "Adding watch to path: '%s'", _path );
 
             goto EXIT;
         }
@@ -145,12 +150,11 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 bool watch_t$add$toGlob( watch_t* _watch,
                          const char* _glob,
                          watchCallback_t _callback,
                          void* _context,
-                         bool _onlyDirectories ) {
+                         bool _needDirectories ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_watch ) ) {
@@ -172,10 +176,30 @@ bool watch_t$add$toGlob( watch_t* _watch,
     }
 
     {
-        ( void )sizeof( _context );
-        ( void )sizeof( _onlyDirectories );
+        char** l_paths = getPathsByGlob( _glob, NULL, NULL );
 
-        trap();
+        FOR_ARRAY( char* const*, l_paths ) {
+            const bool l_isDirectory =
+                ( ( _needDirectories ) ? ( isPathDirectory( *_element ) )
+                                       : ( false ) );
+
+            l_returnValue = watch_t$add$toPath( _watch, *_element, _callback,
+                                                _context, l_isDirectory );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Adding watch to path" );
+
+                break;
+            }
+        }
+
+        FREE_ARRAY_ELEMENTS( l_paths );
+        FREE_ARRAY( l_paths );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
 
         l_returnValue = true;
     }
