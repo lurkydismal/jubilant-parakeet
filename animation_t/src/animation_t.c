@@ -105,9 +105,6 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
 #endif
 
-            // TODO: Improve
-            _endIndex++;
-
             size_t l_keyFrameIndex;
 
             // Key frame
@@ -150,9 +147,9 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
                 const arrayLength_t l_framesAmount =
                     arrayLength( _animation->frames );
 
-                if ( LIKELY( _endIndex > l_framesAmount ) ) {
+                if ( LIKELY( _endIndex >= l_framesAmount ) ) {
                     int64_t l_preallocationAmount =
-                        ( _endIndex - l_framesAmount - 1 );
+                        ( _endIndex - l_framesAmount );
 
                     preallocateArray( &( _animation->frames ),
                                       l_preallocationAmount );
@@ -160,7 +157,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
             }
 
             // Fill key frame index in frames
-            FOR_RANGE( size_t, _startIndex, _endIndex ) {
+            FOR_RANGE( size_t, _startIndex, ( _endIndex + 1 ) ) {
                 _animation->frames[ _index - 1 ] = l_keyFrameIndex;
             }
         }

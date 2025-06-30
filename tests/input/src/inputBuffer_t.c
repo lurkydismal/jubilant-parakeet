@@ -38,14 +38,15 @@ TEST( inputBuffer_t$insert ) {
             const size_t l_frame = 1;
 
             bool l_returnValue =
-                inputBuffer_t$insert( &l_inputBuffer, l_input, l_frame );
+                inputBuffer_t$insert( &l_inputBuffer, &l_input, l_frame );
 
             ASSERT_TRUE( l_returnValue );
 
             ASSERT_EQ(
-                "%u",
-                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer ),
-                l_input );
+                "%#b",
+                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                    ->data,
+                l_input.data );
             ASSERT_EQ(
                 "%zu",
                 inputBuffer_t$inputsSequence$getFrame$last( &l_inputBuffer ),
@@ -53,6 +54,7 @@ TEST( inputBuffer_t$insert ) {
             ASSERT_EQ( "%zu", l_inputBuffer.currentBufferIndex, ( size_t )1 );
         }
 
+        // TODO: Fix
         // Wrap
         {
             const input_t l_inputDummy1 = MAKE_INPUT( UP, A );
@@ -63,14 +65,15 @@ TEST( inputBuffer_t$insert ) {
                 const size_t l_frame = _index;
 
                 bool l_returnValue = inputBuffer_t$insert(
-                    &l_inputBuffer, l_inputDummy1, l_frame );
+                    &l_inputBuffer, &l_inputDummy1, l_frame );
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%#b",
-                           inputBuffer_t$inputsSequence$getInput$last(
-                               &l_inputBuffer ),
-                           l_inputDummy1 );
+                ASSERT_EQ(
+                    "%#b",
+                    inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                        ->data,
+                    l_inputDummy1.data );
                 ASSERT_EQ( "%zu",
                            inputBuffer_t$inputsSequence$getFrame$last(
                                &l_inputBuffer ),
@@ -88,14 +91,15 @@ TEST( inputBuffer_t$insert ) {
             const size_t l_frame = SIZE_MAX;
 
             bool l_returnValue =
-                inputBuffer_t$insert( &l_inputBuffer, l_input, l_frame );
+                inputBuffer_t$insert( &l_inputBuffer, &l_input, l_frame );
 
             ASSERT_TRUE( l_returnValue );
 
             ASSERT_EQ(
-                "%u",
-                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer ),
-                l_input );
+                "%#b",
+                inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                    ->data,
+                l_input.data );
             ASSERT_EQ(
                 "%zu",
                 inputBuffer_t$inputsSequence$getFrame$last( &l_inputBuffer ),
@@ -108,15 +112,16 @@ TEST( inputBuffer_t$insert ) {
     {
         // NULL input buffer
         {
-            bool l_returnValue =
-                inputBuffer_t$insert( NULL, MAKE_INPUT( UP, A ), 0 );
+            input_t l_input = MAKE_INPUT( UP, A );
+            bool l_returnValue = inputBuffer_t$insert( NULL, &l_input, 0 );
 
             ASSERT_FALSE( l_returnValue );
         }
 
         // NULL input
         {
-            bool l_returnValue = inputBuffer_t$insert( &l_inputBuffer, 0, 0 );
+            bool l_returnValue =
+                inputBuffer_t$insert( &l_inputBuffer, NULL, 0 );
 
             ASSERT_FALSE( l_returnValue );
         }
@@ -168,14 +173,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const size_t l_frame = 1;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
-                    ASSERT_EQ( "%u",
+                    ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -188,14 +194,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const size_t l_frame = 20;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy2, l_frame );
+                        &l_inputBuffer, &l_inputDummy2, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
-                    ASSERT_EQ( "%u",
+                    ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy2 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy2.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -217,13 +224,13 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const input_t* l_input = arrayFirstElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy2 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy2 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy2 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy2 ) );
                 }
 
                 FREE_ARRAY( l_inputs );
@@ -234,14 +241,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                 const size_t l_frame = 25;
 
                 bool l_returnValue = inputBuffer_t$insert(
-                    &l_inputBuffer, l_inputDummy1, l_frame );
+                    &l_inputBuffer, &l_inputDummy1, l_frame );
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%u",
-                           inputBuffer_t$inputsSequence$getInput$last(
-                               &l_inputBuffer ),
-                           l_inputDummy1 );
+                ASSERT_EQ(
+                    "%#b",
+                    inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                        ->data,
+                    l_inputDummy1.data );
                 ASSERT_EQ( "%zu",
                            inputBuffer_t$inputsSequence$getFrame$last(
                                &l_inputBuffer ),
@@ -263,13 +271,13 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const input_t* l_input = arrayFirstElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy1 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy1 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy1 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy1 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy1 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy1 ) );
                 }
 
                 // Second
@@ -277,13 +285,13 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const input_t* l_input = arrayLastElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy1 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy1 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy2 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy2 ) );
                 }
 
                 FREE_ARRAY( l_inputs );
@@ -319,14 +327,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                 const size_t l_frame = 1;
 
                 bool l_returnValue = inputBuffer_t$insert(
-                    &l_inputBuffer, l_inputDummy1, l_frame );
+                    &l_inputBuffer, &l_inputDummy1, l_frame );
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%#b",
-                           inputBuffer_t$inputsSequence$getInput$last(
-                               &l_inputBuffer ),
-                           l_inputDummy1 );
+                ASSERT_EQ(
+                    "%#b",
+                    inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                        ->data,
+                    l_inputDummy1.data );
                 ASSERT_EQ( "%zu",
                            inputBuffer_t$inputsSequence$getFrame$last(
                                &l_inputBuffer ),
@@ -335,6 +344,7 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                            ( size_t )1 );
             }
 
+            // TODO: Fix
             // Up to limit
             {
                 FOR_RANGE( size_t, MAX_DELAY_BETWEEN_INPUTS,
@@ -343,14 +353,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                     const size_t l_frame = _index;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -367,14 +378,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                         ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS - 1 );
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -401,14 +413,15 @@ TEST( inputBuffer_t$inputsSequence$get ) {
                         ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS );
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy2, l_frame );
+                        &l_inputBuffer, &l_inputDummy2, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy2 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy2.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -491,14 +504,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const size_t l_frame = 1;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
-                    ASSERT_EQ( "%u",
+                    ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -511,14 +525,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const size_t l_frame = 20;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy2, l_frame );
+                        &l_inputBuffer, &l_inputDummy2, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
-                    ASSERT_EQ( "%u",
+                    ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy2 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy2.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -540,13 +555,13 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const input_t* l_input = arrayFirstElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy2 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy2 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy2 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy2 ) );
                 }
 
                 FREE_ARRAY( l_inputs );
@@ -557,14 +572,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                 const size_t l_frame = 25;
 
                 bool l_returnValue = inputBuffer_t$insert(
-                    &l_inputBuffer, l_inputDummy1, l_frame );
+                    &l_inputBuffer, &l_inputDummy1, l_frame );
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%u",
-                           inputBuffer_t$inputsSequence$getInput$last(
-                               &l_inputBuffer ),
-                           l_inputDummy1 );
+                ASSERT_EQ(
+                    "%#b",
+                    inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                        ->data,
+                    l_inputDummy1.data );
                 ASSERT_EQ( "%zu",
                            inputBuffer_t$inputsSequence$getFrame$last(
                                &l_inputBuffer ),
@@ -586,13 +602,13 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const input_t* l_input = arrayFirstElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy1 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy1 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy1 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy1 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy1 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy1 ) );
                 }
 
                 // Second
@@ -600,13 +616,13 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const input_t* l_input = arrayLastElement( l_inputs );
 
                     ASSERT_STRING_EQ(
-                        input_t$convert$toStaticString( *l_input ),
-                        input_t$convert$toStaticString( l_inputDummy1 ) );
+                        input_t$convert$toStaticString( l_input ),
+                        input_t$convert$toStaticString( &l_inputDummy1 ) );
 
-                    ASSERT_EQ( "%#b", GET_DIRECTION( *l_input ),
-                               GET_DIRECTION( l_inputDummy2 ) );
-                    ASSERT_EQ( "%#b", GET_BUTTON( *l_input ),
-                               GET_BUTTON( l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_DIRECTION( l_input ),
+                               GET_DIRECTION( &l_inputDummy2 ) );
+                    ASSERT_EQ( "%#b", GET_BUTTON( l_input ),
+                               GET_BUTTON( &l_inputDummy2 ) );
                 }
 
                 FREE_ARRAY( l_inputs );
@@ -642,14 +658,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                 const size_t l_frame = 1;
 
                 bool l_returnValue = inputBuffer_t$insert(
-                    &l_inputBuffer, l_inputDummy1, l_frame );
+                    &l_inputBuffer, &l_inputDummy1, l_frame );
 
                 ASSERT_TRUE( l_returnValue );
 
-                ASSERT_EQ( "%#b",
-                           inputBuffer_t$inputsSequence$getInput$last(
-                               &l_inputBuffer ),
-                           l_inputDummy1 );
+                ASSERT_EQ(
+                    "%#b",
+                    inputBuffer_t$inputsSequence$getInput$last( &l_inputBuffer )
+                        ->data,
+                    l_inputDummy1.data );
                 ASSERT_EQ( "%zu",
                            inputBuffer_t$inputsSequence$getFrame$last(
                                &l_inputBuffer ),
@@ -658,6 +675,7 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                            ( size_t )1 );
             }
 
+            // TODO: Fix
             // Up to limit
             {
                 FOR_RANGE( size_t, MAX_DELAY_BETWEEN_INPUTS,
@@ -666,14 +684,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                     const size_t l_frame = _index;
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -691,14 +710,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                         ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS - 1 );
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy1, l_frame );
+                        &l_inputBuffer, &l_inputDummy1, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy1 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy1.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),
@@ -729,14 +749,15 @@ TEST( inputBuffer_t$inputsSequence$get$withLimit ) {
                         ( INPUT_BUFFER_LENGTH + MAX_DELAY_BETWEEN_INPUTS );
 
                     bool l_returnValue = inputBuffer_t$insert(
-                        &l_inputBuffer, l_inputDummy2, l_frame );
+                        &l_inputBuffer, &l_inputDummy2, l_frame );
 
                     ASSERT_TRUE( l_returnValue );
 
                     ASSERT_EQ( "%#b",
                                inputBuffer_t$inputsSequence$getInput$last(
-                                   &l_inputBuffer ),
-                               l_inputDummy2 );
+                                   &l_inputBuffer )
+                                   ->data,
+                               l_inputDummy2.data );
                     ASSERT_EQ( "%zu",
                                inputBuffer_t$inputsSequence$getFrame$last(
                                    &l_inputBuffer ),

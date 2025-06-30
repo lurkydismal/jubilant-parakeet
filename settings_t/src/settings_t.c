@@ -49,6 +49,9 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
             goto EXIT;
         }
 
+        _settings->backgroundIndex = SIZE_MAX;
+        _settings->HUDIndex = SIZE_MAX;
+
         free( _settings->version );
         _settings->version = NULL;
 
@@ -412,7 +415,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 bool settings_t$unload( settings_t* restrict _settings ) {
     bool l_returnValue = false;
 
@@ -423,18 +425,6 @@ bool settings_t$unload( settings_t* restrict _settings ) {
     }
 
     {
-        free( _settings->version );
-        _settings->version = NULL;
-
-        free( _settings->identifier );
-        _settings->identifier = NULL;
-
-        free( _settings->description );
-        _settings->description = NULL;
-
-        free( _settings->contactAddress );
-        _settings->contactAddress = NULL;
-
         l_returnValue = true;
     }
 

@@ -221,9 +221,9 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 
                 l_previousFrame = l_frame;
 
-                // if ( !l_input->data ) {
-                //     continue;
-                // }
+                if ( !l_input->data ) {
+                    continue;
+                }
 
                 insertIntoArray( &l_returnValue, l_input );
 
@@ -250,9 +250,9 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 
                 l_previousFrame = l_frame;
 
-                // if ( !l_input->data ) {
-                //     continue;
-                // }
+                if ( !l_input->data ) {
+                    continue;
+                }
 
                 insertIntoArray( &l_returnValue, l_input );
 

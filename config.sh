@@ -23,9 +23,9 @@ declare -a partsToBuild=(
     "stdfunc"
 )
 declare -a testsToBuild=(
-    "runtime"
+    # "runtime"
     "controls_t"
-    # "input"
+    "input"
     "FPS"
     "player_t"
     "object_t"

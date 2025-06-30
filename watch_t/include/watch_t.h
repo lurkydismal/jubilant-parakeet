@@ -41,7 +41,7 @@ bool watch_t$add$toGlob( watch_t* _watch,
                          const char* _glob,
                          watchCallback_t _callback,
                          void* _context,
-                         bool _onlyDirectories );
+                         bool _needDirectories );
 bool watch_t$remove( watch_t* _watch );
 
 bool watch_t$check( watch_t* _watch, bool _isBlocking );
