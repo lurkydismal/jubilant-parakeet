@@ -12,7 +12,6 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -104,8 +103,21 @@
             void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                       \
             const size_t l_backtraceAmount =                                  \
                 backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );              \
-            backtrace_symbols_fd( l_backtraceBuffer, l_backtraceAmount,       \
-                                  STDERR_FILENO ); );                         \
+            char** l_backtraceResolved =                                      \
+                backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );    \
+            FOR_RANGE( size_t, 0, l_backtraceAmount ) {                       \
+                char* l_backtrace = l_backtraceResolved[ _index ];            \
+                char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );   \
+                *l_fileNameEnd = '\0';                                        \
+                char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) +  \
+                                     ( 1 * sizeof( char ) ) );                \
+                write( STDERR_FILENO, l_fileName,                             \
+                       __builtin_strlen( l_fileName ) );                      \
+                *l_fileNameEnd = '(';                                         \
+                write( STDERR_FILENO, l_fileNameEnd,                          \
+                       __builtin_strlen( l_fileNameEnd ) );                   \
+                write( STDERR_FILENO, "\n", 1 );                              \
+            } free( l_backtraceResolved ); );                                 \
         __builtin_trap();                                                     \
     } while ( 0 )
 
