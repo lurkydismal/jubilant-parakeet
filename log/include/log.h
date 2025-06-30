@@ -35,25 +35,26 @@
 
 #if defined( DEBUG )
 
-#define DEBUG_INFORMATION_FORMAT                                             \
+#define LOG_DEBUG_INFORMATION_FORMAT                                         \
     "Thread " LOG_COLOR_THREAD_ID "%zu" LOG_COLOR_RESET_FOREGROUND           \
     ": File '" LOG_COLOR_FILE_NAME "%s" LOG_COLOR_RESET_FOREGROUND           \
     "': line " LOG_COLOR_LINE_NUMBER "%u" LOG_COLOR_RESET_FOREGROUND         \
     " in function '" LOG_COLOR_FUNCTION_NAME "%s" LOG_COLOR_RESET_FOREGROUND \
     "' | Message: "
-#define DEBUG_INFORMATION_ARGUMENTS \
+
+#define LOG_DEBUG_INFORMATION_ARGUMENTS \
     syscall( SYS_gettid ), __FILE__, __LINE__, __func__
 
 #define log$transaction$query( _logLevel, _string ) \
     log$transaction$query$format( ( _logLevel ), "%s", _string )
 
-#define log$transaction$query$format( _logLevel, _format, ... ) \
-    ( {                                                         \
-        _Static_assert( ( sizeof( #__VA_ARGS__ ) > 1 ),         \
-                        "Missing variadic arguments" );         \
-        _log$transaction$query$format(                          \
-            ( _logLevel ), DEBUG_INFORMATION_FORMAT _format,    \
-            DEBUG_INFORMATION_ARGUMENTS, ##__VA_ARGS__ );       \
+#define log$transaction$query$format( _logLevel, _format, ... )  \
+    ( {                                                          \
+        _Static_assert( ( sizeof( #__VA_ARGS__ ) > 1 ),          \
+                        "Missing variadic arguments" );          \
+        _log$transaction$query$format(                           \
+            ( _logLevel ), LOG_DEBUG_INFORMATION_FORMAT _format, \
+            LOG_DEBUG_INFORMATION_ARGUMENTS, ##__VA_ARGS__ );    \
     } )
 
 #else

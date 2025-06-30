@@ -90,7 +90,7 @@ export declare BUILD_INCLUDES_TESTS=(
 )
 
 export LINK_FLAGS="-flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
-export LINK_FLAGS_DEBUG="-Wl,-rpath,\$ORIGIN"
+export LINK_FLAGS_DEBUG="-rdynamic -Wl,-rpath,\$ORIGIN"
 export LINK_FLAGS_RELEASE="-s"
 export LINK_FLAGS_PROFILE=""
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"

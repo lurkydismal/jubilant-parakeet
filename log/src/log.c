@@ -16,7 +16,7 @@ static logLevel_t g_currentLogLevel = LOG_LEVEL_DEFAULT;
 static FORCE_INLINE void reportNotInitialized( void ) {
 #if ( defined( DEBUG ) && !defined( TESTS ) )
 
-    trap();
+    trap( "Log was not initialized" );
 
 #endif
 }
@@ -125,13 +125,13 @@ bool log$init( const char* restrict _fileName,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_fileName ) ) {
-        trap();
+        trap( "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_fileExtension ) ) {
-        trap();
+        trap( "Invalid argument" );
 
         goto EXIT;
     }
@@ -167,7 +167,7 @@ bool log$init( const char* restrict _fileName,
             l_returnValue = ( g_fileDescriptor != -1 );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                trap();
+                trap( "Corrupted file descritor" );
             }
         }
 
@@ -209,7 +209,7 @@ bool log$quit( void ) {
         l_returnValue = ( close( g_fileDescriptor ) != -1 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            trap();
+            trap( "Corrupted file descriptor" );
         }
 
         g_fileDescriptor = -1;

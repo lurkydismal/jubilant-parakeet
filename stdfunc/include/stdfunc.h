@@ -6,6 +6,7 @@
 #define XXH_NO_STREAM
 #define XXH_STATIC_LINKING_ONLY
 
+#include <execinfo.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -80,20 +81,45 @@
 
 #endif
 
-#define trap() __builtin_trap()
+#define DEBUG_INFORMATION1 \
+    "File '" __FILE__ "': line " MACRO_TO_STRING(__LINE__) \
+    " in function "                       \
+    "'"
 
-#define assert( _expression, _message )                                     \
-    do {                                                                    \
-        if ( !_expression ) {                                               \
-            write( STDERR_FILENO, _message, __builtin_strlen( _message ) ); \
-            trap();                                                         \
-        }                                                                   \
+#define DEBUG_INFORMATION2 "' | Message: "
+
+#define BACKTRACE_LIMIT ( 5 )
+
+#define trap( ... )                                                           \
+    do {                                                                      \
+        __VA_OPT__(                                                           \
+            write( STDERR_FILENO, DEBUG_INFORMATION1,                         \
+                   __builtin_strlen( DEBUG_INFORMATION1 ) );                  \
+            write( STDERR_FILENO, __func__, __builtin_strlen( __func__ ) );   \
+            write( STDERR_FILENO, DEBUG_INFORMATION2,                         \
+                   __builtin_strlen( DEBUG_INFORMATION2 ) );                  \
+            const char l_message[] = __VA_ARGS__;                             \
+            write( STDERR_FILENO, l_message, __builtin_strlen( l_message ) ); \
+            write( STDERR_FILENO, "\n", 1 );                                  \
+            void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                       \
+            const size_t l_backtraceAmount =                                  \
+                backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );              \
+            backtrace_symbols_fd( l_backtraceBuffer, l_backtraceAmount,       \
+                                  STDERR_FILENO ); );                         \
+        __builtin_trap();                                                     \
+    } while ( 0 )
+
+#define assert( _expression, ... ) \
+    do {                           \
+        if ( !( _expression ) ) {  \
+            trap( __VA_ARGS__ );   \
+        }                          \
     } while ( 0 )
 
 #else
 
-#define trap() ( ( void )0 )
-#define assert( _message ) ( ( void )0 )
+#define trap( ... ) ( ( void )0 )
+#define assert( _expression, ... ) ( ( void )0 )
 
 #endif
 
