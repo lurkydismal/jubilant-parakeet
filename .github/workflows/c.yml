@@ -50,7 +50,8 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake ninja-build build-essential \
+        sudo apt-get install -y fd-find libsnappy-dev \
+          cmake ninja-build build-essential \
           libx11-dev libxext-dev libxrandr-dev libxss-dev libxcursor-dev \
           libxi-dev libxinerama-dev
 
