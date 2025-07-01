@@ -47,12 +47,10 @@ jobs:
       with:
         submodules: recursive
 
-    - uses: libsdl-org/setup-sdl@f0131347757b3b78ed886b7f0c36b19e26aa2937 # main
-      id: sdl
-      with:
-        install-linux-dependencies: true
-        build-type: Release
-        version: 3-latest
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build build-essential
 
     - name: ccache
       uses: hendrikmuhs/ccache-action@63069e3931dedbf3b63792097479563182fe70d1 # v1.2.18
@@ -62,6 +60,43 @@ jobs:
 
     - name: mold
       uses: rui314/setup-mold@v1
+
+    - name: Build SDL3
+      run: |
+        git clone --depth=1 --single-branch https://github.com/libsdl-org/SDL.git SDL3 && \
+        cd SDL3 && \
+        export CC="ccache gcc" && \
+        export CXX="ccache g++" && \
+        export LD="mold" && \
+        cmake -B build -G Ninja \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_LINKER=mold \
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
+          -DCMAKE_INSTALL_PREFIX=/usr/local && \
+        cmake --build build && \
+        sudo cmake --install build
+
+    - name: Build SDL3 image
+      run: |
+        git clone --depth=1 --single-branch https://github.com/libsdl-org/SDL_image.git SDL3_image && \
+        cd SDL3_image && \
+        export CC="ccache gcc" && \
+        export CXX="ccache g++" && \
+        export LD="mold" && \
+        cmake -B build -G Ninja \
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+          -DCMAKE_LINKER=mold \
+          -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
+          -DCMAKE_INSTALL_PREFIX=/usr/local && \
+        cmake --build build && \
+        sudo cmake --install build
+
+    - name: Save ccache
+      run: ccache -s
 
     - name: Build ${{ matrix.build_type }}
       run: TERM=xterm ./build.sh ${{ matrix.build_type }}
