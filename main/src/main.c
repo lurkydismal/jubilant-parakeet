@@ -5,17 +5,9 @@
 #endif
 
 #include <dlfcn.h>
-#include <elf.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <gelf.h>
-#include <libelf.h>
-#include <limits.h>
 #include <link.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -27,14 +19,24 @@
 #include "quit.h"
 #include "stdfunc.h"
 
-#define HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME "root"
-
 #if defined( HOT_RELOAD )
 
-static bool check( const char* _soPath ) {
+#define HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME "root"
+
+typedef bool ( *hotReload$unload_t )( void** _state, size_t* _stateSize );
+typedef bool ( *hotReload$load_t )( void* _state, size_t _stateSize );
+
+struct state {
+    void* data;
+    size_t size;
+};
+
+char* g_rootSharedObjectPath = NULL;
+
+static FORCE_INLINE bool hasPathChanged( const char* restrict _path ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_soPath ) ) {
+    if ( UNLIKELY( !_path ) ) {
         goto EXIT;
     }
 
@@ -43,8 +45,8 @@ static bool check( const char* _soPath ) {
 
         struct stat st;
 
-        if ( stat( _soPath, &st ) != 0 ) {
-            fprintf( stderr, "[reload] stat(%s) failed: %s\n", _soPath,
+        if ( stat( _path, &st ) != 0 ) {
+            fprintf( stderr, "[reload] stat(%s) failed: %s\n", _path,
                      strerror( errno ) );
 
             goto EXIT;
@@ -63,7 +65,179 @@ EXIT:
     return ( l_returnValue );
 }
 
-static bool reload( const char* _soPath ) {
+static FORCE_INLINE Lmid_t getNamespaceId( void* restrict _handle ) {
+    Lmid_t l_returnValue = LONG_MAX;
+
+    if ( UNLIKELY( !_handle ) ) {
+        goto EXIT;
+    }
+
+    {
+        const int l_result = dlinfo( _handle, RTLD_DI_LMID, &l_returnValue );
+
+        assert( l_result >= 0 );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool collectStatesFromHandle( void* _handle,
+                                                  char*** _stateNames,
+                                                  struct state*** _states ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_handle ) ) {
+        goto EXIT;
+    }
+
+    {
+        const Lmid_t l_namespaceId = getNamespaceId( _handle );
+
+        assert( l_namespaceId != LONG_MAX );
+
+        struct link_map* l_linkMap;
+
+        const int l_result = dlinfo( _handle, RTLD_DI_LINKMAP, &l_linkMap );
+
+        assert( l_result >= 0 );
+
+        // Call each module state saving function
+        for ( struct link_map* _linkMap = l_linkMap; _linkMap;
+              _linkMap = _linkMap->l_next ) {
+            if ( UNLIKELY( !( _linkMap->l_name ) ||
+                           !( *( _linkMap->l_name ) ) ) ) {
+                continue;
+            }
+
+            if ( UNLIKELY( __builtin_strcmp( _linkMap->l_name,
+                                             g_rootSharedObjectPath ) == 0 ) ) {
+                continue;
+            }
+
+            if ( !comparePathsDirectories( _linkMap->l_name,
+                                           g_rootSharedObjectPath ) ) {
+                continue;
+            }
+
+            void* l_handle = dlmopen( l_namespaceId, _linkMap->l_name,
+                                      ( RTLD_LAZY | RTLD_NOLOAD ) );
+
+            assert( l_handle != NULL );
+
+            hotReload$unload_t l_unloadCallback =
+                dlsym( l_handle, "hotReload$unload" );
+
+            if ( l_unloadCallback ) {
+                printf( "l_unloadCallback    %p %s\n", l_unloadCallback,
+                        _linkMap->l_name );
+                struct state l_state;
+
+                l_returnValue =
+                    l_unloadCallback( &( l_state.data ), &( l_state.size ) );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
+
+                printf( "OUT %zu\n", l_state.size );
+
+                insertIntoArray( _stateNames,
+                                 duplicateString( _linkMap->l_name ) );
+                insertIntoArray( _states, clone( &l_state ) );
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE char** getUndefinedFunctionsFromSoPath(
+    const char* _soPath ) {
+    char** l_returnValue = NULL;
+
+    if ( UNLIKELY( !_soPath ) ) {
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = createArray( char* );
+
+        const char* names[] = {
+            "__extendhfsf2",
+            "__truncsfhf2",
+            "snappy_max_compressed_length",
+            "snappy_compress",
+            "snappy_validate_compressed_buffer",
+            "snappy_uncompressed_length",
+            "snappy_uncompress",
+            "ini_parse_string_length",
+            "SDL_SetRenderVSync",
+            "SDL_GetError",
+            "SDL_GetRenderDrawColor",
+            "SDL_SetRenderDrawColor",
+            "SDL_RenderRect",
+            "SDL_RenderFillRect",
+            "SDL_GetError",
+            "SDL_IOFromConstMem",
+            "IMG_LoadTexture_IO",
+            "SDL_CloseIO",
+            "SDL_DestroyTexture",
+            "SDL_RenderTexture",
+            "SDL_GetError",
+            "SDL_GetKeyboardState",
+            "SDL_SetRenderScale",
+            "SDL_GetError",
+            "SDL_SetAppMetadata",
+            "SDL_Init",
+            "SDL_CreateWindowAndRenderer",
+            "SDL_SetDefaultTextureScaleMode",
+            "SDL_HasGamepad",
+            "SDL_RenderClear",
+            "SDL_RenderPresent",
+            "SDL_DestroyRenderer",
+            "SDL_DestroyWindow",
+            "SDL_Quit",
+        };
+
+        FOR( const char* const*, names ) {
+            insertIntoArray( &l_returnValue, duplicateString( *_element ) );
+        }
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE char** getMainExecutableFunctionNamesToPatch( void ) {
+    char** l_returnValue = NULL;
+
+    {
+        l_returnValue = createArray( char* );
+
+        const char* names[] = {
+            // Main loop
+            "init",
+            "event",
+            "iterate",
+            "quit",
+
+            // Other
+            "concatBeforeAndAfterString",
+        };
+
+        FOR( const char* const*, names ) {
+            insertIntoArray( &l_returnValue, duplicateString( *_element ) );
+        }
+    }
+
+    return ( l_returnValue );
+}
+
+static bool hotReloadSo( const char* restrict _soPath ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_soPath ) ) {
@@ -71,105 +245,201 @@ static bool reload( const char* _soPath ) {
     }
 
     {
-        if ( check( _soPath ) ) {
+        if ( hasPathChanged( _soPath ) ) {
             printf( "[reload] Detected change in %s\n", _soPath );
 
-            void* handle =
-                dlmopen( LM_ID_NEWLM, _soPath, RTLD_LAZY | RTLD_DEEPBIND );
-            printf( "%s %p %s\n", _soPath, handle, dlerror() );
+            static void* l_managerHandle = NULL;
 
-            Lmid_t nsid;
-            if ( dlinfo( handle, RTLD_DI_LMID, &nsid ) != 0 ) {
-                // error, usually invalid handle
-                perror( "dlinfo" );
-            } else {
-                printf( "Namespace ID: %lu\n", ( unsigned long )nsid );
+            // If first hot reload
+            if ( UNLIKELY( !l_managerHandle ) ) {
+                l_managerHandle = dlopen( NULL, RTLD_NOW );
+
+                assert( l_managerHandle != NULL );
             }
 
-            struct link_map* lm;
-            dlinfo( handle, RTLD_DI_LINKMAP, &lm );
+            {
+                char** l_stateNames = createArray( char* );
+                struct state** l_states = createArray( struct state* );
 
-            void* newA = NULL;
+                l_returnValue = collectStatesFromHandle(
+                    l_managerHandle, &l_stateNames, &l_states );
 
-            const char* names[] = {
-                "snappy_max_compressed_length",
-                "snappy_compress",
-                "snappy_validate_compressed_buffer",
-                "snappy_uncompressed_length",
-                "snappy_uncompress",
-                "ini_parse_string_length",
-                "SDL_SetRenderVSync",
-                "SDL_GetError",
-                "SDL_GetRenderDrawColor",
-                "SDL_SetRenderDrawColor",
-                "SDL_RenderRect",
-                "SDL_RenderFillRect",
-                "SDL_GetError",
-                "SDL_IOFromConstMem",
-                "IMG_LoadTexture_IO",
-                "SDL_CloseIO",
-                "SDL_DestroyTexture",
-                "SDL_RenderTexture",
-                "SDL_GetError",
-                "SDL_GetKeyboardState",
-                "SDL_SetRenderScale",
-                "SDL_GetError",
-                "SDL_SetAppMetadata",
-                "SDL_Init",
-                "SDL_CreateWindowAndRenderer",
-                "SDL_SetDefaultTextureScaleMode",
-                "SDL_HasGamepad",
-                "SDL_RenderClear",
-                "SDL_RenderPresent",
-                "SDL_DestroyRenderer",
-                "SDL_DestroyWindow",
-                "SDL_Quit",
-            };
-
-            for ( struct link_map* m = lm; m; m = m->l_next ) {
-                if ( !( m->l_name ) || !( *( m->l_name ) ) ) {
-                    continue;
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT2;
                 }
 
-                void* existing =
-                    dlmopen( nsid, m->l_name, RTLD_LAZY | RTLD_NOLOAD );
+                // Load new
+                l_managerHandle = dlmopen( LM_ID_NEWLM, _soPath,
+                                           ( RTLD_LAZY | RTLD_DEEPBIND ) );
 
-                plthook_t* ph;
+                assert( l_managerHandle != NULL );
 
-                if ( plthook_open_by_handle( &ph, existing ) == 0 ) {
-                    FOR( const char* const*, names ) {
-                        void* old;
-                        if ( plthook_replace( ph, *_element,
-                                              dlsym( RTLD_DEFAULT, *_element ),
-                                              &old ) == 0 ) {
-                            void* p = dlsym( existing, "iterate" );
+                char** l_names = getMainExecutableFunctionNamesToPatch();
 
-                            if ( p ) {
-                                newA = p;
+                assert( l_names != NULL );
+
+                void** l_addresses = createArray( void* );
+
+                preallocateArray( &l_addresses, arrayLength( l_names ) );
+
+                __builtin_memset(
+                    l_addresses, 0,
+                    ( arrayLength( l_addresses ) * sizeof( void* ) ) );
+
+                {
+                    char** l_undefinedFunctions =
+                        getUndefinedFunctionsFromSoPath( _soPath );
+
+                    assert( l_undefinedFunctions != NULL );
+
+                    const Lmid_t l_namespaceId =
+                        getNamespaceId( l_managerHandle );
+
+                    assert( l_namespaceId != LONG_MAX );
+
+                    struct link_map* l_linkMap;
+                    const int l_result =
+                        dlinfo( l_managerHandle, RTLD_DI_LINKMAP, &l_linkMap );
+
+                    assert( l_result >= 0 );
+
+                    for ( struct link_map* _linkMap = l_linkMap; _linkMap;
+                          _linkMap = _linkMap->l_next ) {
+                        if ( UNLIKELY( !( _linkMap->l_name ) ||
+                                       !( *( _linkMap->l_name ) ) ) ) {
+                            continue;
+                        }
+
+                        if ( UNLIKELY( __builtin_strcmp(
+                                           _linkMap->l_name,
+                                           g_rootSharedObjectPath ) == 0 ) ) {
+                            continue;
+                        }
+
+                        if ( !comparePathsDirectories(
+                                 _linkMap->l_name, g_rootSharedObjectPath ) ) {
+                            continue;
+                        }
+
+                        void* l_handle =
+                            dlmopen( l_namespaceId, _linkMap->l_name,
+                                     ( RTLD_LAZY | RTLD_NOLOAD ) );
+
+                        assert( l_handle != NULL );
+
+                        {
+                            hotReload$load_t l_loadCallback =
+                                dlsym( l_handle, "hotReload$load" );
+
+                            if ( l_loadCallback ) {
+                                printf( "l_loadCallback    %p %s\n",
+                                        l_loadCallback, _linkMap->l_name );
+
+                                FOR_RANGE( arrayLength_t, 0,
+                                           arrayLength( l_stateNames ) ) {
+                                    const char* l_name = l_stateNames[ _index ];
+
+                                    if ( __builtin_strcmp(
+                                             l_name, _linkMap->l_name ) == 0 ) {
+                                        printf( "l_loadCallback    %s\n",
+                                                l_name );
+
+                                        struct state* l_state =
+                                            l_states[ _index ];
+
+                                        void* l_stateData = l_state->data;
+                                        size_t l_stateDataSize = l_state->size;
+
+                                        l_returnValue = l_loadCallback(
+                                            l_stateData, l_stateDataSize );
+
+                                        if ( UNLIKELY( !l_returnValue ) ) {
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Patch undefined functions with base namespace
+                        {
+                            plthook_t* l_plthookHandle;
+
+                            const int l_result = plthook_open_by_handle(
+                                &l_plthookHandle, l_handle );
+
+                            if ( l_result != 0 ) {
+                                continue;
                             }
 
-                            printf( "new    %p , %p\n", newA, old );
+                            FOR_ARRAY( char* const*, l_undefinedFunctions ) {
+                                plthook_replace(
+                                    l_plthookHandle, *_element,
+                                    dlsym( RTLD_DEFAULT, *_element ), NULL );
+                            }
+
+                            plthook_close( l_plthookHandle );
+                        }
+
+                        // Locate functions used in main executable for patching
+                        {
+                            FOR_RANGE( arrayLength_t, 0,
+                                       arrayLength( l_names ) ) {
+                                const char* l_name = l_names[ _index ];
+
+                                void* l_address = dlsym( l_handle, l_name );
+
+                                if ( l_address ) {
+                                    l_addresses[ _index ] = l_address;
+                                }
+                            }
                         }
                     }
 
-                    plthook_close( ph );
+                    FREE_ARRAY_ELEMENTS( l_undefinedFunctions );
+                    FREE_ARRAY( l_undefinedFunctions );
                 }
+
+                // Patch functions in main executable
+                {
+                    void* l_baseHandle = dlopen( NULL, RTLD_NOW );
+
+                    plthook_t* l_plthookHandle;
+
+                    const int l_result = plthook_open_by_handle(
+                        &l_plthookHandle, l_baseHandle );
+
+                    assert( l_result == 0 );
+
+                    FOR_RANGE( arrayLength_t, 0, arrayLength( l_names ) ) {
+                        const char* l_name = l_names[ _index ];
+                        void* l_address = l_addresses[ _index ];
+
+                        if ( UNLIKELY( !l_address ) ) {
+                            printf( "no address for %s\n", l_name );
+
+                            continue;
+                        }
+
+                        const int l_result = plthook_replace(
+                            l_plthookHandle, l_name, l_address, NULL );
+
+                        assert( l_result == 0 );
+                    }
+
+                    plthook_close( l_plthookHandle );
+                }
+
+                FREE_ARRAY_ELEMENTS( l_names );
+                FREE_ARRAY( l_names );
+                FREE_ARRAY( l_addresses );
+
+            EXIT2:
+                FREE_ARRAY_ELEMENTS( l_stateNames );
+                FREE_ARRAY( l_stateNames );
+                FREE_ARRAY_ELEMENTS( l_states );
+                FREE_ARRAY( l_states );
             }
-
-            void* main_handle = dlopen( NULL, RTLD_NOW );
-
-            plthook_t* ph;
-
-            if ( plthook_open_by_handle( &ph, main_handle ) != 0 ) {
-                fprintf( stderr, "plthook_open: %s\n", plthook_error() );
-            }
-
-            void* old = NULL;
-            if ( plthook_replace( ph, "iterate", newA, &old ) == 0 ) {
-                printf( "newO    %p , %p\n", newA, old );
-            }
-
-            plthook_close( ph );
         }
 
         l_returnValue = true;
@@ -186,19 +456,23 @@ int main( int _argumentCount, char** _argumentVector ) {
 
 #if defined( HOT_RELOAD )
 
-    char* l_rootSharedObjectPath =
+    g_rootSharedObjectPath =
         duplicateString( HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME ".so" );
 
     {
         char* l_directoryPath = getApplicationDirectoryAbsolutePath();
 
-        concatBeforeAndAfterString( &l_rootSharedObjectPath, l_directoryPath,
+        concatBeforeAndAfterString( &g_rootSharedObjectPath, l_directoryPath,
                                     NULL );
 
         free( l_directoryPath );
     }
 
-    reload( l_rootSharedObjectPath );
+    l_returnValue = hotReloadSo( g_rootSharedObjectPath );
+
+    if ( UNLIKELY( !l_returnValue ) ) {
+        goto EXIT;
+    }
 
 #endif
 
@@ -242,7 +516,11 @@ int main( int _argumentCount, char** _argumentVector ) {
             l_iterationCount++;
 
             if ( ( l_iterationCount % 60 ) == 0 ) {
-                reload( l_rootSharedObjectPath );
+                l_returnValue = hotReloadSo( g_rootSharedObjectPath );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
             }
 #endif
         }
@@ -253,7 +531,7 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-    free( l_rootSharedObjectPath );
+    free( g_rootSharedObjectPath );
 
 #endif
 

@@ -115,7 +115,7 @@ bool quit( applicationState_t* restrict _applicationState,
         // Log
         {
             if ( UNLIKELY( !log$quit() ) ) {
-                trap();
+                trap( "Log quitting" );
 
                 goto EXIT;
             }
