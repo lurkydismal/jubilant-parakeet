@@ -70,7 +70,6 @@ jobs:
         cd SDL3 && \
         export CC="ccache gcc" && \
         export CXX="ccache g++" && \
-        export LD="mold" && \
         cmake -B build -G Ninja \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
@@ -87,7 +86,6 @@ jobs:
         cd SDL3_image && \
         export CC="ccache gcc" && \
         export CXX="ccache g++" && \
-        export LD="mold" && \
         cmake -B build -G Ninja \
           -DCMAKE_C_COMPILER_LAUNCHER=ccache \
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
