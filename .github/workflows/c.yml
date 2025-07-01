@@ -76,7 +76,7 @@ jobs:
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_LINKER=mold \
           -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
           -DCMAKE_INSTALL_PREFIX=/usr/local && \
         cmake --build build && \
         sudo cmake --install build
@@ -93,7 +93,7 @@ jobs:
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
           -DCMAKE_LINKER=mold \
           -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold"
+          -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
           -DCMAKE_INSTALL_PREFIX=/usr/local && \
         cmake --build build && \
         sudo cmake --install build
