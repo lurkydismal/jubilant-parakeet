@@ -27,7 +27,7 @@
 
 #define PRINT_CONFIG_FORMAT_STRING \
     "\nConfig options:\n"          \
-    "%s" LOG_COLOR_RESET "\n"
+    "%s" ASCII_COLOR_RESET "\n"
 
 // Keys should match keys for settings options
 #define SETTINGS_FORMAT_STRING \
@@ -160,25 +160,26 @@ static error_t parserForOption( int _key,
         case 'p': {
             char l_configAsString[ PATH_MAX ] = { '\0' };
 
-#define configFieldHandler( _field, _fieldName, _configAsString )             \
-    do {                                                                      \
-        static size_t l_index = 0;                                            \
-        const char* l_name = ( _field )->name;                                \
-        const char* l_type = ( _fieldName );                                  \
-        const size_t l_configAsStringLength =                                 \
-            __builtin_strlen( _configAsString );                              \
-        const size_t l_configAsStringRemainingLength =                        \
-            ( PATH_MAX - l_configAsStringLength );                            \
-        snprintf( ( ( _configAsString ) + l_configAsStringLength ),           \
-                  l_configAsStringRemainingLength,                            \
-                  LOG_COLOR_YELLOW                                            \
-                  "[" LOG_COLOR_RESET_FOREGROUND " '" LOG_COLOR_GREEN         \
-                  "%s" LOG_COLOR_RESET_FOREGROUND "' = '" LOG_COLOR_RED       \
-                  "%zu" LOG_COLOR_RESET_FOREGROUND "' " LOG_COLOR_YELLOW      \
-                  "]" LOG_COLOR_RESET_FOREGROUND ": '" LOG_COLOR_PURPLE_LIGHT \
-                  "%s" LOG_COLOR_RESET_FOREGROUND "'\n",                      \
-                  l_name, l_index, l_type );                                  \
-        l_index++;                                                            \
+#define configFieldHandler( _field, _fieldName, _configAsString )            \
+    do {                                                                     \
+        static size_t l_index = 0;                                           \
+        const char* l_name = ( _field )->name;                               \
+        const char* l_type = ( _fieldName );                                 \
+        const size_t l_configAsStringLength =                                \
+            __builtin_strlen( _configAsString );                             \
+        const size_t l_configAsStringRemainingLength =                       \
+            ( PATH_MAX - l_configAsStringLength );                           \
+        snprintf( ( ( _configAsString ) + l_configAsStringLength ),          \
+                  l_configAsStringRemainingLength,                           \
+                  ASCII_COLOR_YELLOW                                         \
+                  "[" ASCII_COLOR_RESET_FOREGROUND " '" ASCII_COLOR_GREEN    \
+                  "%s" ASCII_COLOR_RESET_FOREGROUND "' = '" ASCII_COLOR_RED  \
+                  "%zu" ASCII_COLOR_RESET_FOREGROUND "' " ASCII_COLOR_YELLOW \
+                  "]" ASCII_COLOR_RESET_FOREGROUND                           \
+                  ": '" ASCII_COLOR_PURPLE_LIGHT                             \
+                  "%s" ASCII_COLOR_RESET_FOREGROUND "'\n",                   \
+                  l_name, l_index, l_type );                                 \
+        l_index++;                                                           \
     } while ( 0 )
 
 #define HANDLE_CONFIG_FIELD( _field )                                   \

@@ -13,14 +13,6 @@ static char* g_transactionString = NULL;
 static ssize_t g_transactionSize = 0;
 static logLevel_t g_currentLogLevel = LOG_LEVEL_DEFAULT;
 
-static FORCE_INLINE void reportNotInitialized( void ) {
-#if ( defined( DEBUG ) && !defined( TESTS ) )
-
-    trap( "Log was not initialized" );
-
-#endif
-}
-
 static const char* log$level$convert$toColor( const logLevel_t _logLevel ) {
     switch ( _logLevel ) {
         case ( logLevel_t )debug: {
@@ -65,7 +57,7 @@ static size_t log$level$prependToString( char* restrict* restrict _string,
             // Colored
             concatBeforeAndAfterString( &l_logLevelWithBrackets,
                                         log$level$convert$toColor( _logLevel ),
-                                        LOG_COLOR_RESET_FOREGROUND );
+                                        ASCII_COLOR_RESET_FOREGROUND );
 
             concatBeforeAndAfterString( _string, " ", NULL );
 
@@ -222,10 +214,10 @@ EXIT:
 }
 
 static FORCE_INLINE void appendColorReset( void ) {
-    const size_t l_colorResetLength = __builtin_strlen( LOG_COLOR_RESET );
+    const size_t l_colorResetLength = __builtin_strlen( ASCII_COLOR_RESET );
 
     __builtin_memcpy( ( g_transactionString + g_transactionSize ),
-                      LOG_COLOR_RESET, l_colorResetLength );
+                      ASCII_COLOR_RESET, l_colorResetLength );
 
     g_transactionSize += l_colorResetLength;
 }
@@ -235,7 +227,7 @@ bool _log$transaction$query( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        reportNotInitialized();
+        trap( "Log was not initialized" );
 
         goto EXIT;
     }
@@ -257,7 +249,7 @@ bool _log$transaction$query( const logLevel_t _logLevel,
             size_t l_stringLength =
                 log$level$prependToString( &l_string, _logLevel );
             const size_t l_colorResetLength =
-                __builtin_strlen( LOG_COLOR_RESET );
+                __builtin_strlen( ASCII_COLOR_RESET );
 
             if ( UNLIKELY( ( g_transactionSize + l_stringLength +
                              l_colorResetLength ) >
@@ -297,7 +289,7 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        reportNotInitialized();
+        trap( "Log was not initialized" );
 
         goto EXIT;
     }
