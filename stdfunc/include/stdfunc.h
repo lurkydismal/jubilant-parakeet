@@ -7,6 +7,7 @@
 #define XXH_STATIC_LINKING_ONLY
 
 #include <execinfo.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -99,42 +100,45 @@
         MACRO_TO_STRING( __LINE__ ) ASCII_COLOR_RESET_FOREGROUND            \
         " in function '" TRAP_COLOR_FUNCTION_NAME
 
-#define DEBUG_INFORMATION2 ASCII_COLOR_RESET_FOREGROUND "' | Message: "
+#define DEBUG_INFORMATION2 ASCII_COLOR_RESET_FOREGROUND "'"
+#define DEBUG_INFORMATION3 " | Message: "
 
 #define BACKTRACE_LIMIT ( 5 )
 
-#define trap( ... )                                                          \
-    do {                                                                     \
-        __VA_OPT__(                                                          \
-            write( STDERR_FILENO, DEBUG_INFORMATION1,                        \
-                   sizeof( DEBUG_INFORMATION1 ) );                           \
-            write( STDERR_FILENO, __func__, sizeof( __func__ ) );            \
-            write( STDERR_FILENO, DEBUG_INFORMATION2,                        \
-                   sizeof( DEBUG_INFORMATION2 ) );                           \
-            const char l_message[] = __VA_ARGS__;                            \
-            write( STDERR_FILENO, l_message, sizeof( l_message ) );          \
-            write( STDERR_FILENO, "\n", 1 );                                 \
-            void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                      \
-            const size_t l_backtraceAmount =                                 \
-                backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );             \
-            char** l_backtraceResolved =                                     \
-                backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );   \
-            FOR_RANGE( size_t, 0, l_backtraceAmount ) {                      \
-                char* l_backtrace = l_backtraceResolved[ _index ];           \
-                char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );  \
-                *l_fileNameEnd = '\0';                                       \
-                char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) + \
-                                     ( 1 * sizeof( char ) ) );               \
-                write( STDERR_FILENO, l_fileName,                            \
-                       __builtin_strlen( l_fileName ) );                     \
-                *l_fileNameEnd = '(';                                        \
-                write( STDERR_FILENO, l_fileNameEnd,                         \
-                       __builtin_strlen( l_fileNameEnd ) );                  \
-                write( STDERR_FILENO, ASCII_COLOR_RESET,                     \
-                       sizeof( ASCII_COLOR_RESET ) );                        \
-                write( STDERR_FILENO, "\n", 1 );                             \
-            } free( l_backtraceResolved ); );                                \
-        __builtin_trap();                                                    \
+#define trap( ... )                                                            \
+    do {                                                                       \
+        write( STDERR_FILENO, DEBUG_INFORMATION1,                              \
+               sizeof( DEBUG_INFORMATION1 ) );                                 \
+        write( STDERR_FILENO, __func__, sizeof( __func__ ) );                  \
+        write( STDERR_FILENO, DEBUG_INFORMATION2,                              \
+               sizeof( DEBUG_INFORMATION2 ) );                                 \
+        __VA_OPT__( write( STDERR_FILENO, DEBUG_INFORMATION3,                  \
+                           sizeof( DEBUG_INFORMATION3 ) );                     \
+                    const char l_message[] = __VA_ARGS__;                      \
+                    write( STDERR_FILENO, l_message, sizeof( l_message ) ); ); \
+        write( STDERR_FILENO, "\n", 1 );                                       \
+        void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                            \
+        const size_t l_backtraceAmount =                                       \
+            backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );                   \
+        char** l_backtraceResolved =                                           \
+            backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );         \
+        FOR_RANGE( size_t, 0, l_backtraceAmount ) {                            \
+            char* l_backtrace = l_backtraceResolved[ _index ];                 \
+            char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );        \
+            *l_fileNameEnd = '\0';                                             \
+            char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) +       \
+                                 ( 1 * sizeof( char ) ) );                     \
+            write( STDERR_FILENO, l_fileName,                                  \
+                   __builtin_strlen( l_fileName ) );                           \
+            *l_fileNameEnd = '(';                                              \
+            write( STDERR_FILENO, l_fileNameEnd,                               \
+                   __builtin_strlen( l_fileNameEnd ) );                        \
+            write( STDERR_FILENO, ASCII_COLOR_RESET,                           \
+                   sizeof( ASCII_COLOR_RESET ) );                              \
+            write( STDERR_FILENO, "\n", 1 );                                   \
+        }                                                                      \
+        free( l_backtraceResolved );                                           \
+        __builtin_trap();                                                      \
     } while ( 0 )
 
 #define assert( _expression, ... ) \
@@ -597,6 +601,33 @@ static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {
         }
 
         l_returnValue = l_directoryPath;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE bool comparePathsDirectories( const char* _path1,
+                                                  const char* _path2 ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_path1 ) ) {
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_path2 ) ) {
+        goto EXIT;
+    }
+
+    {
+        char l_path1[ PATH_MAX ];
+        __builtin_memcpy( l_path1, _path1, ( __builtin_strlen( _path1 ) + 1 ) );
+
+        char l_path2[ PATH_MAX ];
+        __builtin_memcpy( l_path2, _path2, ( __builtin_strlen( _path2 ) + 1 ) );
+
+        l_returnValue =
+            ( __builtin_strcmp( dirname( l_path1 ), dirname( l_path2 ) ) == 0 );
     }
 
 EXIT:
