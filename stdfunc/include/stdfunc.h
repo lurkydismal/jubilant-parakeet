@@ -40,6 +40,14 @@
 #define DECIMAL_RADIX 10
 #define ONE_SECOND_IN_MILLISECONDS ( ( size_t )( 1000 ) )
 #define ONE_MILLISECOND_IN_NANOSECONDS ( ( size_t )( 1000000 ) )
+#define ASCII_COLOR_CYAN_LIGHT "\e[1;36m"
+#define ASCII_COLOR_GREEN "\e[1;32m"
+#define ASCII_COLOR_PURPLE_LIGHT "\e[1;35m"
+#define ASCII_COLOR_RED "\e[1;31m"
+#define ASCII_COLOR_YELLOW "\e[1;33m"
+#define ASCII_COLOR_RESET_FOREGROUND "\e[39m"
+#define ASCII_COLOR_RESET_BACKGROUND "\e[49m"
+#define ASCII_COLOR_RESET "\e[0m"
 
 // Utility macros ( no side-effects )
 #define SECONDS_TO_MILLISECONDS( _seconds ) \
@@ -80,45 +88,53 @@
 
 #endif
 
-#define DEBUG_INFORMATION1 \
-    "File '" __FILE__ "': line " MACRO_TO_STRING(__LINE__) \
-    " in function "                       \
-    "'"
+#define TRAP_COLOR_FILE_NAME ASCII_COLOR_PURPLE_LIGHT
+#define TRAP_COLOR_LINE_NUMBER ASCII_COLOR_PURPLE_LIGHT
+#define TRAP_COLOR_FUNCTION_NAME ASCII_COLOR_PURPLE_LIGHT
 
-#define DEBUG_INFORMATION2 "' | Message: "
+#define DEBUG_INFORMATION1                                                  \
+    TRAP_COLOR_FILE_NAME ASCII_COLOR_RESET_FOREGROUND                       \
+        "File '" TRAP_COLOR_FILE_NAME __FILE__ ASCII_COLOR_RESET_FOREGROUND \
+        "': line " TRAP_COLOR_LINE_NUMBER                                   \
+        MACRO_TO_STRING( __LINE__ ) ASCII_COLOR_RESET_FOREGROUND            \
+        " in function '" TRAP_COLOR_FUNCTION_NAME
+
+#define DEBUG_INFORMATION2 ASCII_COLOR_RESET_FOREGROUND "' | Message: "
 
 #define BACKTRACE_LIMIT ( 5 )
 
-#define trap( ... )                                                           \
-    do {                                                                      \
-        __VA_OPT__(                                                           \
-            write( STDERR_FILENO, DEBUG_INFORMATION1,                         \
-                   __builtin_strlen( DEBUG_INFORMATION1 ) );                  \
-            write( STDERR_FILENO, __func__, __builtin_strlen( __func__ ) );   \
-            write( STDERR_FILENO, DEBUG_INFORMATION2,                         \
-                   __builtin_strlen( DEBUG_INFORMATION2 ) );                  \
-            const char l_message[] = __VA_ARGS__;                             \
-            write( STDERR_FILENO, l_message, __builtin_strlen( l_message ) ); \
-            write( STDERR_FILENO, "\n", 1 );                                  \
-            void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                       \
-            const size_t l_backtraceAmount =                                  \
-                backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );              \
-            char** l_backtraceResolved =                                      \
-                backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );    \
-            FOR_RANGE( size_t, 0, l_backtraceAmount ) {                       \
-                char* l_backtrace = l_backtraceResolved[ _index ];            \
-                char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );   \
-                *l_fileNameEnd = '\0';                                        \
-                char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) +  \
-                                     ( 1 * sizeof( char ) ) );                \
-                write( STDERR_FILENO, l_fileName,                             \
-                       __builtin_strlen( l_fileName ) );                      \
-                *l_fileNameEnd = '(';                                         \
-                write( STDERR_FILENO, l_fileNameEnd,                          \
-                       __builtin_strlen( l_fileNameEnd ) );                   \
-                write( STDERR_FILENO, "\n", 1 );                              \
-            } free( l_backtraceResolved ); );                                 \
-        __builtin_trap();                                                     \
+#define trap( ... )                                                          \
+    do {                                                                     \
+        __VA_OPT__(                                                          \
+            write( STDERR_FILENO, DEBUG_INFORMATION1,                        \
+                   sizeof( DEBUG_INFORMATION1 ) );                           \
+            write( STDERR_FILENO, __func__, sizeof( __func__ ) );            \
+            write( STDERR_FILENO, DEBUG_INFORMATION2,                        \
+                   sizeof( DEBUG_INFORMATION2 ) );                           \
+            const char l_message[] = __VA_ARGS__;                            \
+            write( STDERR_FILENO, l_message, sizeof( l_message ) );          \
+            write( STDERR_FILENO, "\n", 1 );                                 \
+            void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                      \
+            const size_t l_backtraceAmount =                                 \
+                backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );             \
+            char** l_backtraceResolved =                                     \
+                backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );   \
+            FOR_RANGE( size_t, 0, l_backtraceAmount ) {                      \
+                char* l_backtrace = l_backtraceResolved[ _index ];           \
+                char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );  \
+                *l_fileNameEnd = '\0';                                       \
+                char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) + \
+                                     ( 1 * sizeof( char ) ) );               \
+                write( STDERR_FILENO, l_fileName,                            \
+                       __builtin_strlen( l_fileName ) );                     \
+                *l_fileNameEnd = '(';                                        \
+                write( STDERR_FILENO, l_fileNameEnd,                         \
+                       __builtin_strlen( l_fileNameEnd ) );                  \
+                write( STDERR_FILENO, ASCII_COLOR_RESET,                     \
+                       sizeof( ASCII_COLOR_RESET ) );                        \
+                write( STDERR_FILENO, "\n", 1 );                             \
+            } free( l_backtraceResolved ); );                                \
+        __builtin_trap();                                                    \
     } while ( 0 )
 
 #define assert( _expression, ... ) \
