@@ -95,5 +95,14 @@ jobs:
     - name: Save ccache
       run: ccache -s
 
-    - name: Build ${{ matrix.build_type }}
-      run: TERM=xterm ./build.sh ${{ matrix.build_type }}
+    - name: Build debug
+      run: TERM=xterm ./build.sh
+
+    - name: Build debug with hot reload
+      run: TERM=xterm ENABLE_HOT_RELOAD= ./build.sh
+
+    - name: Build tests
+      run: TERM=xterm BUILD_TYPE=3 ./build.sh
+
+    - name: Run tests
+      run: TERM=xterm ./out/main.out_test
