@@ -3,6 +3,12 @@
 #include "log.h"
 #include "stdfunc.h"
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 background_t background_t$create( void ) {
     background_t l_returnValue = DEFAULT_BACKGROUND;
 
@@ -128,7 +134,7 @@ EXIT:
 
 static FORCE_INLINE bool background_t$reload$element( void* _context,
                                                       const char* _fileName,
-                                                      size_t _eventsMask,
+                                                      size_t _eventMask,
                                                       uint32_t _cookie ) {
     bool l_returnValue = false;
 
@@ -149,12 +155,13 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
 
         log$transaction$query$format(
             ( logLevel_t )info,
-            "Background watch: file [ '%s' : '%zu' : '%u' ]", _fileName,
-            _eventsMask, _cookie );
+            "Background watch: file [ '%s' : '%#zx' : '%u' ]", _fileName,
+            _eventMask, _cookie );
 
 #else
-        ( void )_eventsMask;
-        ( void )_cookie;
+
+        UNUSED( _eventMask );
+        UNUSED( _cookie );
 
 #endif
 
@@ -192,7 +199,20 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
 
                 } else if ( __builtin_strcmp( l_fileExtension,
                                               BOXES_FILE_EXTENSION ) == 0 ) {
-                    l_isBoxes = true;
+                    char l_filePath[ PATH_MAX ] = { '\0' };
+
+                    {
+                        char* l_pointer = l_filePath;
+
+                        l_pointer =
+                            __builtin_stpcpy( l_pointer, l_background->folder );
+                        l_pointer = __builtin_stpcpy( l_pointer, "/" );
+                        l_pointer = __builtin_stpcpy( l_pointer, _fileName );
+                    }
+
+                    if ( doesPathExist( l_filePath ) ) {
+                        l_isBoxes = true;
+                    }
                 }
             }
         }
@@ -407,3 +427,47 @@ bool background_t$render( const background_t* restrict _background,
 EXIT:
     return ( l_returnValue );
 }
+
+#if defined( HOT_RELOAD )
+
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _state );
+    UNUSED( _stateSize );
+
+    if ( LIKELY( _applicationState->background ) &&
+         LIKELY( _applicationState->background->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->background->watches ) {
+            watch_t* l_element = *_element;
+
+            FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
+                *_element = NULL;
+            }
+        }
+    }
+
+    return ( true );
+}
+
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _state );
+    UNUSED( _stateSize );
+
+    if ( LIKELY( _applicationState->background ) &&
+         LIKELY( _applicationState->background->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->background->watches ) {
+            watch_t* l_element = *_element;
+
+            FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
+                *_element = background_t$reload$element;
+            }
+        }
+    }
+
+    return ( true );
+}
+
+#endif

@@ -6,6 +6,12 @@
 #include "FPS.h"
 #include "log.h"
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 static float16_t g_desiredFPS = 0;
 static vsync_t g_vsync = VSYNC_LEVEL_DEFAULT;
 
@@ -119,7 +125,11 @@ bool vsync$end( void ) {
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state, size_t* _stateSize ) {
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     *_stateSize =
         ( sizeof( g_desiredFPS ) + sizeof( g_vsync ) + sizeof( g_sleepTime ) +
           sizeof( g_startTime ) + sizeof( g_endTime ) );
@@ -145,7 +155,11 @@ bool hotReload$unload( void** _state, size_t* _stateSize ) {
     return ( true );
 }
 
-bool hotReload$load( void* _state, size_t _stateSize ) {
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     bool l_returnValue = false;
 
     {

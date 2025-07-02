@@ -9,6 +9,18 @@
 #define EVENT_DELETE IN_DELETE
 #define EVENT_RENAME ( IN_MOVED_FROM | IN_MOVED_TO )
 
+#define isEventWrite( _eventMask )                           \
+    ( ( ( _eventMask ) & ( IN_MODIFY | IN_CLOSE_WRITE ) ) && \
+      !( ( _eventMask ) &                                    \
+         ( IN_DELETE | IN_DELETE_SELF | IN_MOVED_FROM | IN_MOVE_SELF ) ) )
+
+#define isEventDelete( _eventMask ) \
+    ( ( ( _eventMask ) &            \
+        ( IN_DELETE | IN_DELETE_SELF | IN_MOVED_FROM | IN_MOVE_SELF ) ) )
+
+#define isEventRename( _eventMask ) \
+    ( ( ( _eventMask ) & ( IN_MOVED_FROM | IN_MOVED_TO | IN_MOVE_SELF ) ) )
+
 #define DEFAULT_wATCH           \
     { .fileDescriptor = -1,     \
       .epollDescriptor = -1,    \
@@ -18,7 +30,7 @@
 
 typedef bool ( *watchCallback_t )( void* _context,
                                    const char* _fileName,
-                                   size_t _eventsMask,
+                                   size_t _eventMask,
                                    uint32_t _cookie );
 
 typedef struct {

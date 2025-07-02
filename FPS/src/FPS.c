@@ -7,6 +7,12 @@
 #include "log.h"
 #include "stdfunc.h"
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 static pthread_t g_FPSCountThread;
 static bool g_shouldFPSCountThreadWork = false;
 static size_t g_currentFramesPerSecond = 0;
@@ -137,7 +143,11 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state, size_t* _stateSize ) {
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     *_stateSize = ( sizeof( g_totalFramesPassed ) );
     *_state = malloc( *_stateSize );
 
@@ -165,7 +175,11 @@ bool hotReload$unload( void** _state, size_t* _stateSize ) {
     return ( true );
 }
 
-bool hotReload$load( void* _state, size_t _stateSize ) {
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     bool l_returnValue = false;
 
     {
