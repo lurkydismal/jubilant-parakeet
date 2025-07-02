@@ -227,8 +227,6 @@ bool _log$transaction$query( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        trap( "Log was not initialized" );
-
         goto EXIT;
     }
 
@@ -289,8 +287,6 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        trap( "Log was not initialized" );
-
         goto EXIT;
     }
 
@@ -365,7 +361,7 @@ bool log$transaction$commit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_transactionString ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+        trap( "Log was not initialized" );
 
         goto EXIT;
     }

@@ -22,9 +22,11 @@
 #if defined( HOT_RELOAD )
 
 #define HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME "root"
+#define HOT_RELOAD_CHECK_DELAY_FRAMES 2
 
-typedef bool ( *hotReload$unload_t )( void** _state, size_t* _stateSize );
-typedef bool ( *hotReload$load_t )( void* _state, size_t _stateSize );
+typedef bool ( *hotReload$unload_t )( void** restrict _state,
+                                      size_t* restrict _stateSize );
+typedef bool ( *hotReload$load_t )( void* restrict _state, size_t _stateSize );
 
 struct state {
     void* data;
@@ -43,20 +45,15 @@ static FORCE_INLINE bool hasPathChanged( const char* restrict _path ) {
     {
         static long l_lastModificationTime = 0;
 
-        struct stat st;
+        struct stat l_statisticss;
 
-        if ( stat( _path, &st ) != 0 ) {
-            fprintf( stderr, "[reload] stat(%s) failed: %s\n", _path,
-                     strerror( errno ) );
+        assert( ( stat( _path, &l_statisticss ) == 0 ), "stat failed" );
 
+        if ( l_statisticss.st_mtime <= l_lastModificationTime ) {
             goto EXIT;
         }
 
-        if ( st.st_mtime <= l_lastModificationTime ) {
-            goto EXIT;
-        }
-
-        l_lastModificationTime = st.st_mtime;
+        l_lastModificationTime = l_statisticss.st_mtime;
 
         l_returnValue = true;
     }
@@ -82,9 +79,10 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool collectStatesFromHandle( void* _handle,
-                                                  char*** _stateNames,
-                                                  struct state*** _states ) {
+static FORCE_INLINE bool collectStatesFromHandle(
+    void* restrict _handle,
+    char** restrict* restrict _stateNames,
+    struct state** restrict* restrict _states ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_handle ) ) {
@@ -129,8 +127,6 @@ static FORCE_INLINE bool collectStatesFromHandle( void* _handle,
                 dlsym( l_handle, "hotReload$unload" );
 
             if ( l_unloadCallback ) {
-                printf( "l_unloadCallback    %p %s\n", l_unloadCallback,
-                        _linkMap->l_name );
                 struct state l_state;
 
                 l_returnValue =
@@ -139,8 +135,6 @@ static FORCE_INLINE bool collectStatesFromHandle( void* _handle,
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
                 }
-
-                printf( "OUT %zu\n", l_state.size );
 
                 insertIntoArray( _stateNames,
                                  duplicateString( _linkMap->l_name ) );
@@ -155,8 +149,9 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Implement
 static FORCE_INLINE char** getUndefinedFunctionsFromSoPath(
-    const char* _soPath ) {
+    const char* restrict _soPath ) {
     char** l_returnValue = NULL;
 
     if ( UNLIKELY( !_soPath ) ) {
@@ -212,6 +207,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Implement
 static FORCE_INLINE char** getMainExecutableFunctionNamesToPatch( void ) {
     char** l_returnValue = NULL;
 
@@ -274,17 +270,17 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
                 assert( l_managerHandle != NULL );
 
-                char** l_names = getMainExecutableFunctionNamesToPatch();
+                char** l_functionNames = getMainExecutableFunctionNamesToPatch();
 
-                assert( l_names != NULL );
+                assert( l_functionNames != NULL );
 
-                void** l_addresses = createArray( void* );
+                void** l_functionAddresses = createArray( void* );
 
-                preallocateArray( &l_addresses, arrayLength( l_names ) );
+                preallocateArray( &l_functionAddresses, arrayLength( l_functionNames ) );
 
                 __builtin_memset(
-                    l_addresses, 0,
-                    ( arrayLength( l_addresses ) * sizeof( void* ) ) );
+                    l_functionAddresses, 0,
+                    ( arrayLength( l_functionAddresses ) * sizeof( void* ) ) );
 
                 {
                     char** l_undefinedFunctions =
@@ -332,18 +328,12 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                                 dlsym( l_handle, "hotReload$load" );
 
                             if ( l_loadCallback ) {
-                                printf( "l_loadCallback    %p %s\n",
-                                        l_loadCallback, _linkMap->l_name );
-
                                 FOR_RANGE( arrayLength_t, 0,
                                            arrayLength( l_stateNames ) ) {
                                     const char* l_name = l_stateNames[ _index ];
 
                                     if ( __builtin_strcmp(
                                              l_name, _linkMap->l_name ) == 0 ) {
-                                        printf( "l_loadCallback    %s\n",
-                                                l_name );
-
                                         struct state* l_state =
                                             l_states[ _index ];
 
@@ -384,13 +374,13 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                         // Locate functions used in main executable for patching
                         {
                             FOR_RANGE( arrayLength_t, 0,
-                                       arrayLength( l_names ) ) {
-                                const char* l_name = l_names[ _index ];
+                                       arrayLength( l_functionNames ) ) {
+                                const char* l_name = l_functionNames[ _index ];
 
                                 void* l_address = dlsym( l_handle, l_name );
 
                                 if ( l_address ) {
-                                    l_addresses[ _index ] = l_address;
+                                    l_functionAddresses[ _index ] = l_address;
                                 }
                             }
                         }
@@ -411,15 +401,12 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
                     assert( l_result == 0 );
 
-                    FOR_RANGE( arrayLength_t, 0, arrayLength( l_names ) ) {
-                        const char* l_name = l_names[ _index ];
-                        void* l_address = l_addresses[ _index ];
+                    FOR_RANGE( arrayLength_t, 0, arrayLength( l_functionNames ) ) {
+                        const char* l_name = l_functionNames[ _index ];
+                        void* l_address = l_functionAddresses[ _index ];
 
-                        if ( UNLIKELY( !l_address ) ) {
-                            printf( "no address for %s\n", l_name );
-
-                            continue;
-                        }
+                        assert( LIKELY( l_address ),
+                                "Function for main executable was not found" );
 
                         const int l_result = plthook_replace(
                             l_plthookHandle, l_name, l_address, NULL );
@@ -430,9 +417,9 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                     plthook_close( l_plthookHandle );
                 }
 
-                FREE_ARRAY_ELEMENTS( l_names );
-                FREE_ARRAY( l_names );
-                FREE_ARRAY( l_addresses );
+                FREE_ARRAY_ELEMENTS( l_functionNames );
+                FREE_ARRAY( l_functionNames );
+                FREE_ARRAY( l_functionAddresses );
 
             EXIT2:
                 FREE_ARRAY_ELEMENTS( l_stateNames );
@@ -515,7 +502,7 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             l_iterationCount++;
 
-            if ( ( l_iterationCount % 60 ) == 0 ) {
+            if ( ( l_iterationCount % HOT_RELOAD_CHECK_DELAY_FRAMES ) == 0 ) {
                 l_returnValue = hotReloadSo( g_rootSharedObjectPath );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
