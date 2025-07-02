@@ -4,18 +4,20 @@
 
 #endif
 
+#if defined( HOT_RELOAD )
+
 #include <dlfcn.h>
 #include <link.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <sys/stat.h>
-#include <unistd.h>
+
+#include "plthook.h"
+
+#endif
 
 #include "applicationState_t.h"
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
-#include "plthook.h"
 #include "quit.h"
 #include "stdfunc.h"
 
