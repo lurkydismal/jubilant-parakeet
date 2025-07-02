@@ -706,6 +706,8 @@ const char* asset_t$loader$assetsDirectory$get( void ) {
     return ( g_assetsDirectory );
 }
 
+#if defined( HOT_RELOAD )
+
 bool hotReload$unload( void** _state, size_t* _stateSize ) {
     *_stateSize = ( sizeof( g_assetsDirectory ) );
     *_state = malloc( *_stateSize );
@@ -757,3 +759,5 @@ bool hotReload$load( void* _state, size_t _stateSize ) {
 EXIT:
     return ( l_returnValue );
 }
+
+#endif
