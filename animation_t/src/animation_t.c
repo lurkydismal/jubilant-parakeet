@@ -380,8 +380,7 @@ bool animation_t$load$fromGlob( animation_t* restrict _animation,
         FREE_ARRAY( l_paths );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Loading animation from glob" );
+            log$transaction$query( ( logLevel_t )error, "Loading from paths" );
 
             goto EXIT;
         }

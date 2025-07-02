@@ -39,6 +39,7 @@ export declare BUILD_DEFINES=(
 
 export declare BUILD_DEFINES_DEBUG=(
     "DEBUG"
+    "LOG_WATCH"
 )
 
 export declare BUILD_DEFINES_RELEASE=(
