@@ -114,21 +114,6 @@ bool applicationState_t$unload(
     }
 
     {
-#define TRY_UNLOAD_POINTER_OR_EXIT( _field )                            \
-    do {                                                                \
-        l_returnValue = _field##_t$unload( _applicationState->_field ); \
-        if ( UNLIKELY( !l_returnValue ) ) {                             \
-            log$transaction$query( ( logLevel_t )error,                 \
-                                   "Unloading " #_field );              \
-            goto EXIT;                                                  \
-        }                                                               \
-    } while ( 0 )
-
-        TRY_UNLOAD_POINTER_OR_EXIT( background );
-        TRY_UNLOAD_POINTER_OR_EXIT( HUD );
-
-#undef TRY_UNLOAD_POINTER_OR_EXIT
-
 #define TRY_UNLOAD_OR_EXIT( _field )                                         \
     do {                                                                     \
         l_returnValue = _field##_t$unload( &( _applicationState->_field ) ); \

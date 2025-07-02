@@ -3,6 +3,12 @@
 #include "log.h"
 #include "stdfunc.h"
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 HUD_t HUD_t$create( void ) {
     HUD_t l_returnValue = DEFAULT_HUD;
 
@@ -203,7 +209,7 @@ EXIT:
 
 static FORCE_INLINE bool HUD_t$reload$element( void* _context,
                                                const char* _fileName,
-                                               size_t _eventsMask,
+                                               size_t _eventMask,
                                                uint32_t _cookie ) {
     bool l_returnValue = false;
 
@@ -222,13 +228,14 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
     {
 #if defined( LOG_WATCH )
 
-        log$transaction$query$format( ( logLevel_t )info,
-                                      "HUD watch: file [ '%s' : '%zu' : '%u' ]",
-                                      _fileName, _eventsMask, _cookie );
+        log$transaction$query$format(
+            ( logLevel_t )info, "HUD watch: file [ '%s' : '%#zx' : '%u' ]",
+            _fileName, _eventMask, _cookie );
 
 #else
-        ( void )_eventsMask;
-        ( void )_cookie;
+
+        UNUSED( _eventMask );
+        UNUSED( _cookie );
 
 #endif
 
@@ -260,7 +267,19 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
 
             } else if ( __builtin_strcmp( l_fileExtension,
                                           BOXES_FILE_EXTENSION ) == 0 ) {
-                l_isBoxes = true;
+                char l_filePath[ PATH_MAX ] = { '\0' };
+
+                {
+                    char* l_pointer = l_filePath;
+
+                    l_pointer = __builtin_stpcpy( l_pointer, l_HUD->folder );
+                    l_pointer = __builtin_stpcpy( l_pointer, "/" );
+                    l_pointer = __builtin_stpcpy( l_pointer, _fileName );
+                }
+
+                if ( doesPathExist( l_filePath ) ) {
+                    l_isBoxes = true;
+                }
             }
         }
 
@@ -638,3 +657,47 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
 EXIT:
     return ( l_returnValue );
 }
+
+#if defined( HOT_RELOAD )
+
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _state );
+    UNUSED( _stateSize );
+
+    if ( LIKELY( _applicationState->HUD ) &&
+         LIKELY( _applicationState->HUD->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->HUD->watches ) {
+            watch_t* l_element = *_element;
+
+            FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
+                *_element = NULL;
+            }
+        }
+    }
+
+    return ( true );
+}
+
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _state );
+    UNUSED( _stateSize );
+
+    if ( LIKELY( _applicationState->HUD ) &&
+         LIKELY( _applicationState->HUD->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->HUD->watches ) {
+            watch_t* l_element = *_element;
+
+            FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
+                *_element = HUD_t$reload$element;
+            }
+        }
+    }
+
+    return ( true );
+}
+
+#endif

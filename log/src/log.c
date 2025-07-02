@@ -6,6 +6,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 #define LOG_LEVEL_DEFAULT ( ( logLevel_t )warn )
 
 static int g_fileDescriptor = -1;
@@ -423,7 +429,11 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state, size_t* _stateSize ) {
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     *_stateSize = ( sizeof( g_fileDescriptor ) + sizeof( g_transactionString ) +
                     sizeof( g_transactionSize ) + sizeof( g_currentLogLevel ) );
     *_state = malloc( *_stateSize );
@@ -447,7 +457,11 @@ bool hotReload$unload( void** _state, size_t* _stateSize ) {
     return ( true );
 }
 
-bool hotReload$load( void* _state, size_t _stateSize ) {
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     bool l_returnValue = false;
 
     {
