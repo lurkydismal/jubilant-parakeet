@@ -242,8 +242,6 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
     {
         if ( hasPathChanged( _soPath ) ) {
-            printf( "[reload] Detected change in %s\n", _soPath );
-
             static void* l_managerHandle = NULL;
 
             // If first hot reload
@@ -270,13 +268,15 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
                 assert( l_managerHandle != NULL );
 
-                char** l_functionNames = getMainExecutableFunctionNamesToPatch();
+                char** l_functionNames =
+                    getMainExecutableFunctionNamesToPatch();
 
                 assert( l_functionNames != NULL );
 
                 void** l_functionAddresses = createArray( void* );
 
-                preallocateArray( &l_functionAddresses, arrayLength( l_functionNames ) );
+                preallocateArray( &l_functionAddresses,
+                                  arrayLength( l_functionNames ) );
 
                 __builtin_memset(
                     l_functionAddresses, 0,
@@ -401,7 +401,8 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
                     assert( l_result == 0 );
 
-                    FOR_RANGE( arrayLength_t, 0, arrayLength( l_functionNames ) ) {
+                    FOR_RANGE( arrayLength_t, 0,
+                               arrayLength( l_functionNames ) ) {
                         const char* l_name = l_functionNames[ _index ];
                         void* l_address = l_functionAddresses[ _index ];
 
