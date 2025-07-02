@@ -441,6 +441,8 @@ EXIT:
     return ( l_returnValue );
 }
 
+#if defined( HOT_RELOAD )
+
 bool hotReload$unload( void** _state, size_t* _stateSize ) {
     *_stateSize = ( sizeof( g_seed ) );
     *_state = malloc( *_stateSize );
@@ -492,3 +494,5 @@ bool hotReload$load( void* _state, size_t _stateSize ) {
 EXIT:
     return ( l_returnValue );
 }
+
+#endif

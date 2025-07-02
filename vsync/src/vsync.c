@@ -117,7 +117,8 @@ bool vsync$end( void ) {
     return ( l_returnValue );
 }
 
-static struct timespec g_sleepTime, g_startTime, g_endTime;
+#if defined( HOT_RELOAD )
+
 bool hotReload$unload( void** _state, size_t* _stateSize ) {
     *_stateSize =
         ( sizeof( g_desiredFPS ) + sizeof( g_vsync ) + sizeof( g_sleepTime ) +
@@ -182,3 +183,5 @@ bool hotReload$load( void* _state, size_t _stateSize ) {
 EXIT:
     return ( l_returnValue );
 }
+
+#endif
