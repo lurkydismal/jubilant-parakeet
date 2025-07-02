@@ -453,6 +453,8 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
 
                 $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
+                export NEED_HOT_RELOAD
+
                 processIDs+=($!)
             fi
         done
@@ -493,6 +495,8 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
 
                 cd - > '/dev/null'
 
+                export NEED_HOT_RELOAD
+
                 processIDs+=($!)
             fi
         done
@@ -520,33 +524,35 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
         processIDs=()
         processStatuses=()
 
-        # Link root that will have DT_NEEDED for all shared objects
-        source "$rootSharedObjectName/config.sh" && {
-            OUTPUT_FILE="$rootSharedObjectName"'.a'
+        if [ -z "${NEED_HOT_RELOAD+x}" ]; then
+            # Link root that will have DT_NEEDED for all shared objects
+            source "$rootSharedObjectName/config.sh" && {
+                OUTPUT_FILE="$rootSharedObjectName"'.a'
 
-            OUTPUT_FILE="$OUTPUT_FILE" \
-                './build_general.sh' \
-                "$rootSharedObjectName" \
-                "$BUILD_FLAGS" \
-                "$definesAsString" \
-                "$includesAsString"
+                OUTPUT_FILE="$OUTPUT_FILE" \
+                    './build_general.sh' \
+                    "$rootSharedObjectName" \
+                    "$BUILD_FLAGS" \
+                    "$definesAsString" \
+                    "$includesAsString"
 
-            outputFile="$rootSharedObjectName"'.so'
+                outputFile="$rootSharedObjectName"'.so'
 
-            echo "Linking $outputFile"
+                echo "Linking $outputFile"
 
-            cd "$BUILD_DIRECTORY"
+                cd "$BUILD_DIRECTORY"
 
-            $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
+                $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
 
-            BUILD_STATUS=$?
+                BUILD_STATUS=$?
 
-            cd - > '/dev/null'
+                cd - > '/dev/null'
 
-            if [ $BUILD_STATUS -ne 0 ]; then
-                exit
-            fi
-        }
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
+                fi
+            }
+        fi
 
         BUILD_STATUS=$?
 
