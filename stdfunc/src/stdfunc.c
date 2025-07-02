@@ -440,3 +440,55 @@ char** getPathsByGlob( const char* restrict _glob,
 EXIT:
     return ( l_returnValue );
 }
+
+bool hotReload$unload( void** _state, size_t* _stateSize ) {
+    *_stateSize = ( sizeof( g_seed ) );
+    *_state = malloc( *_stateSize );
+
+    void* l_pointer = *_state;
+
+#define APPEND_TO_STATE( _variable )                                   \
+    do {                                                               \
+        const size_t l_variableSize = sizeof( _variable );             \
+        __builtin_memcpy( l_pointer, &( _variable ), l_variableSize ); \
+        l_pointer += l_variableSize;                                   \
+    } while ( 0 )
+
+    APPEND_TO_STATE( g_seed );
+
+#undef APPEND_TO_STATE
+
+    return ( true );
+}
+
+bool hotReload$load( void* _state, size_t _stateSize ) {
+    bool l_returnValue = false;
+
+    {
+        const size_t l_stateSize = ( sizeof( g_seed ) );
+
+        if ( UNLIKELY( _stateSize != l_stateSize ) ) {
+            trap( "Corrupted state" );
+
+            goto EXIT;
+        }
+
+        void* l_pointer = _state;
+
+#define DESERIALIZE_NEXT( _variable )                       \
+    do {                                                    \
+        const size_t l_variableSize = sizeof( _variable );  \
+        _variable = *( ( typeof( _variable )* )l_pointer ); \
+        l_pointer += l_variableSize;                        \
+    } while ( 0 )
+
+        DESERIALIZE_NEXT( g_seed );
+
+#undef DESERIALIZE_NEXT
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}

@@ -134,3 +134,71 @@ size_t FPS$get$total( void ) {
 EXIT:
     return ( l_returnValue );
 }
+
+bool hotReload$unload( void** _state, size_t* _stateSize ) {
+    *_stateSize = ( sizeof( g_totalFramesPassed ) );
+    *_state = malloc( *_stateSize );
+
+    void* l_pointer = *_state;
+
+#define APPEND_TO_STATE( _variable )                                   \
+    do {                                                               \
+        const size_t l_variableSize = sizeof( _variable );             \
+        __builtin_memcpy( l_pointer, &( _variable ), l_variableSize ); \
+        l_pointer += l_variableSize;                                   \
+    } while ( 0 )
+
+    APPEND_TO_STATE( g_totalFramesPassed );
+
+#undef APPEND_TO_STATE
+
+    if ( LIKELY( g_totalFramesPassed ) ) {
+        if ( UNLIKELY( !FPS$quit() ) ) {
+            trap( "Quitting FPS" );
+
+            return ( false );
+        }
+    }
+
+    return ( true );
+}
+
+bool hotReload$load( void* _state, size_t _stateSize ) {
+    bool l_returnValue = false;
+
+    {
+        size_t* l_totalFramesPassed = NULL;
+
+        const size_t l_stateSize = ( sizeof( l_totalFramesPassed ) );
+
+        if ( UNLIKELY( _stateSize != l_stateSize ) ) {
+            trap( "Corrupted state" );
+
+            goto EXIT;
+        }
+
+        void* l_pointer = _state;
+
+#define DESERIALIZE_NEXT( _variable )                       \
+    do {                                                    \
+        const size_t l_variableSize = sizeof( _variable );  \
+        _variable = *( ( typeof( _variable )* )l_pointer ); \
+        l_pointer += l_variableSize;                        \
+    } while ( 0 )
+
+        DESERIALIZE_NEXT( l_totalFramesPassed );
+
+#undef DESERIALIZE_NEXT
+
+        if ( LIKELY( l_totalFramesPassed ) ) {
+            if ( UNLIKELY( !FPS$init( l_totalFramesPassed ) ) ) {
+                trap( "Initializing FPS" );
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
