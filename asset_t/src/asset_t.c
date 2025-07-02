@@ -698,7 +698,10 @@ EXIT:
 
 const char* asset_t$loader$assetsDirectory$get( void ) {
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+        log$transaction$query( ( logLevel_t )error,
+                               "Assets loader not initialized" );
+
+        trap();
 
         return ( "" );
     }

@@ -422,12 +422,9 @@ bool init( applicationState_t* restrict _applicationState,
     {
         // Log
         {
-            if ( UNLIKELY( !log$init( LOG_FILE_NAME_DEFAULT,
-                                      LOG_FILE_EXTENSION_DEFAULT ) ) ) {
-                trap( "Log initialization" );
-
-                goto EXIT;
-            }
+            assert( UNLIKELY( log$init( LOG_FILE_NAME_DEFAULT,
+                                        LOG_FILE_EXTENSION_DEFAULT ) ),
+                    "Log initialization" );
 
 #if defined( DEBUG )
 

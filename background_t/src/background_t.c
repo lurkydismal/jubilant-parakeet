@@ -145,13 +145,16 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
     }
 
     {
-#define LOG_WATCH
 #if defined( LOG_WATCH )
 
         log$transaction$query$format(
             ( logLevel_t )info,
             "Background watch: file [ '%s' : '%zu' : '%u' ]", _fileName,
             _eventsMask, _cookie );
+
+#else
+        ( void )_eventsMask;
+        ( void )_cookie;
 
 #endif
 

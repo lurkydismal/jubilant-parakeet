@@ -123,7 +123,7 @@ bool watch_t$add$toPath( watch_t* _watch,
             concatBeforeAndAfterString(
                 &l_path, asset_t$loader$assetsDirectory$get(), NULL );
 
-            int l_watchDescriptor =
+            l_watchDescriptor =
                 inotify_add_watch( _watch->fileDescriptor, l_path, l_flags );
 
             l_returnValue = ( l_watchDescriptor != -1 );
@@ -289,6 +289,12 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                         const struct inotify_event* l_event =
                             ( struct inotify_event* )l_eventPointer;
 
+                        if ( ( l_event->mask & EVENT_WRITE ) ||
+                             ( l_event->mask & EVENT_DELETE ) ||
+                             ( l_event->mask & EVENT_RENAME ) ) {
+                            goto LOOP_CONTINUE;
+                        }
+
                         watchCallback_t l_callback = NULL;
                         void* l_context = NULL;
 
@@ -327,6 +333,7 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                             goto EXIT;
                         }
 
+LOOP_CONTINUE:
                         const size_t l_eventSize =
                             ( sizeof( struct inotify_event ) + l_event->len );
 

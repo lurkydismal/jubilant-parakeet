@@ -220,11 +220,15 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
     }
 
     {
-#if 1
+#if defined( LOG_WATCH )
 
         log$transaction$query$format( ( logLevel_t )info,
                                       "HUD watch: file [ '%s' : '%zu' : '%u' ]",
                                       _fileName, _eventsMask, _cookie );
+
+#else
+        ( void )_eventsMask;
+        ( void )_cookie;
 
 #endif
 
@@ -261,14 +265,55 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
         }
 
         if ( l_isAnimationFrame || l_isBoxes ) {
+            if ( findSymbolInString( _fileName, '.' ) !=
+                 findLastSymbolInString( _fileName, '.' ) ) {
+                goto EXIT;
+            }
+
+#define TRY_LOAD_MANY_OR_EXIT( _field )                                        \
+    do {                                                                       \
+        const size_t l_##_field##Length = __builtin_strlen( #_field );         \
+        if ( ( __builtin_strncmp( _fileName, #_field, l_##_field##Length ) ==  \
+               0 ) &&                                                          \
+             ( _fileName[ l_##_field##Length ] ==                              \
+               ( ( l_isAnimationFrame ) ? ( '_' ) : ( '.' ) ) ) ) {            \
+            FOR_ARRAY( object_t* const*, ( l_HUD->_field ) ) {                 \
+                state_t* l_state = arrayFirstElement( ( *_element )->states ); \
+                SDL_Renderer* l_renderer = l_state->renderer;                  \
+                l_returnValue = object_t$states$remove( *_element );           \
+                if ( UNLIKELY( !l_returnValue ) ) {                            \
+                    log$transaction$query( ( logLevel_t )error,                \
+                                           "Removing HUD " #_field             \
+                                           " states" );                        \
+                    goto EXIT;                                                 \
+                }                                                              \
+                l_returnValue = HUD_t$element$load$one( *_element, l_HUD,      \
+                                                        l_renderer, #_field ); \
+                if ( UNLIKELY( !l_returnValue ) ) {                            \
+                    log$transaction$query( ( logLevel_t )error,                \
+                                           "Loading HUD " #_field );           \
+                    goto EXIT;                                                 \
+                }                                                              \
+            }                                                                  \
+        }                                                                      \
+    } while ( 0 )
+
+            TRY_LOAD_MANY_OR_EXIT( logos );
+            TRY_LOAD_MANY_OR_EXIT( hpGauges );
+            TRY_LOAD_MANY_OR_EXIT( hpBars );
+            TRY_LOAD_MANY_OR_EXIT( names );
+            TRY_LOAD_MANY_OR_EXIT( meterGauges );
+            TRY_LOAD_MANY_OR_EXIT( meterBars );
+
+#undef TRY_LOAD_MANY_OR_EXIT
+
 #define TRY_LOAD_ONE_OR_EXIT( _field )                                         \
     do {                                                                       \
         const size_t l_##_field##Length = __builtin_strlen( #_field );         \
         if ( ( __builtin_strncmp( _fileName, #_field, l_##_field##Length ) ==  \
                0 ) &&                                                          \
-             ( _fileName[ l_##_field##Length ] == '_' ) ) {                    \
-            log$transaction$query$format( ( logLevel_t )debug, "T %s %s",      \
-                                          _fileName, #_field );                \
+             ( _fileName[ l_##_field##Length ] ==                              \
+               ( ( l_isAnimationFrame ) ? ( '_' ) : ( '.' ) ) ) ) {            \
             state_t* l_state = arrayFirstElement( l_HUD->_field.states );      \
             SDL_Renderer* l_renderer = l_state->renderer;                      \
             l_returnValue = object_t$states$remove( &( l_HUD->_field ) );      \
@@ -346,8 +391,12 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         }                                                                 \
     } while ( 0 )
 
-        // TODO: Fix
-        // TRY_LOAD_MANY_OR_EXIT( logos );
+        TRY_LOAD_MANY_OR_EXIT( logos );
+        TRY_LOAD_MANY_OR_EXIT( hpGauges );
+        TRY_LOAD_MANY_OR_EXIT( hpBars );
+        TRY_LOAD_MANY_OR_EXIT( names );
+        TRY_LOAD_MANY_OR_EXIT( meterGauges );
+        TRY_LOAD_MANY_OR_EXIT( meterBars );
 
 #undef TRY_LOAD_MANY_OR_EXIT
 

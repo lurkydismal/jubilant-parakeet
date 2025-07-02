@@ -467,8 +467,7 @@ bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
         FREE_ARRAY( l_paths );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query$format(
-                ( logLevel_t )error, "Failed loading from glob: '%s'", _glob );
+            log$transaction$query( ( logLevel_t )error, "Loading from paths" );
 
             goto EXIT;
         }
