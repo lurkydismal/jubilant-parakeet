@@ -8,6 +8,12 @@
 #include "log.h"
 #include "stdfunc.h"
 
+#if defined( HOT_RELOAD )
+
+#include "applicationState_t.h"
+
+#endif
+
 static char* g_assetsDirectory = NULL;
 
 bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
@@ -711,7 +717,11 @@ const char* asset_t$loader$assetsDirectory$get( void ) {
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state, size_t* _stateSize ) {
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     *_stateSize = ( sizeof( g_assetsDirectory ) );
     *_state = malloc( *_stateSize );
 
@@ -731,7 +741,11 @@ bool hotReload$unload( void** _state, size_t* _stateSize ) {
     return ( true );
 }
 
-bool hotReload$load( void* _state, size_t _stateSize ) {
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     bool l_returnValue = false;
 
     {

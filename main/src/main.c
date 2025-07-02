@@ -21,14 +21,24 @@
 #include "quit.h"
 #include "stdfunc.h"
 
+applicationState_t g_applicationState;
+
 #if defined( HOT_RELOAD )
 
 #define HOT_RELOAD_ROOT_SHARED_OBJECT_FILE_NAME "root"
 #define HOT_RELOAD_CHECK_DELAY_FRAMES 2
 
-typedef bool ( *hotReload$unload_t )( void** restrict _state,
-                                      size_t* restrict _stateSize );
-typedef bool ( *hotReload$load_t )( void* restrict _state, size_t _stateSize );
+#define HOT_RELOAD_UNLOAD_FUNCTION_SIGNATURE "hotReload$unload"
+#define HOT_RELOAD_LOAD_FUNCTION_SIGNATURE "hotReload$load"
+
+typedef bool ( *hotReload$unload_t )(
+    void** restrict _state,
+    size_t* restrict _stateSize,
+    applicationState_t* restrict _applicationState );
+typedef bool ( *hotReload$load_t )(
+    void* restrict _state,
+    size_t _stateSize,
+    applicationState_t* restrict _applicationState );
 
 struct state {
     void* data;
@@ -126,13 +136,13 @@ static FORCE_INLINE bool collectStatesFromHandle(
             assert( l_handle != NULL );
 
             hotReload$unload_t l_unloadCallback =
-                dlsym( l_handle, "hotReload$unload" );
+                dlsym( l_handle, HOT_RELOAD_UNLOAD_FUNCTION_SIGNATURE );
 
             if ( l_unloadCallback ) {
                 struct state l_state;
 
-                l_returnValue =
-                    l_unloadCallback( &( l_state.data ), &( l_state.size ) );
+                l_returnValue = l_unloadCallback(
+                    &( l_state.data ), &( l_state.size ), &g_applicationState );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
@@ -326,8 +336,8 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                         assert( l_handle != NULL );
 
                         {
-                            hotReload$load_t l_loadCallback =
-                                dlsym( l_handle, "hotReload$load" );
+                            hotReload$load_t l_loadCallback = dlsym(
+                                l_handle, HOT_RELOAD_LOAD_FUNCTION_SIGNATURE );
 
                             if ( l_loadCallback ) {
                                 FOR_RANGE( arrayLength_t, 0,
@@ -343,7 +353,8 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                                         size_t l_stateDataSize = l_state->size;
 
                                         l_returnValue = l_loadCallback(
-                                            l_stateData, l_stateDataSize );
+                                            l_stateData, l_stateDataSize,
+                                            &g_applicationState );
 
                                         if ( UNLIKELY( !l_returnValue ) ) {
                                             continue;
@@ -408,7 +419,7 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                         const char* l_name = l_functionNames[ _index ];
                         void* l_address = l_functionAddresses[ _index ];
 
-                        assert( LIKELY( l_address ),
+                        assert( l_address,
                                 "Function for main executable was not found" );
 
                         const int l_result = plthook_replace(
@@ -466,10 +477,8 @@ int main( int _argumentCount, char** _argumentVector ) {
 
 #endif
 
-    applicationState_t l_applicationState;
-
     l_returnValue =
-        init( &l_applicationState, _argumentCount, _argumentVector );
+        init( &g_applicationState, _argumentCount, _argumentVector );
 
     if ( UNLIKELY( !l_returnValue ) ) {
         goto EXIT;
@@ -489,13 +498,13 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             SDL_PollEvent( &l_event );
 
-            l_returnValue = event( &l_applicationState, &l_event );
+            l_returnValue = event( &g_applicationState, &l_event );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 break;
             }
 
-            l_returnValue = iterate( &l_applicationState );
+            l_returnValue = iterate( &g_applicationState );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 break;
@@ -517,7 +526,7 @@ int main( int _argumentCount, char** _argumentVector ) {
     }
 
 EXIT:
-    quit( &l_applicationState, l_returnValue );
+    quit( &g_applicationState, l_returnValue );
 
 #if defined( HOT_RELOAD )
 

@@ -289,9 +289,9 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                         const struct inotify_event* l_event =
                             ( struct inotify_event* )l_eventPointer;
 
-                        if ( ( l_event->mask & EVENT_WRITE ) ||
-                             ( l_event->mask & EVENT_DELETE ) ||
-                             ( l_event->mask & EVENT_RENAME ) ) {
+                        if ( !isEventWrite( l_event->mask ) &&
+                             !isEventDelete( l_event->mask ) &&
+                             !isEventRename( l_event->mask ) ) {
                             goto LOOP_CONTINUE;
                         }
 
@@ -333,7 +333,7 @@ bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
                             goto EXIT;
                         }
 
-LOOP_CONTINUE:
+                    LOOP_CONTINUE:
                         const size_t l_eventSize =
                             ( sizeof( struct inotify_event ) + l_event->len );
 

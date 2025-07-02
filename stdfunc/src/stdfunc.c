@@ -10,6 +10,7 @@
 #include <glob.h>
 #include <string.h>
 
+#include "applicationState_t.h"
 #include "asset_t.h"
 #include "log.h"
 
@@ -318,6 +319,60 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Remove asset_t
+bool doesPathExist( const char* restrict _path ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
+        char* l_path = duplicateString( _path );
+
+        concatBeforeAndAfterString(
+            &l_path, asset_t$loader$assetsDirectory$get(), NULL );
+
+        l_returnValue = ( access( l_path, F_OK ) == 0 );
+
+        free( l_path );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+// TODO: Remove asset_t
+bool isPathDirectory( const char* restrict _path ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_path ) ) {
+        goto EXIT;
+    }
+
+    {
+        char* l_path = duplicateString( _path );
+
+        concatBeforeAndAfterString(
+            &l_path, asset_t$loader$assetsDirectory$get(), NULL );
+
+        struct stat l_pathStats;
+
+        l_returnValue = ( stat( l_path, &l_pathStats ) == 0 );
+
+        free( l_path );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
+        }
+
+        l_returnValue = S_ISDIR( l_pathStats.st_mode );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 static int getPathsByGlob$comparator( const void* _path1, const void* _path2 ) {
     const char* l_path1 = *( ( const char** )_path1 );
     const char* l_path2 = *( ( const char** )_path2 );
@@ -443,7 +498,11 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state, size_t* _stateSize ) {
+bool hotReload$unload( void** _state,
+                       size_t* _stateSize,
+                       applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     *_stateSize = ( sizeof( g_seed ) );
     *_state = malloc( *_stateSize );
 
@@ -463,7 +522,11 @@ bool hotReload$unload( void** _state, size_t* _stateSize ) {
     return ( true );
 }
 
-bool hotReload$load( void* _state, size_t _stateSize ) {
+bool hotReload$load( void* _state,
+                     size_t _stateSize,
+                     applicationState_t* _applicationState ) {
+    UNUSED( _applicationState );
+
     bool l_returnValue = false;
 
     {

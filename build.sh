@@ -9,6 +9,8 @@ export TESTS_DIRECTORY_NAME="tests"
 export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
 export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
 
+export HASH_FUNCTION="xxh3sum"
+
 # 0 - Debug
 # 1 - Release
 # 2 - Profile
@@ -345,7 +347,7 @@ for partToBuild in "${partsToBuild[@]}"; do
         processedFiles+=("$OUTPUT_FILE")
 
         if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-            processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+            processedFilesHashes["$OUTPUT_FILE"]="$($HASH_FUNCTION "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
         fi
 
         OUTPUT_FILE="$OUTPUT_FILE" \
@@ -382,7 +384,7 @@ if [ $BUILD_STATUS -eq 0 ]; then
             processedFilesStatic+=("$OUTPUT_FILE")
 
             if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-                processedFilesHashes["$OUTPUT_FILE"]="$(md5sum "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
+                processedFilesHashes["$OUTPUT_FILE"]="$($HASH_FUNCTION "$BUILD_DIRECTORY/$OUTPUT_FILE" | cut -d ' ' -f1)"
             fi
 
             if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
@@ -449,7 +451,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
                 fi
             fi
 
-            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                 echo "Linking static $outputFile"
 
                 $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
@@ -487,7 +489,7 @@ if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
         for processedFile in "${processedFiles[@]}"; do
             outputFile="${processedFile%.a}.so"
 
-            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$(md5sum "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                 echo "Linking $outputFile"
 
                 cd "$BUILD_DIRECTORY"
