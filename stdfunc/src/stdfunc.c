@@ -76,7 +76,7 @@ size_t concatBeforeAndAfterString( char* restrict* restrict _string,
             // String
             {
                 *_string = ( char* )realloc(
-                    *_string, ( l_totalLength + 1 ) * sizeof( char ) );
+                    *_string, ( ( l_totalLength + 1 ) * sizeof( char ) ) );
 
                 if ( l_stringLength && l_beforeStringLength ) {
                     __builtin_memmove( ( l_beforeStringLength + *_string ),
@@ -319,7 +319,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Remove asset_t
 bool doesPathExist( const char* restrict _path ) {
     bool l_returnValue = false;
 
@@ -342,7 +341,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Remove asset_t
 bool isPathDirectory( const char* restrict _path ) {
     bool l_returnValue = false;
 
@@ -380,7 +378,6 @@ static int getPathsByGlob$comparator( const void* _path1, const void* _path2 ) {
     return ( strverscmp( l_path1, l_path2 ) );
 }
 
-// TODO: Remove asset_t
 char** getPathsByGlob( const char* restrict _glob,
                        const char* restrict _directory,
                        const bool _needSort ) {
@@ -458,7 +455,6 @@ char** getPathsByGlob( const char* restrict _glob,
                     const size_t l_fullPathLength =
                         __builtin_strlen( l_fullPath );
                     // 0 if NULL
-                    // TODO: Improve
                     size_t l_directoryLength =
                         ( ( _directory ) ? ( __builtin_strlen( _directory ) )
                                          : ( 0 ) );

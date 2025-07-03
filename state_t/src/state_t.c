@@ -236,6 +236,89 @@ EXIT:
     return ( l_returnValue );
 }
 
+bool state_t$render$rotated( const state_t* restrict _state,
+                             const double _angle,
+                             SDL_FlipMode _flipMode,
+                             const SDL_FRect* restrict _cameraRectangle,
+                             bool _doDrawBoxes ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_state ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_cameraRectangle ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const boxes_t* l_targetBoxes = &( _state->animation.targetBoxes );
+
+        l_returnValue = ( l_targetBoxes->currentFrame <
+                          arrayLength( l_targetBoxes->frames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid target boxes current frame" );
+
+            goto EXIT;
+        }
+
+        const size_t l_targetBoxesKeyFrameIndex = arrayFirstElement(
+            l_targetBoxes->frames[ l_targetBoxes->currentFrame ] );
+
+        l_returnValue = ( l_targetBoxesKeyFrameIndex <
+                          arrayLength( l_targetBoxes->keyFrames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid target boxes key frame index" );
+
+            goto EXIT;
+        }
+
+        // Always single box
+        const SDL_FRect* l_targetBox =
+            l_targetBoxes->keyFrames[ l_targetBoxesKeyFrameIndex ];
+
+        const SDL_FRect l_targetRectangle = {
+            ( _cameraRectangle->x + l_targetBox->x ),
+            ( _cameraRectangle->y + l_targetBox->y ), l_targetBox->w,
+            l_targetBox->h };
+
+        l_returnValue = animation_t$render$rotated(
+            &( _state->animation ), _state->renderer, _angle, _flipMode,
+            &l_targetRectangle );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Rendering animation" );
+
+            goto EXIT;
+        }
+
+        if ( _doDrawBoxes ) {
+            l_returnValue =
+                boxes_t$render( &( _state->boxes ), _state->renderer,
+                                &l_targetRectangle, true );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error, "Rendering boxes" );
+
+                goto EXIT;
+            }
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 bool state_t$render( const state_t* restrict _state,
                      const SDL_FRect* restrict _cameraRectangle,
                      bool _doDrawBoxes ) {

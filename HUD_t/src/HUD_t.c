@@ -13,12 +13,13 @@ HUD_t HUD_t$create( void ) {
     HUD_t l_returnValue = DEFAULT_HUD;
 
     {
-        l_returnValue.logos = createArray( object_t* );
-        l_returnValue.hpGauges = createArray( object_t* );
         l_returnValue.hpBars = createArray( object_t* );
+        l_returnValue.guardBars = createArray( object_t* );
+        l_returnValue.hpGauges = createArray( object_t* );
+        l_returnValue.logos = createArray( object_t* );
         l_returnValue.names = createArray( object_t* );
-        l_returnValue.meterGauges = createArray( object_t* );
         l_returnValue.meterBars = createArray( object_t* );
+        l_returnValue.meterGauges = createArray( object_t* );
 
         l_returnValue.timerBackground = object_t$create();
         l_returnValue.timer = object_t$create();
@@ -43,23 +44,26 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
     }
 
     {
-        FREE_ARRAY( _HUD->logos );
-        _HUD->logos = NULL;
+        FREE_ARRAY( _HUD->hpBars );
+        _HUD->hpBars = NULL;
+
+        FREE_ARRAY( _HUD->guardBars );
+        _HUD->guardBars = NULL;
 
         FREE_ARRAY( _HUD->hpGauges );
         _HUD->hpGauges = NULL;
 
-        FREE_ARRAY( _HUD->hpBars );
-        _HUD->hpBars = NULL;
+        FREE_ARRAY( _HUD->logos );
+        _HUD->logos = NULL;
 
         FREE_ARRAY( _HUD->names );
         _HUD->names = NULL;
 
-        FREE_ARRAY( _HUD->meterGauges );
-        _HUD->meterGauges = NULL;
-
         FREE_ARRAY( _HUD->meterBars );
         _HUD->meterBars = NULL;
+
+        FREE_ARRAY( _HUD->meterGauges );
+        _HUD->meterGauges = NULL;
 
 #define TRY_DESTROY_OR_EXIT( _field )                          \
     do {                                                       \
@@ -317,12 +321,13 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
         }                                                                      \
     } while ( 0 )
 
-            TRY_LOAD_MANY_OR_EXIT( logos );
-            TRY_LOAD_MANY_OR_EXIT( hpGauges );
             TRY_LOAD_MANY_OR_EXIT( hpBars );
+            TRY_LOAD_MANY_OR_EXIT( guardBars );
+            TRY_LOAD_MANY_OR_EXIT( hpGauges );
+            TRY_LOAD_MANY_OR_EXIT( logos );
             TRY_LOAD_MANY_OR_EXIT( names );
-            TRY_LOAD_MANY_OR_EXIT( meterGauges );
             TRY_LOAD_MANY_OR_EXIT( meterBars );
+            TRY_LOAD_MANY_OR_EXIT( meterGauges );
 
 #undef TRY_LOAD_MANY_OR_EXIT
 
@@ -410,12 +415,13 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         }                                                                 \
     } while ( 0 )
 
-        TRY_LOAD_MANY_OR_EXIT( logos );
-        TRY_LOAD_MANY_OR_EXIT( hpGauges );
         TRY_LOAD_MANY_OR_EXIT( hpBars );
+        TRY_LOAD_MANY_OR_EXIT( guardBars );
+        TRY_LOAD_MANY_OR_EXIT( hpGauges );
+        TRY_LOAD_MANY_OR_EXIT( logos );
         TRY_LOAD_MANY_OR_EXIT( names );
-        TRY_LOAD_MANY_OR_EXIT( meterGauges );
         TRY_LOAD_MANY_OR_EXIT( meterBars );
+        TRY_LOAD_MANY_OR_EXIT( meterGauges );
 
 #undef TRY_LOAD_MANY_OR_EXIT
 
@@ -495,12 +501,13 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
         FREE_ARRAY_ELEMENTS( _HUD->_field );                                  \
     } while ( 0 )
 
-        REMOVE_STATES_AND_FREE_OR_EXIT( logos );
-        REMOVE_STATES_AND_FREE_OR_EXIT( hpGauges );
         REMOVE_STATES_AND_FREE_OR_EXIT( hpBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( guardBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( hpGauges );
+        REMOVE_STATES_AND_FREE_OR_EXIT( logos );
         REMOVE_STATES_AND_FREE_OR_EXIT( names );
-        REMOVE_STATES_AND_FREE_OR_EXIT( meterGauges );
         REMOVE_STATES_AND_FREE_OR_EXIT( meterBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( meterGauges );
 
 #undef REMOVE_STATES_AND_FREE_OR_EXIT
 
@@ -570,12 +577,13 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
         }                                                     \
     } while ( 0 )
 
-        STEP_OBJECTS_OR_EXIT( logos );
-        STEP_OBJECTS_OR_EXIT( hpGauges );
         STEP_OBJECTS_OR_EXIT( hpBars );
+        STEP_OBJECTS_OR_EXIT( guardBars );
+        STEP_OBJECTS_OR_EXIT( hpGauges );
+        STEP_OBJECTS_OR_EXIT( logos );
         STEP_OBJECTS_OR_EXIT( names );
-        STEP_OBJECTS_OR_EXIT( meterGauges );
         STEP_OBJECTS_OR_EXIT( meterBars );
+        STEP_OBJECTS_OR_EXIT( meterGauges );
 
 #undef STEP_OBJECTS_OR_EXIT
 
@@ -613,25 +621,34 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         const SDL_FRect l_cameraRectangle = { .x = 0, .y = 0, .w = 0, .h = 0 };
         const bool l_doDrawBoxes = false;
 
-#define RENDER_OBJECTS_OR_EXIT( _field )                                    \
-    do {                                                                    \
-        FOR_ARRAY( object_t* const*, ( _HUD->_field ) ) {                   \
-            l_returnValue = object_t$render( *_element, &l_cameraRectangle, \
-                                             l_doDrawBoxes );               \
-            if ( UNLIKELY( !l_returnValue ) ) {                             \
-                log$transaction$query( ( logLevel_t )error,                 \
-                                       "Rendering " #_field );              \
-                goto EXIT;                                                  \
-            }                                                               \
-        }                                                                   \
+        // TODO: Implement
+#define RENDER_OBJECTS_OR_EXIT( _field )                                     \
+    do {                                                                     \
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->_field ) ) {         \
+            typeof( *( _HUD->_field ) ) l_element = _HUD->_field[ _index ];  \
+            if ( ( _index % 2 ) == 1 ) {                                     \
+                l_returnValue = object_t$render$rotated(                     \
+                    l_element, 180, SDL_FLIP_HORIZONTAL, &l_cameraRectangle, \
+                    l_doDrawBoxes );                                         \
+            } else {                                                         \
+                l_returnValue = object_t$render(                             \
+                    l_element, &l_cameraRectangle, l_doDrawBoxes );          \
+            }                                                                \
+            if ( UNLIKELY( !l_returnValue ) ) {                              \
+                log$transaction$query( ( logLevel_t )error,                  \
+                                       "Rendering " #_field );               \
+                goto EXIT;                                                   \
+            }                                                                \
+        }                                                                    \
     } while ( 0 )
 
-        RENDER_OBJECTS_OR_EXIT( logos );
-        RENDER_OBJECTS_OR_EXIT( hpGauges );
         RENDER_OBJECTS_OR_EXIT( hpBars );
+        RENDER_OBJECTS_OR_EXIT( guardBars );
+        RENDER_OBJECTS_OR_EXIT( hpGauges );
+        RENDER_OBJECTS_OR_EXIT( logos );
         RENDER_OBJECTS_OR_EXIT( names );
-        RENDER_OBJECTS_OR_EXIT( meterGauges );
         RENDER_OBJECTS_OR_EXIT( meterBars );
+        RENDER_OBJECTS_OR_EXIT( meterGauges );
 
 #undef RENDER_OBJECTS_OR_EXIT
 

@@ -20,14 +20,15 @@
       .playerAmount = 0 }
 
 typedef struct {
-    object_t** logos;
-    object_t** hpGauges;
     object_t** hpBars;
+    object_t** guardBars;
+    object_t** hpGauges;
+    object_t** logos;
     object_t** names;
-    object_t** meterGauges;
     object_t** meterBars;
-    object_t timer;
+    object_t** meterGauges;
     object_t timerBackground;
+    object_t timer;
     char* name;
     char* folder;
     char* extension;

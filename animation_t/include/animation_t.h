@@ -38,6 +38,11 @@ bool animation_t$load$fromGlob( animation_t* restrict _animation,
 bool animation_t$unload( animation_t* restrict _animation );
 
 bool animation_t$step( animation_t* restrict _animation, bool _canLoop );
+bool animation_t$render$rotated( const animation_t* restrict _animation,
+                                 SDL_Renderer* _renderer,
+                                 const double _angle,
+                                 SDL_FlipMode _flipMode,
+                                 const SDL_FRect* restrict _targetRectangle );
 bool animation_t$render( const animation_t* restrict _animation,
                          SDL_Renderer* _renderer,
                          const SDL_FRect* restrict _targetRectangle );

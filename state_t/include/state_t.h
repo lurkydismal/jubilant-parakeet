@@ -34,6 +34,11 @@ bool state_t$load$fromGlob( state_t* restrict _state,
 bool state_t$unload( state_t* restrict _state );
 
 bool state_t$step( state_t* restrict _state );
+bool state_t$render$rotated( const state_t* restrict _state,
+                             const double _angle,
+                             SDL_FlipMode _flipMode,
+                             const SDL_FRect* restrict _targetRectanble,
+                             bool _doDrawBoxes );
 bool state_t$render( const state_t* restrict _state,
                      const SDL_FRect* restrict _targetRectanble,
                      bool _doDrawBoxes );

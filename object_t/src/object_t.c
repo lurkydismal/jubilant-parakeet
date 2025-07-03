@@ -315,6 +315,49 @@ EXIT:
     return ( l_returnValue );
 }
 
+bool object_t$render$rotated( const object_t* restrict _object,
+                              const double _angle,
+                              SDL_FlipMode _flipMode,
+                              const SDL_FRect* restrict _cameraRectangle,
+                              bool _doDrawBoxes ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_cameraRectangle ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const SDL_FRect l_targetRectangle = {
+            .x = ( _object->worldX - _cameraRectangle->x ),
+            .y = ( _object->worldY - _cameraRectangle->y ),
+            .w = 0,
+            .h = 0 };
+
+        l_returnValue =
+            state_t$render$rotated( _object->currentState, _angle, _flipMode,
+                                    &l_targetRectangle, _doDrawBoxes );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Rendering state" );
+
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 bool object_t$render( const object_t* restrict _object,
                       const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes ) {
