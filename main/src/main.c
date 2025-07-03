@@ -194,6 +194,7 @@ static FORCE_INLINE char** getUndefinedFunctionsFromSoPath(
             "SDL_CloseIO",
             "SDL_DestroyTexture",
             "SDL_RenderTexture",
+            "SDL_RenderTextureRotated",
             "SDL_GetError",
             "SDL_GetKeyboardState",
             "SDL_SetRenderScale",
