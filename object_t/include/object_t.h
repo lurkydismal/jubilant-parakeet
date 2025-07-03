@@ -56,6 +56,11 @@ bool object_t$move( object_t* restrict _object,
 bool object_t$step( object_t* restrict _object,
                     float _velocityX,
                     float _velocityY );
+bool object_t$render$rotated( const object_t* restrict _object,
+                              const double _angle,
+                              SDL_FlipMode _flipMode,
+                              const SDL_FRect* restrict _cameraRectangle,
+                              bool _doDrawBoxes );
 bool object_t$render( const object_t* restrict _object,
                       const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes );

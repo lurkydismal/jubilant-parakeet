@@ -463,6 +463,97 @@ EXIT:
     return ( l_returnValue );
 }
 
+bool animation_t$render$rotated( const animation_t* restrict _animation,
+                                 SDL_Renderer* _renderer,
+                                 const double _angle,
+                                 SDL_FlipMode _flipMode,
+                                 const SDL_FRect* restrict _targetRectangle ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_animation ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_renderer ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_targetRectangle ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const boxes_t* l_animationTargetBox = &( _animation->targetBoxes );
+
+        l_returnValue = ( l_animationTargetBox->currentFrame <
+                          arrayLength( l_animationTargetBox->frames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid target box current frame" );
+
+            goto EXIT;
+        }
+
+        // Always a single box
+        const SDL_FRect* l_animationFrameTargetRectangle =
+            l_animationTargetBox->keyFrames[ arrayFirstElement(
+                l_animationTargetBox
+                    ->frames[ l_animationTargetBox->currentFrame ] ) ];
+
+        const SDL_FRect l_resolvedTargetRectangle = {
+            _targetRectangle->x, _targetRectangle->y,
+            l_animationFrameTargetRectangle->w,
+            l_animationFrameTargetRectangle->h };
+
+        l_returnValue =
+            ( _animation->currentFrame < arrayLength( _animation->frames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid animation current frame" );
+
+            goto EXIT;
+        }
+
+        const size_t l_animationKeyFrameIndex =
+            _animation->frames[ _animation->currentFrame ];
+
+        l_returnValue =
+            ( l_animationKeyFrameIndex < arrayLength( _animation->keyFrames ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid animation current frame" );
+
+            goto EXIT;
+        }
+
+        l_returnValue = SDL_RenderTextureRotated(
+            _renderer, _animation->keyFrames[ l_animationKeyFrameIndex ], NULL,
+            &l_resolvedTargetRectangle, _angle, NULL, _flipMode );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query$format( ( logLevel_t )error,
+                                          "Rendering texture: '%s'",
+                                          SDL_GetError() );
+
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
 bool animation_t$render( const animation_t* restrict _animation,
                          SDL_Renderer* _renderer,
                          const SDL_FRect* restrict _targetRectangle ) {
