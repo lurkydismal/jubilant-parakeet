@@ -3,25 +3,34 @@
 #include <stdbool.h>
 
 #include "object_t.h"
+#include "player_t.h"
 #include "watch_t.h"
 
 #define DEFAULT_HUD                      \
-    { .logos = NULL,                     \
-      .hpGauges = NULL,                  \
+    { .guardBars = NULL,                 \
+      .brokenGuardBars = NULL,           \
+      .guardGauges = NULL,               \
       .hpBars = NULL,                    \
+      .restorableHpBars = NULL,          \
+      .hpGauges = NULL,                  \
+      .logos = NULL,                     \
       .names = NULL,                     \
-      .meterGauges = NULL,               \
       .meterBars = NULL,                 \
+      .meterGauges = NULL,               \
       .timer = DEFAULT_OBJECT,           \
       .timerBackground = DEFAULT_OBJECT, \
+      .isGuardBroken = false,            \
       .name = NULL,                      \
       .folder = NULL,                    \
       .extension = NULL,                 \
-      .playerAmount = 0 }
+      .players = NULL }
 
 typedef struct {
-    object_t** hpBars;
     object_t** guardBars;
+    object_t** brokenGuardBars;
+    object_t** guardGauges;
+    object_t** hpBars;
+    object_t** restorableHpBars;
     object_t** hpGauges;
     object_t** logos;
     object_t** names;
@@ -29,10 +38,13 @@ typedef struct {
     object_t** meterGauges;
     object_t timerBackground;
     object_t timer;
+
+    bool isGuardBroken;
+
     char* name;
     char* folder;
     char* extension;
-    size_t playerAmount;
+    player_t** players;
 
 #if defined( DEBUG )
 

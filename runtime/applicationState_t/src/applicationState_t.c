@@ -78,8 +78,17 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
     }
 
     {
-        // TODO: Improve
-        _applicationState->HUD->playerAmount = ( 1 );
+        {
+            player_t** l_players = createArray( player_t* );
+
+            insertIntoArray(&l_players, &localPlayer );
+
+            FOR_ARRAY( player* const*,remotePlayers ) {
+                insertIntoArray(&l_players, _element );
+            }
+
+            _applicationState->HUD->players = l_players;
+        }
 
 #define TRY_LOAD_OR_EXIT( _field )                                            \
     do {                                                                      \
