@@ -497,12 +497,12 @@ int main( int _argumentCount, char** _argumentVector ) {
 
             event_t l_event;
 
-            SDL_PollEvent( &l_event );
+            while ( SDL_PollEvent( &l_event ) ) {
+                l_returnValue = event( &g_applicationState, &l_event );
 
-            l_returnValue = event( &g_applicationState, &l_event );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
-                break;
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    goto EXIT;
+                }
             }
 
             l_returnValue = iterate( &g_applicationState );
