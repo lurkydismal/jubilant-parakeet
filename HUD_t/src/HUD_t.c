@@ -13,8 +13,11 @@ HUD_t HUD_t$create( void ) {
     HUD_t l_returnValue = DEFAULT_HUD;
 
     {
-        l_returnValue.hpBars = createArray( object_t* );
         l_returnValue.guardBars = createArray( object_t* );
+        l_returnValue.brokenGuardBars = createArray( object_t* );
+        l_returnValue.guardGauges = createArray( object_t* );
+        l_returnValue.restorableHpBars = createArray( object_t* );
+        l_returnValue.hpBars = createArray( object_t* );
         l_returnValue.hpGauges = createArray( object_t* );
         l_returnValue.logos = createArray( object_t* );
         l_returnValue.names = createArray( object_t* );
@@ -29,6 +32,8 @@ HUD_t HUD_t$create( void ) {
         l_returnValue.watches = createArray( watch_t* );
 
 #endif
+
+        l_returnValue.players = createArray( player_t* );
     }
 
     return ( l_returnValue );
@@ -44,11 +49,20 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
     }
 
     {
-        FREE_ARRAY( _HUD->hpBars );
-        _HUD->hpBars = NULL;
-
         FREE_ARRAY( _HUD->guardBars );
         _HUD->guardBars = NULL;
+
+        FREE_ARRAY( _HUD->brokenGuardBars );
+        _HUD->brokenGuardBars = NULL;
+
+        FREE_ARRAY( _HUD->guardGauges );
+        _HUD->guardGauges = NULL;
+
+        FREE_ARRAY( _HUD->restorableHpBars );
+        _HUD->restorableHpBars = NULL;
+
+        FREE_ARRAY( _HUD->hpBars );
+        _HUD->hpBars = NULL;
 
         FREE_ARRAY( _HUD->hpGauges );
         _HUD->hpGauges = NULL;
@@ -321,8 +335,11 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
         }                                                                      \
     } while ( 0 )
 
-            TRY_LOAD_MANY_OR_EXIT( hpBars );
             TRY_LOAD_MANY_OR_EXIT( guardBars );
+            TRY_LOAD_MANY_OR_EXIT( brokenGuardBars );
+            TRY_LOAD_MANY_OR_EXIT( guardGauges );
+            TRY_LOAD_MANY_OR_EXIT( restorableHpBars );
+            TRY_LOAD_MANY_OR_EXIT( hpBars );
             TRY_LOAD_MANY_OR_EXIT( hpGauges );
             TRY_LOAD_MANY_OR_EXIT( logos );
             TRY_LOAD_MANY_OR_EXIT( names );
@@ -415,8 +432,11 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         }                                                                 \
     } while ( 0 )
 
-        TRY_LOAD_MANY_OR_EXIT( hpBars );
         TRY_LOAD_MANY_OR_EXIT( guardBars );
+        TRY_LOAD_MANY_OR_EXIT( brokenGuardBars );
+        TRY_LOAD_MANY_OR_EXIT( guardGauges );
+        TRY_LOAD_MANY_OR_EXIT( restorableHpBars );
+        TRY_LOAD_MANY_OR_EXIT( hpBars );
         TRY_LOAD_MANY_OR_EXIT( hpGauges );
         TRY_LOAD_MANY_OR_EXIT( logos );
         TRY_LOAD_MANY_OR_EXIT( names );
@@ -501,8 +521,11 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
         FREE_ARRAY_ELEMENTS( _HUD->_field );                                  \
     } while ( 0 )
 
-        REMOVE_STATES_AND_FREE_OR_EXIT( hpBars );
         REMOVE_STATES_AND_FREE_OR_EXIT( guardBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( brokenGuardBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( guardGauges );
+        REMOVE_STATES_AND_FREE_OR_EXIT( restorableHpBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( hpBars );
         REMOVE_STATES_AND_FREE_OR_EXIT( hpGauges );
         REMOVE_STATES_AND_FREE_OR_EXIT( logos );
         REMOVE_STATES_AND_FREE_OR_EXIT( names );
@@ -577,8 +600,11 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
         }                                                     \
     } while ( 0 )
 
-        STEP_OBJECTS_OR_EXIT( hpBars );
         STEP_OBJECTS_OR_EXIT( guardBars );
+        STEP_OBJECTS_OR_EXIT( brokenGuardBars );
+        STEP_OBJECTS_OR_EXIT( guardGauges );
+        STEP_OBJECTS_OR_EXIT( restorableHpBars );
+        STEP_OBJECTS_OR_EXIT( hpBars );
         STEP_OBJECTS_OR_EXIT( hpGauges );
         STEP_OBJECTS_OR_EXIT( logos );
         STEP_OBJECTS_OR_EXIT( names );
@@ -622,28 +648,35 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         const bool l_doDrawBoxes = false;
 
         // TODO: Implement
-#define RENDER_OBJECTS_OR_EXIT( _field )                                     \
-    do {                                                                     \
-        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->_field ) ) {         \
-            typeof( *( _HUD->_field ) ) l_element = _HUD->_field[ _index ];  \
-            if ( ( _index % 2 ) == 1 ) {                                     \
-                l_returnValue = object_t$render$rotated(                     \
-                    l_element, 180, SDL_FLIP_HORIZONTAL, &l_cameraRectangle, \
-                    l_doDrawBoxes );                                         \
-            } else {                                                         \
-                l_returnValue = object_t$render(                             \
-                    l_element, &l_cameraRectangle, l_doDrawBoxes );          \
-            }                                                                \
-            if ( UNLIKELY( !l_returnValue ) ) {                              \
-                log$transaction$query( ( logLevel_t )error,                  \
-                                       "Rendering " #_field );               \
-                goto EXIT;                                                   \
-            }                                                                \
-        }                                                                    \
+#define RENDER_OBJECTS_OR_EXIT( _field )                                    \
+    do {                                                                    \
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->_field ) ) {        \
+            typeof( *( _HUD->_field ) ) l_element = _HUD->_field[ _index ]; \
+            if ( _index % 2 ) {                                             \
+                l_returnValue = object_t$render$rotated(                    \
+                    l_element, 180, SDL_FLIP_VERTICAL, &l_cameraRectangle,  \
+                    l_doDrawBoxes );                                        \
+            } else {                                                        \
+                l_returnValue = object_t$render(                            \
+                    l_element, &l_cameraRectangle, l_doDrawBoxes );         \
+            }                                                               \
+            if ( UNLIKELY( !l_returnValue ) ) {                             \
+                log$transaction$query( ( logLevel_t )error,                 \
+                                       "Rendering " #_field );              \
+                goto EXIT;                                                  \
+            }                                                               \
+        }                                                                   \
     } while ( 0 )
 
-        RENDER_OBJECTS_OR_EXIT( hpBars );
         RENDER_OBJECTS_OR_EXIT( guardBars );
+
+        if ( _HUD->isGuardBroken ) {
+            RENDER_OBJECTS_OR_EXIT( brokenGuardBars );
+        }
+
+        RENDER_OBJECTS_OR_EXIT( guardGauges );
+        RENDER_OBJECTS_OR_EXIT( restorableHpBars );
+        RENDER_OBJECTS_OR_EXIT( hpBars );
         RENDER_OBJECTS_OR_EXIT( hpGauges );
         RENDER_OBJECTS_OR_EXIT( logos );
         RENDER_OBJECTS_OR_EXIT( names );
