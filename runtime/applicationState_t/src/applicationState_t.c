@@ -79,15 +79,13 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
 
     {
         {
-            player_t** l_players = createArray( player_t* );
+            insertIntoArray( &( _applicationState->HUD->players ),
+                             &( _applicationState->localPlayer ) );
 
-            insertIntoArray(&l_players, &localPlayer );
-
-            FOR_ARRAY( player* const*,remotePlayers ) {
-                insertIntoArray(&l_players, _element );
+            FOR_ARRAY( player_t* const*, _applicationState->remotePlayers ) {
+                insertIntoArray( &( _applicationState->HUD->players ),
+                                 _element );
             }
-
-            _applicationState->HUD->players = l_players;
         }
 
 #define TRY_LOAD_OR_EXIT( _field )                                            \

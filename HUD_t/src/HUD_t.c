@@ -109,7 +109,8 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
             _HUD->extension = NULL;
         }
 
-        _HUD->playerAmount = 0;
+        FREE_ARRAY( _HUD->players );
+        _HUD->players = NULL;
 
 #if defined( DEBUG )
 
@@ -407,7 +408,7 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_HUD->playerAmount ) ) {
+    if ( UNLIKELY( !arrayLength( _HUD->players ) ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -419,7 +420,7 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
 
 #define TRY_LOAD_MANY_OR_EXIT( _field )                                   \
     do {                                                                  \
-        FOR_RANGE( size_t, 0, _HUD->playerAmount ) {                      \
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->players ) ) {     \
             object_t l_element = object_t$create();                       \
             l_returnValue = HUD_t$element$load$one( &l_element, _HUD,     \
                                                     _renderer, #_field ); \
