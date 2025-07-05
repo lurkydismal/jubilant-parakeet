@@ -10,15 +10,18 @@
 #define DEFAULT_SETTINGS_DESCRIPTION "brrr gamuingu"
 #define DEFAULT_SETTINGS_CONTACT_ADDRESS "<lurkydismal@duck.com>"
 
-#define DEFAULT_SETTINGS            \
-    { .window = DEFAULT_WINDOW,     \
-      .controls = DEFAULT_CONTROLS, \
-      .backgroundIndex = SIZE_MAX,  \
-      .HUDIndex = SIZE_MAX,         \
-      .version = NULL,              \
-      .identifier = NULL,           \
-      .description = NULL,          \
-      .contactAddress = NULL }
+#define DEFAULT_SETTINGS              \
+    {                                 \
+        .window = DEFAULT_WINDOW,     \
+        .controls = DEFAULT_CONTROLS, \
+        .backgroundIndex = SIZE_MAX,  \
+        .HUDIndex = SIZE_MAX,         \
+        .characterIndex = SIZE_MAX,   \
+        .version = NULL,              \
+        .identifier = NULL,           \
+        .description = NULL,          \
+        .contactAddress = NULL,       \
+    }
 
 // All available customization
 typedef struct {
@@ -26,6 +29,7 @@ typedef struct {
     controls_t controls;
     size_t backgroundIndex;
     size_t HUDIndex;
+    size_t characterIndex;
     char* version;
     char* identifier;
     char* description;

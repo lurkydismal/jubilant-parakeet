@@ -7,8 +7,11 @@
 
 #define CONTROL_AS_STRING_UNKNOWN "UNKNOWN"
 
-#define DEFAULT_CONTROL \
-    { .scancode = SDL_SCANCODE_UNKNOWN, .input = DEFAULT_INPUT }
+#define DEFAULT_CONTROL                   \
+    {                                     \
+        .scancode = SDL_SCANCODE_UNKNOWN, \
+        .input = DEFAULT_INPUT,           \
+    }
 
 typedef struct {
     SDL_Scancode scancode;
@@ -16,7 +19,7 @@ typedef struct {
 } control_t;
 
 control_t control_t$create( void );
-bool control_t$destroy( control_t* _control );
+bool control_t$destroy( control_t* restrict _control );
 
 SDL_Scancode control_t$scancode$convert$fromString( const char* _string );
 const char* control_t$scancode$convert$toStaticString( SDL_Scancode _scancode );

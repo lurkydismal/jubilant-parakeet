@@ -6,6 +6,7 @@
 
 #include "FPS.h"
 #include "HUD_t.h"
+#include "character_t.h"
 #include "log.h"
 #include "player_t.h"
 #include "stdfunc.h"
@@ -45,6 +46,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
 
             TRY_CHECK_WATCH_OR_EXIT( background );
             TRY_CHECK_WATCH_OR_EXIT( HUD );
+            TRY_CHECK_WATCH_OR_EXIT( character );
 
 #undef TRY_CHECK_WATCH_OR_EXIT
         }

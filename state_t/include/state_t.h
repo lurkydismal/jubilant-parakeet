@@ -7,12 +7,14 @@
 #include "animation_t.h"
 #include "boxes_t.h"
 
-#define DEFAULT_STATE                 \
-    { .animation = DEFAULT_ANIMATION, \
-      .boxes = DEFAULT_BOXES,         \
-      .isActionable = true,           \
-      .canLoop = false,               \
-      .renderer = NULL }
+#define DEFAULT_STATE                   \
+    {                                   \
+        .animation = DEFAULT_ANIMATION, \
+        .boxes = DEFAULT_BOXES,         \
+        .isActionable = true,           \
+        .canLoop = false,               \
+        .renderer = NULL,               \
+    }
 
 typedef struct {
     animation_t animation;

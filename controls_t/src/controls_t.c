@@ -47,7 +47,7 @@ controls_t controls_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool controls_t$destroy( controls_t* _controls ) {
+bool controls_t$destroy( controls_t* restrict _controls ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_controls ) ) {

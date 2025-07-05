@@ -202,7 +202,11 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                 const float l_height = strtof( l_boxProperties[ 3 ], NULL );
 
                 const SDL_FRect l_targetRectangle = {
-                    .x = l_x, .y = l_y, .w = l_width, .h = l_height };
+                    .x = l_x,
+                    .y = l_y,
+                    .w = l_width,
+                    .h = l_height,
+                };
 
                 {
                     char** l_startAndEndIndexAsString =
@@ -588,7 +592,8 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
                 .x = ( _targetRectangle->x + ( *_element )->x ),
                 .y = ( _targetRectangle->y + ( *_element )->y ),
                 .w = ( *_element )->w,
-                .h = ( *_element )->h };
+                .h = ( *_element )->h,
+            };
 
             if ( _doFill ) {
                 l_returnValue =

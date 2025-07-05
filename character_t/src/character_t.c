@@ -1,4 +1,4 @@
-#include "background_t.h"
+#include "character_t.h"
 
 #include "log.h"
 #include "stdfunc.h"
@@ -9,11 +9,12 @@
 
 #endif
 
-background_t background_t$create( void ) {
-    background_t l_returnValue = DEFAULT_BACKGROUND;
+// TODO
+character_t character_t$create( void ) {
+    character_t l_returnValue = DEFAULT_CHARACTER;
 
     {
-        l_returnValue.object = object_t$create();
+        l_returnValue.movesObject = object_t$create();
 
 #if defined( DEBUG )
 
@@ -25,43 +26,44 @@ background_t background_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool background_t$destroy( background_t* restrict _background ) {
+// TODO
+bool character_t$destroy( character_t* restrict _character ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) ) {
+    if ( UNLIKELY( !_character ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        l_returnValue = object_t$destroy( &( _background->object ) );
+        l_returnValue = object_t$destroy( &( _character->movesObject ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Destroying background" );
+                                   "Destroying character" );
 
             goto EXIT;
         }
 
-        if ( LIKELY( _background->name ) ) {
-            free( _background->name );
-            _background->name = NULL;
+        if ( LIKELY( _character->name ) ) {
+            free( _character->name );
+            _character->name = NULL;
         }
 
-        if ( LIKELY( _background->folder ) ) {
-            free( _background->folder );
-            _background->folder = NULL;
+        if ( LIKELY( _character->folder ) ) {
+            free( _character->folder );
+            _character->folder = NULL;
         }
 
-        if ( LIKELY( _background->extension ) ) {
-            free( _background->extension );
-            _background->extension = NULL;
+        if ( LIKELY( _character->extension ) ) {
+            free( _character->extension );
+            _character->extension = NULL;
         }
 
 #if defined( DEBUG )
 
-        FREE_ARRAY( _background->watches );
+        FREE_ARRAY( _character->watches );
 
 #endif
 
@@ -72,7 +74,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool load( background_t* restrict _background,
+// TODO
+static FORCE_INLINE bool load( character_t* restrict _character,
                                SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
@@ -83,11 +86,11 @@ static FORCE_INLINE bool load( background_t* restrict _background,
             // Boxes
             // folder/folder.boxes
             {
-                l_boxesGlob = duplicateString( _background->folder );
+                l_boxesGlob = duplicateString( _character->folder );
 
                 concatBeforeAndAfterString( &l_boxesGlob, "/",
                                             "." BOXES_FILE_EXTENSION );
-                concatBeforeAndAfterString( &l_boxesGlob, _background->folder,
+                concatBeforeAndAfterString( &l_boxesGlob, _character->folder,
                                             NULL );
             }
 
@@ -99,15 +102,15 @@ static FORCE_INLINE bool load( background_t* restrict _background,
                 l_animationGlob = duplicateString( "_*." );
 
                 concatBeforeAndAfterString( &l_animationGlob,
-                                            _background->folder,
-                                            _background->extension );
+                                            _character->folder,
+                                            _character->extension );
                 concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
                 concatBeforeAndAfterString( &l_animationGlob,
-                                            _background->folder, NULL );
+                                            _character->folder, NULL );
             }
 
             l_returnValue = object_t$state$add$fromGlob(
-                &( _background->object ), _renderer, l_boxesGlob,
+                &( _character->movesObject ), _renderer, l_boxesGlob,
                 l_animationGlob, "", false, true );
 
             free( l_boxesGlob );
@@ -116,14 +119,14 @@ static FORCE_INLINE bool load( background_t* restrict _background,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Adding background state from glob" );
+                                   "Adding character state from glob" );
 
             goto EXIT;
         }
 
         // Background always have only single state
-        _background->object.currentState =
-            arrayFirstElement( _background->object.states );
+        _character->movesObject.currentState =
+            arrayFirstElement( _character->movesObject.states );
 
         l_returnValue = true;
     }
@@ -132,7 +135,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool background_t$reload$element(
+// TODO
+static FORCE_INLINE bool character_t$reload$element(
     void* restrict _context,
     const char* restrict _fileName,
     size_t _eventMask,
@@ -166,7 +170,7 @@ static FORCE_INLINE bool background_t$reload$element(
 
 #endif
 
-        background_t* l_background = ( background_t* )_context;
+        character_t* l_character = ( character_t* )_context;
 
         bool l_isAnimationFrame = false;
         bool l_isBoxes = false;
@@ -189,12 +193,12 @@ static FORCE_INLINE bool background_t$reload$element(
             const char* l_fileExtension =
                 ( _fileName + l_fileExtensionStartIndex + 1 );
             const size_t l_folderLength =
-                __builtin_strlen( l_background->folder );
+                __builtin_strlen( l_character->folder );
 
-            if ( __builtin_strncmp( _fileName, l_background->folder,
+            if ( __builtin_strncmp( _fileName, l_character->folder,
                                     l_folderLength ) == 0 ) {
                 if ( ( __builtin_strcmp( l_fileExtension,
-                                         l_background->extension ) == 0 ) &&
+                                         l_character->extension ) == 0 ) &&
                      ( _fileName[ l_folderLength ] == '_' ) ) {
                     l_isAnimationFrame = true;
 
@@ -206,7 +210,7 @@ static FORCE_INLINE bool background_t$reload$element(
                         char* l_pointer = l_filePath;
 
                         l_pointer =
-                            __builtin_stpcpy( l_pointer, l_background->folder );
+                            __builtin_stpcpy( l_pointer, l_character->folder );
                         l_pointer = __builtin_stpcpy( l_pointer, "/" );
                         __builtin_stpcpy( l_pointer, _fileName );
                     }
@@ -219,25 +223,27 @@ static FORCE_INLINE bool background_t$reload$element(
         }
 
         if ( l_isAnimationFrame || l_isBoxes ) {
-            state_t* l_state = arrayFirstElement( l_background->object.states );
+            state_t* l_state =
+                arrayFirstElement( l_character->movesObject.states );
 
             SDL_Renderer* l_renderer = l_state->renderer;
 
-            l_returnValue = object_t$states$remove( &( l_background->object ) );
+            l_returnValue =
+                object_t$states$remove( &( l_character->movesObject ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing background state" );
+                                       "Removing character state" );
 
                 goto EXIT;
             }
 
-            l_returnValue = load( l_background, l_renderer );
+            l_returnValue = load( l_character, l_renderer );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format(
                     ( logLevel_t )error,
-                    "Loading background state %s from path: '%s'",
+                    "Loading character state %s from path: '%s'",
                     ( ( l_isAnimationFrame ) ? ( "animation" ) : ( "boxes" ) ),
                     _fileName );
 
@@ -246,7 +252,7 @@ static FORCE_INLINE bool background_t$reload$element(
 
             log$transaction$query$format(
                 ( logLevel_t )debug,
-                "Loaded background state %s from path: '%s'",
+                "Loaded character state %s from path: '%s'",
                 ( ( l_isAnimationFrame ) ? ( "animation" ) : ( "boxes" ) ),
                 _fileName );
         }
@@ -258,13 +264,14 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool background_t$load( background_t* restrict _background,
-                        SDL_Renderer* _renderer ) {
+// TODO
+bool character_t$load( character_t* restrict _character,
+                       SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) || UNLIKELY( !_background->name ) ||
-         UNLIKELY( !_background->folder ) ||
-         UNLIKELY( !_background->extension ) ) {
+    if ( UNLIKELY( !_character ) || UNLIKELY( !_character->name ) ||
+         UNLIKELY( !_character->folder ) ||
+         UNLIKELY( !_character->extension ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -278,14 +285,14 @@ bool background_t$load( background_t* restrict _background,
 
     {
         log$transaction$query$format(
-            ( logLevel_t )info, "Loading background: '%s'", _background->name );
+            ( logLevel_t )info, "Loading character: '%s'", _character->name );
 
         {
-            l_returnValue = load( _background, _renderer );
+            l_returnValue = load( _character, _renderer );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading background" );
+                                       "Loading character" );
 
                 goto EXIT;
             }
@@ -296,17 +303,17 @@ bool background_t$load( background_t* restrict _background,
                 watch_t l_watch = watch_t$create();
 
                 l_returnValue = watch_t$add$toPath(
-                    &l_watch, _background->folder, background_t$reload$element,
-                    _background, true );
+                    &l_watch, _character->folder, character_t$reload$element,
+                    _character, true );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Adding background watch" );
+                                           "Adding character watch" );
 
                     goto EXIT;
                 }
 
-                insertIntoArray( &( _background->watches ), clone( &l_watch ) );
+                insertIntoArray( &( _character->watches ), clone( &l_watch ) );
             }
 #endif
         }
@@ -318,45 +325,46 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool background_t$unload( background_t* restrict _background ) {
+// TODO
+bool character_t$unload( character_t* restrict _character ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) ) {
+    if ( UNLIKELY( !_character ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        l_returnValue = object_t$states$remove( &( _background->object ) );
+        l_returnValue = object_t$states$remove( &( _character->movesObject ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing background states" );
+                                   "Removing character states" );
 
             goto EXIT;
         }
 
-        _background->object.currentState = NULL;
+        _character->movesObject.currentState = NULL;
 
 #if defined( DEBUG )
         // Watch
         {
-            FOR_RANGE( arrayLength_t, 0, arrayLength( _background->watches ) ) {
-                watch_t* l_watch = _background->watches[ _index ];
+            FOR_RANGE( arrayLength_t, 0, arrayLength( _character->watches ) ) {
+                watch_t* l_watch = _character->watches[ _index ];
 
                 l_returnValue = watch_t$destroy( l_watch );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Destroying background watch" );
+                                           "Destroying character watch" );
 
                     goto EXIT;
                 }
 
                 free( l_watch );
 
-                pluckArray( &( _background->watches ), l_watch );
+                pluckArray( &( _character->watches ), l_watch );
             }
         }
 #endif
@@ -368,20 +376,22 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool background_t$step( background_t* restrict _background ) {
+// TODO: Implement
+// Run scripts
+bool character_t$step( character_t* restrict _character ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) ) {
+    if ( UNLIKELY( !_character ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        l_returnValue = object_t$step( &( _background->object ), 0, 0 );
+        l_returnValue = object_t$step( &( _character->movesObject ), 0, 0 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping background" );
+            log$transaction$query( ( logLevel_t )error, "Stepping character" );
 
             goto EXIT;
         }
@@ -393,12 +403,12 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool background_t$render( const background_t* restrict _background,
-                          const SDL_FRect* restrict _cameraRectangle,
-                          bool _doDrawBoxes ) {
+bool character_t$render( const character_t* restrict _character,
+                         const SDL_FRect* restrict _cameraRectangle,
+                         bool _doDrawBoxes ) {
     bool l_returnValue = false;
 
-    if ( UNLIKELY( !_background ) ) {
+    if ( UNLIKELY( !_character ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -411,12 +421,11 @@ bool background_t$render( const background_t* restrict _background,
     }
 
     {
-        l_returnValue = object_t$render( &( _background->object ),
+        l_returnValue = object_t$render( &( _character->movesObject ),
                                          _cameraRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Rendering background" );
+            log$transaction$query( ( logLevel_t )error, "Rendering character" );
 
             goto EXIT;
         }
@@ -436,9 +445,9 @@ bool hotReload$unload( void** restrict _state,
     UNUSED( _state );
     UNUSED( _stateSize );
 
-    if ( LIKELY( _applicationState->background ) &&
-         LIKELY( _applicationState->background->watches ) ) {
-        FOR_ARRAY( watch_t* const*, _applicationState->background->watches ) {
+    if ( LIKELY( _applicationState->character ) &&
+         LIKELY( _applicationState->character->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->character->watches ) {
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
@@ -456,13 +465,14 @@ bool hotReload$load( void* restrict _state,
     UNUSED( _state );
     UNUSED( _stateSize );
 
-    if ( LIKELY( _applicationState->background ) &&
-         LIKELY( _applicationState->background->watches ) ) {
-        FOR_ARRAY( watch_t* const*, _applicationState->background->watches ) {
+    if ( LIKELY( _applicationState->character ) &&
+         LIKELY( _applicationState->character->watches ) ) {
+        FOR_ARRAY( watch_t* const*, _applicationState->character->watches ) {
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
-                *_element = background_t$reload$element;
+                // TODO: Implement hot reload
+                *_element = NULL;
             }
         }
     }

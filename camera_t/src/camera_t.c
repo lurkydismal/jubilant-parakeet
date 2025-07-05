@@ -9,7 +9,7 @@ camera_t camera_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool camera_t$destroy( camera_t* _camera ) {
+bool camera_t$destroy( camera_t* restrict _camera ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {
@@ -27,7 +27,7 @@ EXIT:
 }
 
 // TODO: Implement
-bool camera_t$update( camera_t* _camera, const player_t* _player ) {
+bool camera_t$update( camera_t* restrict _camera, const player_t* _player ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {

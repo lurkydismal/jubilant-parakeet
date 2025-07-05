@@ -7,25 +7,29 @@
 #include "HUD_t.h"
 #include "background_t.h"
 #include "camera_t.h"
+#include "character_t.h"
 #include "config_t.h"
 #include "player_t.h"
 #include "settings_t.h"
 
-#define DEFAULT_APPLICATION_STATE    \
-    { .window = NULL,                \
-      .renderer = NULL,              \
-      .settings = DEFAULT_SETTINGS,  \
-      .config = DEFAULT_CONFIG,      \
-      .background = NULL,            \
-      .HUD = NULL,                   \
-      .camera = DEFAULT_CAMERA,      \
-      .localPlayer = DEFAULT_PLAYER, \
-      .remotePlayers = NULL,         \
-      .logicalWidth = 1280,          \
-      .logicalHeight = 720,          \
-      .totalFramesRendered = 0,      \
-      .isPaused = false,             \
-      .status = false }
+#define DEFAULT_APPLICATION_STATE      \
+    {                                  \
+        .window = NULL,                \
+        .renderer = NULL,              \
+        .settings = DEFAULT_SETTINGS,  \
+        .config = DEFAULT_CONFIG,      \
+        .background = NULL,            \
+        .HUD = NULL,                   \
+        .character = NULL,             \
+        .camera = DEFAULT_CAMERA,      \
+        .localPlayer = DEFAULT_PLAYER, \
+        .remotePlayers = NULL,         \
+        .logicalWidth = 1280,          \
+        .logicalHeight = 720,          \
+        .totalFramesRendered = 0,      \
+        .isPaused = false,             \
+        .status = false,               \
+    }
 
 typedef struct {
     SDL_Window* window;
@@ -34,6 +38,7 @@ typedef struct {
     config_t config;
     background_t* background;
     HUD_t* HUD;
+    character_t* character;
     camera_t camera;
     player_t localPlayer;
     player_t** remotePlayers;

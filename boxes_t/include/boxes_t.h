@@ -10,11 +10,13 @@
 
 #define BOXES_FILE_EXTENSION "boxes"
 
-#define DEFAULT_BOXES    \
-    { .keyFrames = NULL, \
-      .frames = NULL,    \
-      .currentFrame = 0, \
-      .color = DEFAULT_COLOR }
+#define DEFAULT_BOXES           \
+    {                           \
+        .keyFrames = NULL,      \
+        .frames = NULL,         \
+        .currentFrame = 0,      \
+        .color = DEFAULT_COLOR, \
+    }
 
 typedef struct {
     SDL_FRect** keyFrames;
