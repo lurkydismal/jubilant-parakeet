@@ -4,6 +4,8 @@
 #include <SDL3/SDL_render.h>
 
 #include "boxes_t.h"
+#include "log.h"
+#include "stdfunc.h"
 
 #define DEFAULT_ANIMATION \
     { .keyFrames = NULL,  \
@@ -17,6 +19,65 @@ typedef struct {
     size_t currentFrame;
     boxes_t targetBoxes;
 } animation_t;
+
+static FORCE_INLINE SDL_Texture* animation_t$currentKeyFrame$get(
+    const animation_t* _animation ) {
+    SDL_Texture* l_returnValue = NULL;
+
+    if ( UNLIKELY( !_animation ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        if ( UNLIKELY( _animation->currentFrame >=
+                       arrayLength( _animation->frames ) ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid animation current frame" );
+
+            goto EXIT;
+        }
+
+        l_returnValue =
+            ( _animation->keyFrames
+                  [ _animation->frames[ _animation->currentFrame ] ] );
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+static FORCE_INLINE SDL_FRect* animation_t$currentTargetRectangle$get(
+    const animation_t* _animation ) {
+    SDL_FRect* l_returnValue = NULL;
+
+    if ( UNLIKELY( !_animation ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const boxes_t* l_animationTargetBox = &( _animation->targetBoxes );
+
+        if ( UNLIKELY( l_animationTargetBox->currentFrame >=
+                       arrayLength( l_animationTargetBox->frames ) ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid target box current frame" );
+
+            goto EXIT;
+        }
+
+        // Always a single box
+        l_returnValue = l_animationTargetBox->keyFrames[ arrayFirstElement(
+            l_animationTargetBox
+                ->frames[ l_animationTargetBox->currentFrame ] ) ];
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
 
 animation_t animation_t$create( void );
 bool animation_t$destroy( animation_t* restrict _animation );

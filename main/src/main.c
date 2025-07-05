@@ -8,6 +8,8 @@
 
 #include <dlfcn.h>
 #include <link.h>
+#include <setjmp.h>
+#include <signal.h>
 #include <sys/stat.h>
 
 #include "plthook.h"
@@ -46,6 +48,13 @@ struct state {
 };
 
 char* g_rootSharedObjectPath = NULL;
+sigjmp_buf g_jumpBuffer;
+
+static void crashHandler( int _signal ) {
+    UNUSED( _signal );
+
+    siglongjmp( g_jumpBuffer, 1 );
+}
 
 static FORCE_INLINE bool hasPathChanged( const char* restrict _path ) {
     bool l_returnValue = false;
@@ -275,9 +284,18 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                     goto EXIT2;
                 }
 
+                static void* l_previouManagerHandle = NULL;
+
+                // Can not be NULL
+                l_previouManagerHandle = l_managerHandle;
+
                 // Load new
                 l_managerHandle = dlmopen( LM_ID_NEWLM, _soPath,
                                            ( RTLD_LAZY | RTLD_DEEPBIND ) );
+
+                if ( sigsetjmp( g_jumpBuffer, 0 ) != 0 ) {
+                    l_managerHandle = l_previouManagerHandle;
+                }
 
                 assert( l_managerHandle != NULL );
 
@@ -470,6 +488,10 @@ int main( int _argumentCount, char** _argumentVector ) {
         free( l_directoryPath );
     }
 
+    signal( SIGSEGV, crashHandler );
+    signal( SIGILL, crashHandler );
+    signal( SIGBUS, crashHandler );
+
     l_returnValue = hotReloadSo( g_rootSharedObjectPath );
 
     if ( UNLIKELY( !l_returnValue ) ) {
@@ -503,6 +525,13 @@ int main( int _argumentCount, char** _argumentVector ) {
                 if ( UNLIKELY( !l_returnValue ) ) {
                     goto EXIT;
                 }
+            }
+
+            // TODO: Improve
+            l_returnValue = event( &g_applicationState, NULL );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
             }
 
             l_returnValue = iterate( &g_applicationState );
