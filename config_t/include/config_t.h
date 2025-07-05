@@ -5,16 +5,19 @@
 #include "HUD_t.h"
 #include "asset_t.h"
 #include "background_t.h"
+#include "character_t.h"
 
 #define DEFAULT_CONFIG       \
     {                        \
         .backgrounds = NULL, \
         .HUDs = NULL,        \
+        .characters = NULL,  \
     }
 
 typedef struct {
     background_t** backgrounds;
     HUD_t** HUDs;
+    character_t** characters;
 } config_t;
 
 config_t config_t$create();

@@ -231,9 +231,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-ssize_t findStringInArray( const char* restrict* restrict _array,
+ssize_t findStringInArray( char* restrict* restrict _array,
                            const size_t _arrayLength,
-                           const char* restrict _value ) {
+                           char* restrict _string ) {
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_array ) ) {
@@ -248,7 +248,7 @@ ssize_t findStringInArray( const char* restrict* restrict _array,
         goto EXIT;
     }
 
-    if ( UNLIKELY( !_value ) ) {
+    if ( UNLIKELY( !_string ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
@@ -257,14 +257,17 @@ ssize_t findStringInArray( const char* restrict* restrict _array,
     {
         ssize_t l_index = -1;
 
-        FOR_RANGE( size_t, 0, _arrayLength ) {
-            const char* l_value = _array[ _index ];
+        const size_t l_stringLength = __builtin_strlen( _string );
 
-            if ( UNLIKELY( !l_value ) ) {
+        FOR_RANGE( size_t, 0, _arrayLength ) {
+            const char* l_element = _array[ _index ];
+
+            if ( UNLIKELY( !l_element ) ) {
                 continue;
             }
 
-            if ( __builtin_strcmp( l_value, _value ) == 0 ) {
+            if ( __builtin_strncmp( l_element, _string, l_stringLength ) ==
+                 0 ) {
                 l_index = _index;
 
                 break;
@@ -494,9 +497,9 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state,
-                       size_t* _stateSize,
-                       applicationState_t* _applicationState ) {
+bool hotReload$unload( void** restrict _state,
+                       size_t* restrict _stateSize,
+                       applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     *_stateSize = ( sizeof( g_seed ) );
@@ -518,9 +521,9 @@ bool hotReload$unload( void** _state,
     return ( true );
 }
 
-bool hotReload$load( void* _state,
+bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
-                     applicationState_t* _applicationState ) {
+                     applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     bool l_returnValue = false;

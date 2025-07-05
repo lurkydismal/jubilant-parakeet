@@ -10,8 +10,11 @@
 
 #define MAX_DELAY_BETWEEN_INPUTS ( 8 )
 
-#define DEFAULT_INPUT_BUFFER \
-    { .currentBufferIndex = 0, .previousBufferIndex = 0 }
+#define DEFAULT_INPUT_BUFFER      \
+    {                             \
+        .currentBufferIndex = 0,  \
+        .previousBufferIndex = 0, \
+    }
 
 typedef struct {
     input_t inputs[ INPUT_BUFFER_LENGTH ];
@@ -21,15 +24,15 @@ typedef struct {
 } inputBuffer_t;
 
 inputBuffer_t inputBuffer_t$create( void );
-bool inputBuffer_t$destroy( inputBuffer_t* _inputBuffer );
+bool inputBuffer_t$destroy( inputBuffer_t* restrict _inputBuffer );
 
 input_t* inputBuffer_t$inputsSequence$getInput$last(
     inputBuffer_t* _inputBuffer );
 size_t inputBuffer_t$inputsSequence$getFrame$last(
     inputBuffer_t* _inputBuffer );
 
-bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
-                           const input_t* _input,
+bool inputBuffer_t$insert( inputBuffer_t* restrict _inputBuffer,
+                           const input_t* restrict _input,
                            size_t _frame );
 
 input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,

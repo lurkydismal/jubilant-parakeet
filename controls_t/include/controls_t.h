@@ -6,15 +6,17 @@
 #include "control_t.h"
 #include "stdfunc.h"
 
-#define DEFAULT_CONTROLS        \
-    { .up = DEFAULT_CONTROL,    \
-      .down = DEFAULT_CONTROL,  \
-      .left = DEFAULT_CONTROL,  \
-      .right = DEFAULT_CONTROL, \
-      .A = DEFAULT_CONTROL,     \
-      .B = DEFAULT_CONTROL,     \
-      .C = DEFAULT_CONTROL,     \
-      .D = DEFAULT_CONTROL }
+#define DEFAULT_CONTROLS          \
+    {                             \
+        .up = DEFAULT_CONTROL,    \
+        .down = DEFAULT_CONTROL,  \
+        .left = DEFAULT_CONTROL,  \
+        .right = DEFAULT_CONTROL, \
+        .A = DEFAULT_CONTROL,     \
+        .B = DEFAULT_CONTROL,     \
+        .C = DEFAULT_CONTROL,     \
+        .D = DEFAULT_CONTROL,     \
+    }
 
 // All available controls
 typedef struct {
@@ -32,7 +34,7 @@ typedef struct {
 } controls_t;
 
 controls_t controls_t$create( void );
-bool controls_t$destroy( controls_t* _controls );
+bool controls_t$destroy( controls_t* restrict _controls );
 
 static FORCE_INLINE control_t* controls_t$control_t$convert$fromScancode(
     controls_t* _controls,

@@ -6,8 +6,19 @@
 #include "player_t.h"
 #include "stdfloat16.h"
 
-#define DEFAULT_CAMERA \
-    { .zoom = 1, .zoomMin = 0.1, .zoomMax = 5, .rectangle = { 0, 0, 0, 0 } }
+#define DEFAULT_CAMERA  \
+    {                   \
+        .zoom = 1,      \
+        .zoomMin = 0.1, \
+        .zoomMax = 5,   \
+        .rectangle =    \
+            {           \
+                0,      \
+                0,      \
+                0,      \
+                0,      \
+            },          \
+    }
 
 typedef struct {
     float16_t zoom;
@@ -17,6 +28,6 @@ typedef struct {
 } camera_t;
 
 camera_t camera_t$create( void );
-bool camera_t$destroy( camera_t* _camera );
+bool camera_t$destroy( camera_t* restrict _camera );
 
-bool camera_t$update( camera_t* _camera, const player_t* _player );
+bool camera_t$update( camera_t* restrict _camera, const player_t* _player );

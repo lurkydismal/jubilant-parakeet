@@ -717,9 +717,9 @@ const char* asset_t$loader$assetsDirectory$get( void ) {
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state,
-                       size_t* _stateSize,
-                       applicationState_t* _applicationState ) {
+bool hotReload$unload( void** restrict _state,
+                       size_t* restrict _stateSize,
+                       applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     *_stateSize = ( sizeof( g_assetsDirectory ) );
@@ -741,9 +741,9 @@ bool hotReload$unload( void** _state,
     return ( true );
 }
 
-bool hotReload$load( void* _state,
+bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
-                     applicationState_t* _applicationState ) {
+                     applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     bool l_returnValue = false;

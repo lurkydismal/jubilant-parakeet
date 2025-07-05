@@ -6,25 +6,27 @@
 #include "player_t.h"
 #include "watch_t.h"
 
-#define DEFAULT_HUD                      \
-    { .guardBars = NULL,                 \
-      .brokenGuardBars = NULL,           \
-      .guardGauges = NULL,               \
-      .healthBars = NULL,                \
-      .restorableHealthBars = NULL,      \
-      .healthGauges = NULL,              \
-      .logos = NULL,                     \
-      .names = NULL,                     \
-      .meterBars = NULL,                 \
-      .meterGauges = NULL,               \
-      .timer = DEFAULT_OBJECT,           \
-      .timerBackground = DEFAULT_OBJECT, \
-      .logicalWidth = 0,                 \
-      .logicalHeight = 0,                \
-      .name = NULL,                      \
-      .folder = NULL,                    \
-      .extension = NULL,                 \
-      .players = NULL }
+#define DEFAULT_HUD                        \
+    {                                      \
+        .guardBars = NULL,                 \
+        .brokenGuardBars = NULL,           \
+        .guardGauges = NULL,               \
+        .healthBars = NULL,                \
+        .restorableHealthBars = NULL,      \
+        .healthGauges = NULL,              \
+        .logos = NULL,                     \
+        .names = NULL,                     \
+        .meterBars = NULL,                 \
+        .meterGauges = NULL,               \
+        .timer = DEFAULT_OBJECT,           \
+        .timerBackground = DEFAULT_OBJECT, \
+        .logicalWidth = 0,                 \
+        .logicalHeight = 0,                \
+        .name = NULL,                      \
+        .folder = NULL,                    \
+        .extension = NULL,                 \
+        .players = NULL,                   \
+    }
 
 typedef struct {
     object_t** guardBars;

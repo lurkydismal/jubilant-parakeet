@@ -39,7 +39,7 @@ HUD_t HUD_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool HUD_t$destroy( HUD_t* _HUD ) {
+bool HUD_t$destroy( HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) ) {
@@ -188,7 +188,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
             l_returnValue =
                 object_t$state$add$fromGlob( _element, _renderer, l_boxesGlbb,
-                                             l_animationGlob, false, true );
+                                             l_animationGlob, "", false, true );
 
             free( l_boxesGlbb );
             free( l_animationGlob );
@@ -251,8 +251,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool HUD_t$reload$element( void* _context,
-                                               const char* _fileName,
+static FORCE_INLINE bool HUD_t$reload$element( void* restrict _context,
+                                               const char* restrict _fileName,
                                                size_t _eventMask,
                                                uint32_t _cookie ) {
     bool l_returnValue = false;
@@ -670,7 +670,12 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
     }
 
     {
-        const SDL_FRect l_cameraRectangle = { .x = 0, .y = 0, .w = 0, .h = 0 };
+        const SDL_FRect l_cameraRectangle = {
+            .x = 0,
+            .y = 0,
+            .w = 0,
+            .h = 0,
+        };
         const bool l_doDrawBoxes = false;
 
 #define RENDER_BARS_OR_EXIT( _name )                                           \
@@ -812,9 +817,9 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state,
-                       size_t* _stateSize,
-                       applicationState_t* _applicationState ) {
+bool hotReload$unload( void** restrict _state,
+                       size_t* restrict _stateSize,
+                       applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 
@@ -832,9 +837,9 @@ bool hotReload$unload( void** _state,
     return ( true );
 }
 
-bool hotReload$load( void* _state,
+bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
-                     applicationState_t* _applicationState ) {
+                     applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 

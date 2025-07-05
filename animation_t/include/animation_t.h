@@ -7,11 +7,13 @@
 #include "log.h"
 #include "stdfunc.h"
 
-#define DEFAULT_ANIMATION \
-    { .keyFrames = NULL,  \
-      .frames = NULL,     \
-      .currentFrame = 0,  \
-      .targetBoxes = DEFAULT_BOXES }
+#define DEFAULT_ANIMATION             \
+    {                                 \
+        .keyFrames = NULL,            \
+        .frames = NULL,               \
+        .currentFrame = 0,            \
+        .targetBoxes = DEFAULT_BOXES, \
+    }
 
 typedef struct {
     SDL_Texture** keyFrames;

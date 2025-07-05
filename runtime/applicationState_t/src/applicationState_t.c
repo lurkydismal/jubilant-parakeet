@@ -41,8 +41,9 @@ bool applicationState_t$destroy(
         TRY_DESTROY_OR_EXIT( settings );
 
         /*
-         * HUD is a reference to config HUD
          * Background is a reference to config background
+         * HUD is a reference to config HUD
+         * Character is a reference to config character
          */
         TRY_DESTROY_OR_EXIT( config );
         TRY_DESTROY_OR_EXIT( camera );
@@ -112,6 +113,7 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
 
         TRY_LOAD_OR_EXIT( background );
         TRY_LOAD_OR_EXIT( HUD );
+        TRY_LOAD_OR_EXIT( character );
 
 #undef TRY_LOAD_OR_EXIT
 
@@ -148,22 +150,21 @@ bool applicationState_t$unload(
 
 #undef TRY_UNLOAD_OR_EXIT
 
-        l_returnValue =
-            player_t$states$remove( &( _applicationState->localPlayer ) );
+        l_returnValue = player_t$unload( &( _applicationState->localPlayer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing local player states" );
+                                   "Unloading local player" );
 
             goto EXIT;
         }
 
         FOR_ARRAY( player_t* const*, _applicationState->remotePlayers ) {
-            l_returnValue = player_t$states$remove( *_element );
+            l_returnValue = player_t$unload( *_element );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing remote player states" );
+                                       "Unloading remote player" );
 
                 goto EXIT;
             }

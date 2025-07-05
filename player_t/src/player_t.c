@@ -9,7 +9,7 @@ player_t player_t$create( void ) {
     player_t l_returnValue = DEFAULT_PLAYER;
 
     {
-        l_returnValue.object = object_t$create();
+        l_returnValue.character = character_t$create();
         l_returnValue.inputBuffer = inputBuffer_t$create();
     }
 
@@ -26,7 +26,7 @@ bool player_t$destroy( player_t* restrict _player ) {
     }
 
     {
-        l_returnValue = object_t$destroy( &( _player->object ) );
+        l_returnValue = character_t$destroy( &( _player->character ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error, "Destroying player" );
@@ -50,6 +50,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+#if 0
 bool player_t$state$add$fromPaths( player_t* restrict _player,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxesPath,
@@ -84,8 +85,8 @@ bool player_t$state$add$fromPaths( player_t* restrict _player,
     }
 
     {
-        l_returnValue = object_t$state$add$fromPaths(
-            &( _player->object ), _renderer, _boxesPath, _animationPaths,
+        l_returnValue = character_t$state$add$fromPaths(
+            &( _player->character ), _renderer, _boxesPath, _animationPaths,
             _isActionable, _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
@@ -135,8 +136,8 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
     }
 
     {
-        l_returnValue = object_t$state$add$fromGlob(
-            &( _player->object ), _renderer, _boxesGlob, _animationGlob,
+        l_returnValue = character_t$state$add$fromGlob(
+            &( _player->character ), _renderer, _boxesGlob, _animationGlob,
             _isActionable, _canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
@@ -163,9 +164,9 @@ bool player_t$states$remove( player_t* restrict _player ) {
     }
 
     {
-        FOR_ARRAY( state_t* const*, _player->object.states ) {
+        FOR_ARRAY( state_t* const*, _player->character.states ) {
             l_returnValue =
-                object_t$state$remove( &( _player->object ), *_element );
+                character_t$state$remove( &( _player->character ), *_element );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -181,10 +182,9 @@ bool player_t$states$remove( player_t* restrict _player ) {
 EXIT:
     return ( l_returnValue );
 }
+#endif
 
-bool player_t$step( player_t* restrict _player,
-                    float _velocityX,
-                    float _velocityY ) {
+bool player_t$load( player_t* restrict _player, SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_player ) ) {
@@ -194,8 +194,57 @@ bool player_t$step( player_t* restrict _player,
     }
 
     {
-        l_returnValue =
-            object_t$step( &( _player->object ), _velocityX, _velocityY );
+        l_returnValue = character_t$load( &( _player->character ), _renderer );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Loading player" );
+
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool player_t$unload( player_t* restrict _player ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = character_t$unload( &( _player->character ) );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error, "Unloading player" );
+
+            goto EXIT;
+        }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool player_t$step( player_t* restrict _player ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_player ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = character_t$step( &( _player->character ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error, "Stepping player" );
@@ -228,8 +277,8 @@ bool player_t$render( const player_t* restrict _player,
     }
 
     {
-        l_returnValue = object_t$render( &( _player->object ), _cameraRectangle,
-                                         _doDrawBoxes );
+        l_returnValue = character_t$render( &( _player->character ),
+                                            _cameraRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error, "Rendering player" );

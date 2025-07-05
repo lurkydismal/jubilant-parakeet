@@ -6,4 +6,7 @@
 #define DEFAULT_VSYNC ( ( vsync_t )off )
 #define VSYNC_LEVEL_DEFAULT DEFAULT_VSYNC
 
-typedef enum { off = 0, unknownVsync } vsync_t;
+typedef enum {
+    off = 0,
+    unknownVsync,
+} vsync_t;

@@ -22,7 +22,9 @@ watch_t watch_t$create( void ) {
             l_returnValue.epollDescriptor = epoll_create1( 0 );
 
             struct epoll_event l_event = {
-                .events = EPOLLIN, .data.fd = l_returnValue.fileDescriptor };
+                .events = EPOLLIN,
+                .data.fd = l_returnValue.fileDescriptor,
+            };
 
             epoll_ctl( l_returnValue.epollDescriptor, EPOLL_CTL_ADD,
                        l_returnValue.fileDescriptor, &l_event );
@@ -36,7 +38,7 @@ watch_t watch_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool watch_t$destroy( watch_t* _watch ) {
+bool watch_t$destroy( watch_t* restrict _watch ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_watch ) ) {
@@ -78,7 +80,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool watch_t$add$toPath( watch_t* _watch,
+bool watch_t$add$toPath( watch_t* restrict _watch,
                          const char* _path,
                          watchCallback_t _callback,
                          void* _context,
@@ -150,7 +152,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool watch_t$add$toGlob( watch_t* _watch,
+bool watch_t$add$toGlob( watch_t* restrict _watch,
                          const char* _glob,
                          watchCallback_t _callback,
                          void* _context,
@@ -208,7 +210,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool watch_t$remove( watch_t* _watch ) {
+bool watch_t$remove( watch_t* restrict _watch ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_watch ) ) {

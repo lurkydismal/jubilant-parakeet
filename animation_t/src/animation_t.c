@@ -228,7 +228,11 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
             {
                 SDL_FRect l_targetRectangle = {
-                    .x = 0.0f, .y = 0.0f, .w = 0.0f, .h = 0.0f };
+                    .x = 0.0f,
+                    .y = 0.0f,
+                    .w = 0.0f,
+                    .h = 0.0f,
+                };
 
                 // Target rectangle
                 {

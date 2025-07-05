@@ -3,25 +3,27 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "character_t.h"
 #include "inputBuffer_t.h"
-#include "object_t.h"
 
-#define DEFAULT_PLAYER                     \
-    { .object = DEFAULT_OBJECT,            \
-      .inputBuffer = DEFAULT_INPUT_BUFFER, \
-      .isGuardBroken = false,              \
-      .healthPointsMax = 10000,            \
-      .restorableHealthPointsMax = 10000,  \
-      .guardPointsMax = 1000,              \
-      .meterPointsMax = 100,               \
-      .healthPoints = 4321,                \
-      .restorableHealthPoints = 7654,      \
-      .guardPoints = 123,                  \
-      .meterPoints = 23,                   \
-      .name = NULL }
+#define DEFAULT_PLAYER                       \
+    {                                        \
+        .character = DEFAULT_CHARACTER,      \
+        .inputBuffer = DEFAULT_INPUT_BUFFER, \
+        .isGuardBroken = false,              \
+        .healthPointsMax = 10000,            \
+        .restorableHealthPointsMax = 10000,  \
+        .guardPointsMax = 1000,              \
+        .meterPointsMax = 100,               \
+        .healthPoints = 4321,                \
+        .restorableHealthPoints = 7654,      \
+        .guardPoints = 123,                  \
+        .meterPoints = 23,                   \
+        .name = NULL,                        \
+    }
 
 typedef struct {
-    object_t object;
+    character_t character;
     inputBuffer_t inputBuffer;
 
     bool isGuardBroken;
@@ -43,6 +45,7 @@ typedef struct {
 player_t player_t$create( void );
 bool player_t$destroy( player_t* restrict _player );
 
+#if 0
 // Boxes
 // fileName_ColorAsHex.extension
 // X Y Width Height StartIndex-EndIndex
@@ -61,10 +64,11 @@ bool player_t$state$add$fromGlob( player_t* restrict _player,
                                   bool _isActionable,
                                   bool _canLoop );
 bool player_t$states$remove( player_t* restrict _player );
+#endif
 
-bool player_t$step( player_t* restrict _player,
-                    float _velocityX,
-                    float _velocityY );
+bool player_t$load( player_t* restrict _player, SDL_Renderer* _renderer );
+bool player_t$unload( player_t* restrict _player );
+bool player_t$step( player_t* restrict _player );
 bool player_t$render( const player_t* restrict _player,
                       const SDL_FRect* restrict _cameraRectangle,
                       bool _doDrawBoxes );

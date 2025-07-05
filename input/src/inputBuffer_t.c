@@ -16,7 +16,7 @@ inputBuffer_t inputBuffer_t$create( void ) {
     return ( l_returnValue );
 }
 
-bool inputBuffer_t$destroy( inputBuffer_t* _inputBuffer ) {
+bool inputBuffer_t$destroy( inputBuffer_t* restrict _inputBuffer ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
@@ -79,8 +79,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
-                           const input_t* _input,
+bool inputBuffer_t$insert( inputBuffer_t* restrict _inputBuffer,
+                           const input_t* restrict _input,
                            size_t _frame ) {
     bool l_returnValue = false;
 

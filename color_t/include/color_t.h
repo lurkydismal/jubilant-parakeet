@@ -8,16 +8,41 @@
 #include "log.h"
 #include "stdfunc.h"
 
-#define COLOR_BLACK \
-    { .red = 0, .green = 0, .blue = 0, .alpha = SDL_ALPHA_OPAQUE }
-#define COLOR_WHITE \
-    { .red = 0xFF, .green = 0xFF, .blue = 0xFF, .alpha = SDL_ALPHA_OPAQUE }
-#define COLOR_RED \
-    { .red = 0xFF, .green = 0, .blue = 0, .alpha = SDL_ALPHA_OPAQUE }
-#define COLOR_GREEN \
-    { .red = 0, .green = 0xFF, .blue = 0, .alpha = SDL_ALPHA_OPAQUE }
-#define COLOR_BLUE \
-    { .red = 0, .green = 0, .blue = 0xFF, .alpha = SDL_ALPHA_OPAQUE }
+#define COLOR_BLACK                \
+    {                              \
+        .red = 0,                  \
+        .green = 0,                \
+        .blue = 0,                 \
+        .alpha = SDL_ALPHA_OPAQUE, \
+    }
+#define COLOR_WHITE                \
+    {                              \
+        .red = 0xFF,               \
+        .green = 0xFF,             \
+        .blue = 0xFF,              \
+        .alpha = SDL_ALPHA_OPAQUE, \
+    }
+#define COLOR_RED                  \
+    {                              \
+        .red = 0xFF,               \
+        .green = 0,                \
+        .blue = 0,                 \
+        .alpha = SDL_ALPHA_OPAQUE, \
+    }
+#define COLOR_GREEN                \
+    {                              \
+        .red = 0,                  \
+        .green = 0xFF,             \
+        .blue = 0,                 \
+        .alpha = SDL_ALPHA_OPAQUE, \
+    }
+#define COLOR_BLUE                 \
+    {                              \
+        .red = 0,                  \
+        .green = 0,                \
+        .blue = 0xFF,              \
+        .alpha = SDL_ALPHA_OPAQUE, \
+    }
 #define DEFAULT_COLOR COLOR_WHITE
 
 typedef struct {
@@ -57,7 +82,11 @@ color_t$convert$fromString( const char* restrict _string ) {
     ( ( ( _number ) >> ( 8 * _colorChannel ) ) & 0xFF )
 
         if ( l_stringLength == 6 ) {
-            typedef enum { red = 2, green = 1, blue = 0 } colorChannel_t;
+            typedef enum {
+                red = 2,
+                green = 1,
+                blue = 0,
+            } colorChannel_t;
 
             l_returnValue.red =
                 GET_COLOR_FROM_NUMBER( l_colorAsNumber, ( colorChannel_t )red );
