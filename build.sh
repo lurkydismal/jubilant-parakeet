@@ -108,6 +108,7 @@ export declare EXTERNAL_LIBRARIES_TO_LINK=(
     "snappy"
     "sdl3"
     "sdl3-image"
+    "libcjson"
 )
 export declare LIBRARIES_TO_LINK_TESTS=(
     "m"

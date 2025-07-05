@@ -251,7 +251,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool HUD_t$reload$element( void* restrict _context,
+static FORCE_INLINE bool HUD_t$reload( void* restrict _context,
                                                const char* restrict _fileName,
                                                size_t _eventMask,
                                                uint32_t _cookie ) {
@@ -493,7 +493,7 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
             watch_t l_watch = watch_t$create();
 
             l_returnValue = watch_t$add$toPath(
-                &l_watch, _HUD->folder, HUD_t$reload$element, _HUD, true );
+                &l_watch, _HUD->folder, HUD_t$reload, _HUD, true );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -849,7 +849,7 @@ bool hotReload$load( void* restrict _state,
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
-                *_element = HUD_t$reload$element;
+                *_element = HUD_t$reload;
             }
         }
     }

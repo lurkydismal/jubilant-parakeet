@@ -132,7 +132,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool background_t$reload$element(
+static FORCE_INLINE bool background_t$reload(
     void* restrict _context,
     const char* restrict _fileName,
     size_t _eventMask,
@@ -296,7 +296,7 @@ bool background_t$load( background_t* restrict _background,
                 watch_t l_watch = watch_t$create();
 
                 l_returnValue = watch_t$add$toPath(
-                    &l_watch, _background->folder, background_t$reload$element,
+                    &l_watch, _background->folder, background_t$reload,
                     _background, true );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
@@ -336,8 +336,6 @@ bool background_t$unload( background_t* restrict _background ) {
 
             goto EXIT;
         }
-
-        _background->object.currentState = NULL;
 
 #if defined( DEBUG )
         // Watch
@@ -462,7 +460,7 @@ bool hotReload$load( void* restrict _state,
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
-                *_element = background_t$reload$element;
+                *_element = background_t$reload;
             }
         }
     }

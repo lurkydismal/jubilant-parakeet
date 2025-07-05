@@ -3,6 +3,7 @@
 #include <SDL3/SDL_render.h>
 #include <stdbool.h>
 
+#include "input_t.h"
 #include "object_t.h"
 #include "watch_t.h"
 
@@ -11,13 +12,24 @@
         .movesObject = DEFAULT_OBJECT, \
         .moveNames = NULL,             \
         .moves = NULL,                 \
+        .displayName = NULL,           \
+        .healthPoints = 0,             \
+        .walkSpeed = 0,                \
+        .jumpHeight = 0,               \
         .name = NULL,                  \
         .folder = NULL,                \
         .extension = NULL,             \
     }
 
 typedef struct {
-    int x;
+    size_t type;
+    input_t input;
+    float* velocity;
+    size_t** cancelWindows;
+    size_t startup;
+    size_t active;
+    size_t recovery;
+    size_t* cancelInto;
 } move_t;
 
 typedef struct {
@@ -25,6 +37,11 @@ typedef struct {
 
     char** moveNames;
     move_t** moves;
+
+    char* displayName;
+    size_t healthPoints;
+    float walkSpeed;
+    float jumpHeight;
 
     char* name;
     char* folder;
