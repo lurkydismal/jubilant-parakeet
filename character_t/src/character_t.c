@@ -1,5 +1,7 @@
 #include "character_t.h"
 
+#include <cJSON.h>
+
 #include "log.h"
 #include "stdfunc.h"
 
@@ -9,12 +11,13 @@
 
 #endif
 
-// TODO
 character_t character_t$create( void ) {
     character_t l_returnValue = DEFAULT_CHARACTER;
 
     {
         l_returnValue.movesObject = object_t$create();
+        l_returnValue.moveNames = createArray( char* );
+        l_returnValue.moves = createArray( move_t* );
 
 #if defined( DEBUG )
 
@@ -26,7 +29,6 @@ character_t character_t$create( void ) {
     return ( l_returnValue );
 }
 
-// TODO
 bool character_t$destroy( character_t* restrict _character ) {
     bool l_returnValue = false;
 
@@ -44,6 +46,14 @@ bool character_t$destroy( character_t* restrict _character ) {
                                    "Destroying character" );
 
             goto EXIT;
+        }
+
+        FREE_ARRAY( _character->moveNames );
+        FREE_ARRAY( _character->moves );
+
+        if ( LIKELY( _character->displayName ) ) {
+            free( _character->displayName );
+            _character->displayName = NULL;
         }
 
         if ( LIKELY( _character->name ) ) {
@@ -287,6 +297,52 @@ bool character_t$load( character_t* restrict _character,
         log$transaction$query$format(
             ( logLevel_t )info, "Loading character: '%s'", _character->name );
 
+        // Parse information
+        {
+            asset_t l_asset = asset_t$create();
+            asset_t$load( &l_asset, "roa/info.json" );
+
+            cJSON* l_root = cJSON_Parse(l_asset->data);
+
+            {
+                cJSON* l_name = cJSON_GetObjectItemCaseSensitive(l_root, "name");
+                cJSON* l_startup = cJSON_GetObjectItemCaseSensitive(l_root, "startup");
+                cJSON* l_active = cJSON_GetObjectItemCaseSensitive(l_root, "active");
+                cJSON* l_recovery = cJSON_GetObjectItemCaseSensitive(l_root, "recovery");
+                cJSON* l_cancelWindow = cJSON_GetObjectItemCaseSensitive(l_root, "cancelWindow");
+
+                if (!cJSON_IsString(l_name) ||
+                        !cJSON_IsNumber(l_startup) ||
+                        !cJSON_IsNumber(l_active) ||
+                        !cJSON_IsNumber(l_recovery) ||
+                        !cJSON_IsArray(l_cancelWindow)) {
+                    cJSON_Delete(l_root);
+                    return false;
+                }
+
+                _outMove->name = strdup(l_name->valuestring);
+                _outMove->startup = l_startup->valueint;
+                _outMove->active = l_active->valueint;
+                _outMove->recovery = l_recovery->valueint;
+
+                cJSON* l_start = cJSON_GetArrayItem(l_cancelWindow, 0);
+                cJSON* l_end = cJSON_GetArrayItem(l_cancelWindow, 1);
+
+                if (!cJSON_IsNumber(l_start) || !cJSON_IsNumber(l_end)) {
+                    cJSON_Delete(l_root);
+                    return false;
+                }
+
+                _outMove->cancelStart = l_start->valueint;
+                _outMove->cancelEnd = l_end->valueint;
+            }
+
+            cJSON_Delete(l_root);
+
+            asset$unload( &l_asset );
+            asset$destroy( &l_asset );
+        }
+
         {
             l_returnValue = load( _character, _renderer );
 
@@ -303,7 +359,7 @@ bool character_t$load( character_t* restrict _character,
                 watch_t l_watch = watch_t$create();
 
                 l_returnValue = watch_t$add$toPath(
-                    &l_watch, _character->folder, character_t$reload$element,
+                    &l_watch, _character->folder, character_t$reload,
                     _character, true );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
@@ -344,8 +400,6 @@ bool character_t$unload( character_t* restrict _character ) {
 
             goto EXIT;
         }
-
-        _character->movesObject.currentState = NULL;
 
 #if defined( DEBUG )
         // Watch
@@ -471,8 +525,7 @@ bool hotReload$load( void* restrict _state,
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
-                // TODO: Implement hot reload
-                *_element = NULL;
+                *_element = character_t$reload;
             }
         }
     }
