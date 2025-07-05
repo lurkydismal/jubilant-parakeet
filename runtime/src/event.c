@@ -168,40 +168,57 @@ bool event( applicationState_t* restrict _applicationState,
     }
 
     {
-        switch ( _event->type ) {
-            case SDL_EVENT_QUIT: {
-                _applicationState->status = true;
+        // TODO: Improve
+        if ( !_event ) {
+            l_returnValue = handleKeyboardState( _applicationState );
 
-                l_returnValue = false;
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Handling keyboard state" );
 
                 goto EXIT;
             }
 
-            case SDL_EVENT_WINDOW_RESIZED: {
-                const float l_newWidth = _event->window.data1;
-                const float l_newHeight = _event->window.data2;
+        } else {
+            switch ( _event->type ) {
+                case SDL_EVENT_QUIT: {
+                    _applicationState->status = true;
 
-                l_returnValue = onWindowResize( _applicationState, l_newWidth,
-                                                l_newHeight );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Handling window resize" );
+                    l_returnValue = false;
 
                     goto EXIT;
                 }
 
-                break;
-            }
+                case SDL_EVENT_WINDOW_RESIZED: {
+                    const float l_newWidth = _event->window.data1;
+                    const float l_newHeight = _event->window.data2;
 
-            default: {
-                l_returnValue = handleKeyboardState( _applicationState );
+                    l_returnValue = onWindowResize( _applicationState,
+                                                    l_newWidth, l_newHeight );
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    log$transaction$query( ( logLevel_t )error,
-                                           "Handling keyboard state" );
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Handling window resize" );
 
-                    goto EXIT;
+                        goto EXIT;
+                    }
+
+                    break;
+                }
+
+                case SDL_EVENT_KEY_DOWN:
+                case SDL_EVENT_KEY_UP: {
+                    l_returnValue = handleKeyboardState( _applicationState );
+
+                    if ( UNLIKELY( !l_returnValue ) ) {
+                        log$transaction$query( ( logLevel_t )error,
+                                               "Handling keyboard state" );
+
+                        goto EXIT;
+                    }
+                }
+
+                default: {
                 }
             }
         }

@@ -6,12 +6,38 @@
 #include "inputBuffer_t.h"
 #include "object_t.h"
 
-#define DEFAULT_PLAYER \
-    { .object = DEFAULT_OBJECT, .inputBuffer = DEFAULT_INPUT_BUFFER }
+#define DEFAULT_PLAYER                     \
+    { .object = DEFAULT_OBJECT,            \
+      .inputBuffer = DEFAULT_INPUT_BUFFER, \
+      .isGuardBroken = false,              \
+      .healthPointsMax = 10000,            \
+      .restorableHealthPointsMax = 10000,  \
+      .guardPointsMax = 1000,              \
+      .meterPointsMax = 100,               \
+      .healthPoints = 4321,                \
+      .restorableHealthPoints = 7654,      \
+      .guardPoints = 123,                  \
+      .meterPoints = 23,                   \
+      .name = NULL }
 
 typedef struct {
     object_t object;
     inputBuffer_t inputBuffer;
+
+    bool isGuardBroken;
+
+    size_t healthPointsMax;
+    size_t restorableHealthPointsMax;
+    size_t guardPointsMax;
+    float meterPointsMax;
+
+    size_t healthPoints;
+    size_t restorableHealthPoints;
+    size_t guardPoints;
+    float meterPoints;
+
+    // TODO: Implement
+    char* name;
 } player_t;
 
 player_t player_t$create( void );

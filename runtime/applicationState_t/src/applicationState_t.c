@@ -82,10 +82,22 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
             insertIntoArray( &( _applicationState->HUD->players ),
                              &( _applicationState->localPlayer ) );
 
+            // TODO
+            player_t newP = player_t$create();
+            newP.isGuardBroken = true;
+
+            insertIntoArray( &( _applicationState->remotePlayers ),
+                             clone( &newP ) );
+
             FOR_ARRAY( player_t* const*, _applicationState->remotePlayers ) {
                 insertIntoArray( &( _applicationState->HUD->players ),
-                                 _element );
+                                 *_element );
             }
+
+            _applicationState->HUD->logicalWidth =
+                _applicationState->logicalWidth;
+            _applicationState->HUD->logicalHeight =
+                _applicationState->logicalHeight;
         }
 
 #define TRY_LOAD_OR_EXIT( _field )                                            \

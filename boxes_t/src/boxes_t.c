@@ -1,8 +1,5 @@
 #include "boxes_t.h"
 
-#include "log.h"
-#include "stdfunc.h"
-
 boxes_t boxes_t$create( void ) {
     boxes_t l_returnValue = DEFAULT_BOXES;
 
@@ -584,26 +581,14 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
             goto EXIT;
         }
 
-        l_returnValue =
-            ( _boxes->currentFrame < arrayLength( _boxes->frames ) );
+        SDL_FRect** l_currentKeyFrames = boxes_t$currentKeyFrames$get( _boxes );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid boxex current frame" );
-
-            goto EXIT;
-        }
-
-        const size_t* l_boxesIndexes =
-            ( _boxes->frames[ _boxes->currentFrame ] );
-
-        FOR_ARRAY( const size_t*, l_boxesIndexes ) {
-            const SDL_FRect* l_boxRectangle = _boxes->keyFrames[ *_element ];
+        FOR_ARRAY( SDL_FRect* const*, l_currentKeyFrames ) {
             const SDL_FRect l_targetRectangle = {
-                .x = ( _targetRectangle->x + l_boxRectangle->x ),
-                .y = ( _targetRectangle->y + l_boxRectangle->y ),
-                .w = l_boxRectangle->w,
-                .h = l_boxRectangle->h };
+                .x = ( _targetRectangle->x + ( *_element )->x ),
+                .y = ( _targetRectangle->y + ( *_element )->y ),
+                .w = ( *_element )->w,
+                .h = ( *_element )->h };
 
             if ( _doFill ) {
                 l_returnValue =
@@ -614,7 +599,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
                         ( logLevel_t )error, "Render filled rectangle: '%s'",
                         SDL_GetError() );
 
-                    goto EXIT;
+                    break;
                 }
 
             } else {
@@ -625,9 +610,15 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
                                                   "Render rectangle: '%s'",
                                                   SDL_GetError() );
 
-                    goto EXIT;
+                    break;
                 }
             }
+        }
+
+        FREE_ARRAY( l_currentKeyFrames );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            goto EXIT;
         }
 
         l_returnValue = SDL_SetRenderDrawColor(

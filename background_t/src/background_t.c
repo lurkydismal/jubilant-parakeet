@@ -207,7 +207,7 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
                         l_pointer =
                             __builtin_stpcpy( l_pointer, l_background->folder );
                         l_pointer = __builtin_stpcpy( l_pointer, "/" );
-                        l_pointer = __builtin_stpcpy( l_pointer, _fileName );
+                        __builtin_stpcpy( l_pointer, _fileName );
                     }
 
                     if ( doesPathExist( l_filePath ) ) {

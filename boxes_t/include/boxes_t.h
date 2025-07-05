@@ -5,6 +5,8 @@
 
 #include "asset_t.h"
 #include "color_t.h"
+#include "log.h"
+#include "stdfunc.h"
 
 #define BOXES_FILE_EXTENSION "boxes"
 
@@ -20,6 +22,40 @@ typedef struct {
     size_t currentFrame;
     color_t color;
 } boxes_t;
+
+static FORCE_INLINE SDL_FRect** boxes_t$currentKeyFrames$get(
+    const boxes_t* _boxes ) {
+    SDL_FRect** l_returnValue = NULL;
+
+    if ( UNLIKELY( !_boxes ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        l_returnValue = createArray( SDL_FRect* );
+
+        if ( UNLIKELY( _boxes->currentFrame >=
+                       arrayLength( _boxes->frames ) ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Invalid boxex current frame" );
+
+            goto EXIT;
+        }
+
+        const size_t* l_boxesIndexes =
+            ( _boxes->frames[ _boxes->currentFrame ] );
+
+        FOR_ARRAY( const size_t*, l_boxesIndexes ) {
+            insertIntoArray( &l_returnValue,
+                             ( _boxes->keyFrames[ *_element ] ) );
+        }
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
 
 boxes_t boxes_t$create( void );
 bool boxes_t$destroy( boxes_t* restrict _boxes );

@@ -16,9 +16,9 @@ HUD_t HUD_t$create( void ) {
         l_returnValue.guardBars = createArray( object_t* );
         l_returnValue.brokenGuardBars = createArray( object_t* );
         l_returnValue.guardGauges = createArray( object_t* );
-        l_returnValue.restorableHpBars = createArray( object_t* );
-        l_returnValue.hpBars = createArray( object_t* );
-        l_returnValue.hpGauges = createArray( object_t* );
+        l_returnValue.restorableHealthBars = createArray( object_t* );
+        l_returnValue.healthBars = createArray( object_t* );
+        l_returnValue.healthGauges = createArray( object_t* );
         l_returnValue.logos = createArray( object_t* );
         l_returnValue.names = createArray( object_t* );
         l_returnValue.meterBars = createArray( object_t* );
@@ -58,14 +58,14 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
         FREE_ARRAY( _HUD->guardGauges );
         _HUD->guardGauges = NULL;
 
-        FREE_ARRAY( _HUD->restorableHpBars );
-        _HUD->restorableHpBars = NULL;
+        FREE_ARRAY( _HUD->restorableHealthBars );
+        _HUD->restorableHealthBars = NULL;
 
-        FREE_ARRAY( _HUD->hpBars );
-        _HUD->hpBars = NULL;
+        FREE_ARRAY( _HUD->healthBars );
+        _HUD->healthBars = NULL;
 
-        FREE_ARRAY( _HUD->hpGauges );
-        _HUD->hpGauges = NULL;
+        FREE_ARRAY( _HUD->healthGauges );
+        _HUD->healthGauges = NULL;
 
         FREE_ARRAY( _HUD->logos );
         _HUD->logos = NULL;
@@ -207,16 +207,41 @@ static FORCE_INLINE bool HUD_t$element$load$one(
         // World coordinates is the same as camera coordinates for HUD element
         // Define world/ camera coordinates
         {
-            const SDL_FRect* l_boxesKeyFramesFirstElement =
-                arrayFirstElement( _element->currentState->boxes.keyFrames );
+            SDL_FRect** l_boxesKeyFrames = boxes_t$currentKeyFrames$get(
+                &( _element->currentState->boxes ) );
 
-            _element->worldX = l_boxesKeyFramesFirstElement->x;
-            _element->worldXMin = l_boxesKeyFramesFirstElement->x;
-            _element->worldXMax = l_boxesKeyFramesFirstElement->x;
+            if ( UNLIKELY( !l_boxesKeyFrames ) ||
+                 UNLIKELY( !arrayLength( l_boxesKeyFrames ) ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Assigning HUD element position" );
 
-            _element->worldY = l_boxesKeyFramesFirstElement->y;
-            _element->worldYMin = l_boxesKeyFramesFirstElement->y;
-            _element->worldYMax = l_boxesKeyFramesFirstElement->y;
+                goto EXIT_ASSIGN;
+            }
+
+            const SDL_FRect* l_boxesKeyFrame =
+                arrayFirstElement( l_boxesKeyFrames );
+
+            const SDL_FRect* l_elementRectangle =
+                animation_t$currentTargetRectangle$get(
+                    &( _element->currentState->animation ) );
+
+            _element->worldX = l_boxesKeyFrame->x;
+            _element->worldXMin = l_boxesKeyFrame->x;
+            _element->worldXMax = ( _HUD->logicalWidth - l_elementRectangle->w -
+                                    l_boxesKeyFrame->x );
+
+            _element->worldY = l_boxesKeyFrame->y;
+            _element->worldYMin = l_boxesKeyFrame->y;
+            _element->worldYMax =
+                ( _HUD->logicalHeight - l_elementRectangle->h -
+                  l_boxesKeyFrame->y );
+
+        EXIT_ASSIGN:
+            FREE_ARRAY( l_boxesKeyFrames );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT;
+            }
         }
 
         l_returnValue = true;
@@ -293,7 +318,7 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
 
                     l_pointer = __builtin_stpcpy( l_pointer, l_HUD->folder );
                     l_pointer = __builtin_stpcpy( l_pointer, "/" );
-                    l_pointer = __builtin_stpcpy( l_pointer, _fileName );
+                    __builtin_stpcpy( l_pointer, _fileName );
                 }
 
                 if ( doesPathExist( l_filePath ) ) {
@@ -339,9 +364,9 @@ static FORCE_INLINE bool HUD_t$reload$element( void* _context,
             TRY_LOAD_MANY_OR_EXIT( guardBars );
             TRY_LOAD_MANY_OR_EXIT( brokenGuardBars );
             TRY_LOAD_MANY_OR_EXIT( guardGauges );
-            TRY_LOAD_MANY_OR_EXIT( restorableHpBars );
-            TRY_LOAD_MANY_OR_EXIT( hpBars );
-            TRY_LOAD_MANY_OR_EXIT( hpGauges );
+            TRY_LOAD_MANY_OR_EXIT( restorableHealthBars );
+            TRY_LOAD_MANY_OR_EXIT( healthBars );
+            TRY_LOAD_MANY_OR_EXIT( healthGauges );
             TRY_LOAD_MANY_OR_EXIT( logos );
             TRY_LOAD_MANY_OR_EXIT( names );
             TRY_LOAD_MANY_OR_EXIT( meterBars );
@@ -436,9 +461,9 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         TRY_LOAD_MANY_OR_EXIT( guardBars );
         TRY_LOAD_MANY_OR_EXIT( brokenGuardBars );
         TRY_LOAD_MANY_OR_EXIT( guardGauges );
-        TRY_LOAD_MANY_OR_EXIT( restorableHpBars );
-        TRY_LOAD_MANY_OR_EXIT( hpBars );
-        TRY_LOAD_MANY_OR_EXIT( hpGauges );
+        TRY_LOAD_MANY_OR_EXIT( restorableHealthBars );
+        TRY_LOAD_MANY_OR_EXIT( healthBars );
+        TRY_LOAD_MANY_OR_EXIT( healthGauges );
         TRY_LOAD_MANY_OR_EXIT( logos );
         TRY_LOAD_MANY_OR_EXIT( names );
         TRY_LOAD_MANY_OR_EXIT( meterBars );
@@ -525,9 +550,9 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
         REMOVE_STATES_AND_FREE_OR_EXIT( guardBars );
         REMOVE_STATES_AND_FREE_OR_EXIT( brokenGuardBars );
         REMOVE_STATES_AND_FREE_OR_EXIT( guardGauges );
-        REMOVE_STATES_AND_FREE_OR_EXIT( restorableHpBars );
-        REMOVE_STATES_AND_FREE_OR_EXIT( hpBars );
-        REMOVE_STATES_AND_FREE_OR_EXIT( hpGauges );
+        REMOVE_STATES_AND_FREE_OR_EXIT( restorableHealthBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( healthBars );
+        REMOVE_STATES_AND_FREE_OR_EXIT( healthGauges );
         REMOVE_STATES_AND_FREE_OR_EXIT( logos );
         REMOVE_STATES_AND_FREE_OR_EXIT( names );
         REMOVE_STATES_AND_FREE_OR_EXIT( meterBars );
@@ -604,9 +629,9 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
         STEP_OBJECTS_OR_EXIT( guardBars );
         STEP_OBJECTS_OR_EXIT( brokenGuardBars );
         STEP_OBJECTS_OR_EXIT( guardGauges );
-        STEP_OBJECTS_OR_EXIT( restorableHpBars );
-        STEP_OBJECTS_OR_EXIT( hpBars );
-        STEP_OBJECTS_OR_EXIT( hpGauges );
+        STEP_OBJECTS_OR_EXIT( restorableHealthBars );
+        STEP_OBJECTS_OR_EXIT( healthBars );
+        STEP_OBJECTS_OR_EXIT( healthGauges );
         STEP_OBJECTS_OR_EXIT( logos );
         STEP_OBJECTS_OR_EXIT( names );
         STEP_OBJECTS_OR_EXIT( meterBars );
@@ -648,15 +673,58 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         const SDL_FRect l_cameraRectangle = { .x = 0, .y = 0, .w = 0, .h = 0 };
         const bool l_doDrawBoxes = false;
 
-        // TODO: Implement
+#define RENDER_BARS_OR_EXIT( _name )                                           \
+    do {                                                                       \
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->_name##Bars ) ) {      \
+            typeof( *( _HUD->_name##Bars ) ) l_element =                       \
+                _HUD->_name##Bars[ _index ];                                   \
+            player_t* l_player = _HUD->players[ _index ];                      \
+            const float l_widthCurrent =                                       \
+                ( animation_t$currentTargetRectangle$get(                      \
+                      &( l_element->currentState->animation ) ) )              \
+                    ->w;                                                       \
+            ( animation_t$currentTargetRectangle$get(                          \
+                  &( l_element->currentState->animation ) ) )                  \
+                ->w = ( ( l_widthCurrent * l_player->_name##Points ) /         \
+                        l_player->_name##PointsMax );                          \
+            if ( _index % 2 ) {                                                \
+                const float l_widthMissing =                                   \
+                    ( l_widthCurrent -                                         \
+                      ( animation_t$currentTargetRectangle$get(                \
+                            &( l_element->currentState->animation ) ) )        \
+                          ->w );                                               \
+                const size_t l_worldXCurrent = l_element->worldX;              \
+                l_element->worldX = ( l_element->worldXMax + l_widthMissing ); \
+                l_returnValue = object_t$render$rotated(                       \
+                    l_element, 180, SDL_FLIP_VERTICAL, &l_cameraRectangle,     \
+                    l_doDrawBoxes );                                           \
+                l_element->worldX = l_worldXCurrent;                           \
+            } else {                                                           \
+                l_returnValue = object_t$render(                               \
+                    l_element, &l_cameraRectangle, l_doDrawBoxes );            \
+            }                                                                  \
+            ( animation_t$currentTargetRectangle$get(                          \
+                  &( l_element->currentState->animation ) ) )                  \
+                ->w = l_widthCurrent;                                          \
+            if ( UNLIKELY( !l_returnValue ) ) {                                \
+                log$transaction$query( ( logLevel_t )error,                    \
+                                       "Rendering " #_name " bars" );          \
+                goto EXIT;                                                     \
+            }                                                                  \
+        }                                                                      \
+    } while ( 0 )
+
 #define RENDER_OBJECTS_OR_EXIT( _field )                                    \
     do {                                                                    \
         FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->_field ) ) {        \
             typeof( *( _HUD->_field ) ) l_element = _HUD->_field[ _index ]; \
             if ( _index % 2 ) {                                             \
+                const size_t l_worldXCurrent = l_element->worldX;           \
+                l_element->worldX = l_element->worldXMax;                   \
                 l_returnValue = object_t$render$rotated(                    \
                     l_element, 180, SDL_FLIP_VERTICAL, &l_cameraRectangle,  \
                     l_doDrawBoxes );                                        \
+                l_element->worldX = l_worldXCurrent;                        \
             } else {                                                        \
                 l_returnValue = object_t$render(                            \
                     l_element, &l_cameraRectangle, l_doDrawBoxes );         \
@@ -669,22 +737,55 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         }                                                                   \
     } while ( 0 )
 
-        RENDER_OBJECTS_OR_EXIT( guardBars );
+        RENDER_BARS_OR_EXIT( guard );
 
-        if ( _HUD->isGuardBroken ) {
-            RENDER_OBJECTS_OR_EXIT( brokenGuardBars );
+        // Broken guard bars
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _HUD->brokenGuardBars ) ) {
+            {
+                const player_t* l_player = _HUD->players[ _index ];
+
+                if ( !( l_player->isGuardBroken ) ) {
+                    continue;
+                }
+            }
+
+            object_t* l_element = _HUD->brokenGuardBars[ _index ];
+
+            if ( _index % 2 ) {
+                const size_t l_worldXCurrent = l_element->worldX;
+
+                l_element->worldX = l_element->worldXMax;
+
+                l_returnValue = object_t$render$rotated(
+                    l_element, 180, SDL_FLIP_VERTICAL, &l_cameraRectangle,
+                    l_doDrawBoxes );
+
+                l_element->worldX = l_worldXCurrent;
+
+            } else {
+                l_returnValue = object_t$render( l_element, &l_cameraRectangle,
+                                                 l_doDrawBoxes );
+            }
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Rendering brokenGuard bars" );
+
+                goto EXIT;
+            }
         }
 
         RENDER_OBJECTS_OR_EXIT( guardGauges );
-        RENDER_OBJECTS_OR_EXIT( restorableHpBars );
-        RENDER_OBJECTS_OR_EXIT( hpBars );
-        RENDER_OBJECTS_OR_EXIT( hpGauges );
+        RENDER_BARS_OR_EXIT( restorableHealth );
+        RENDER_BARS_OR_EXIT( health );
+        RENDER_OBJECTS_OR_EXIT( healthGauges );
         RENDER_OBJECTS_OR_EXIT( logos );
         RENDER_OBJECTS_OR_EXIT( names );
-        RENDER_OBJECTS_OR_EXIT( meterBars );
+        RENDER_BARS_OR_EXIT( meter );
         RENDER_OBJECTS_OR_EXIT( meterGauges );
 
 #undef RENDER_OBJECTS_OR_EXIT
+#undef RENDER_BARS_OR_EXIT
 
 #define TRY_RENDER_OR_EXIT( _field )                                          \
     do {                                                                      \
