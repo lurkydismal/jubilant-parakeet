@@ -290,6 +290,8 @@ bool object_t$states$remove( object_t* restrict _object ) {
             }
         }
 
+        _object->currentState = NULL;
+
         l_returnValue = true;
     }
 

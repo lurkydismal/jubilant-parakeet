@@ -451,9 +451,10 @@ bool asset_t$unload( asset_t* restrict _asset ) {
     }
 
     {
-        free( _asset->data );
-
-        _asset->data = NULL;
+        if ( LIKELY( _asset->data ) ) {
+            free( _asset->data );
+            _asset->data = NULL;
+        }
 
         _asset->size = 0;
 
