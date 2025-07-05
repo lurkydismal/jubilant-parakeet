@@ -337,34 +337,8 @@ bool state_t$render( const state_t* restrict _state,
     }
 
     {
-        const boxes_t* l_targetBoxes = &( _state->animation.targetBoxes );
-
-        l_returnValue = ( l_targetBoxes->currentFrame <
-                          arrayLength( l_targetBoxes->frames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target boxes current frame" );
-
-            goto EXIT;
-        }
-
-        const size_t l_targetBoxesKeyFrameIndex = arrayFirstElement(
-            l_targetBoxes->frames[ l_targetBoxes->currentFrame ] );
-
-        l_returnValue = ( l_targetBoxesKeyFrameIndex <
-                          arrayLength( l_targetBoxes->keyFrames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target boxes key frame index" );
-
-            goto EXIT;
-        }
-
-        // Always single box
         const SDL_FRect* l_targetBox =
-            l_targetBoxes->keyFrames[ l_targetBoxesKeyFrameIndex ];
+            animation_t$currentTargetRectangle$get( &( _state->animation ) );
 
         const SDL_FRect l_targetRectangle = {
             ( _cameraRectangle->x + l_targetBox->x ),

@@ -3,9 +3,6 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3_image/SDL_image.h>
 
-#include "log.h"
-#include "stdfunc.h"
-
 animation_t animation_t$create( void ) {
     animation_t l_returnValue = DEFAULT_ANIMATION;
 
@@ -489,55 +486,26 @@ bool animation_t$render$rotated( const animation_t* restrict _animation,
     }
 
     {
-        const boxes_t* l_animationTargetBox = &( _animation->targetBoxes );
+        const SDL_FRect* l_targetRectangle =
+            animation_t$currentTargetRectangle$get( _animation );
 
-        l_returnValue = ( l_animationTargetBox->currentFrame <
-                          arrayLength( l_animationTargetBox->frames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target box current frame" );
-
+        if ( UNLIKELY( !l_targetRectangle ) ) {
             goto EXIT;
         }
-
-        // Always a single box
-        const SDL_FRect* l_animationFrameTargetRectangle =
-            l_animationTargetBox->keyFrames[ arrayFirstElement(
-                l_animationTargetBox
-                    ->frames[ l_animationTargetBox->currentFrame ] ) ];
 
         const SDL_FRect l_resolvedTargetRectangle = {
-            _targetRectangle->x, _targetRectangle->y,
-            l_animationFrameTargetRectangle->w,
-            l_animationFrameTargetRectangle->h };
+            _targetRectangle->x, _targetRectangle->y, l_targetRectangle->w,
+            l_targetRectangle->h };
 
-        l_returnValue =
-            ( _animation->currentFrame < arrayLength( _animation->frames ) );
+        SDL_Texture* l_keyFrame = animation_t$currentKeyFrame$get( _animation );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid animation current frame" );
-
+        if ( UNLIKELY( !l_keyFrame ) ) {
             goto EXIT;
         }
 
-        const size_t l_animationKeyFrameIndex =
-            _animation->frames[ _animation->currentFrame ];
-
-        l_returnValue =
-            ( l_animationKeyFrameIndex < arrayLength( _animation->keyFrames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid animation current frame" );
-
-            goto EXIT;
-        }
-
-        l_returnValue = SDL_RenderTextureRotated(
-            _renderer, _animation->keyFrames[ l_animationKeyFrameIndex ], NULL,
-            &l_resolvedTargetRectangle, _angle, NULL, _flipMode );
+        l_returnValue = SDL_RenderTextureRotated( _renderer, l_keyFrame, NULL,
+                                                  &l_resolvedTargetRectangle,
+                                                  _angle, NULL, _flipMode );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
@@ -578,55 +546,25 @@ bool animation_t$render( const animation_t* restrict _animation,
     }
 
     {
-        const boxes_t* l_animationTargetBox = &( _animation->targetBoxes );
+        const SDL_FRect* l_targetRectangle =
+            animation_t$currentTargetRectangle$get( _animation );
 
-        l_returnValue = ( l_animationTargetBox->currentFrame <
-                          arrayLength( l_animationTargetBox->frames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target box current frame" );
-
+        if ( UNLIKELY( !l_targetRectangle ) ) {
             goto EXIT;
         }
-
-        // Always a single box
-        const SDL_FRect* l_animationFrameTargetRectangle =
-            l_animationTargetBox->keyFrames[ arrayFirstElement(
-                l_animationTargetBox
-                    ->frames[ l_animationTargetBox->currentFrame ] ) ];
 
         const SDL_FRect l_resolvedTargetRectangle = {
-            _targetRectangle->x, _targetRectangle->y,
-            l_animationFrameTargetRectangle->w,
-            l_animationFrameTargetRectangle->h };
+            _targetRectangle->x, _targetRectangle->y, l_targetRectangle->w,
+            l_targetRectangle->h };
 
-        l_returnValue =
-            ( _animation->currentFrame < arrayLength( _animation->frames ) );
+        SDL_Texture* l_keyFrame = animation_t$currentKeyFrame$get( _animation );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid animation current frame" );
-
+        if ( UNLIKELY( !l_keyFrame ) ) {
             goto EXIT;
         }
 
-        const size_t l_animationKeyFrameIndex =
-            _animation->frames[ _animation->currentFrame ];
-
-        l_returnValue =
-            ( l_animationKeyFrameIndex < arrayLength( _animation->keyFrames ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid animation current frame" );
-
-            goto EXIT;
-        }
-
-        l_returnValue = SDL_RenderTexture(
-            _renderer, _animation->keyFrames[ l_animationKeyFrameIndex ], NULL,
-            &l_resolvedTargetRectangle );
+        l_returnValue = SDL_RenderTexture( _renderer, l_keyFrame, NULL,
+                                           &l_resolvedTargetRectangle );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,

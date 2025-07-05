@@ -10,16 +10,17 @@
     { .guardBars = NULL,                 \
       .brokenGuardBars = NULL,           \
       .guardGauges = NULL,               \
-      .hpBars = NULL,                    \
-      .restorableHpBars = NULL,          \
-      .hpGauges = NULL,                  \
+      .healthBars = NULL,                \
+      .restorableHealthBars = NULL,      \
+      .healthGauges = NULL,              \
       .logos = NULL,                     \
       .names = NULL,                     \
       .meterBars = NULL,                 \
       .meterGauges = NULL,               \
       .timer = DEFAULT_OBJECT,           \
       .timerBackground = DEFAULT_OBJECT, \
-      .isGuardBroken = false,            \
+      .logicalWidth = 0,                 \
+      .logicalHeight = 0,                \
       .name = NULL,                      \
       .folder = NULL,                    \
       .extension = NULL,                 \
@@ -29,9 +30,9 @@ typedef struct {
     object_t** guardBars;
     object_t** brokenGuardBars;
     object_t** guardGauges;
-    object_t** hpBars;
-    object_t** restorableHpBars;
-    object_t** hpGauges;
+    object_t** healthBars;
+    object_t** restorableHealthBars;
+    object_t** healthGauges;
     object_t** logos;
     object_t** names;
     object_t** meterBars;
@@ -39,7 +40,8 @@ typedef struct {
     object_t timerBackground;
     object_t timer;
 
-    bool isGuardBroken;
+    size_t logicalWidth;
+    size_t logicalHeight;
 
     char* name;
     char* folder;
