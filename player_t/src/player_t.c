@@ -43,6 +43,21 @@ bool player_t$destroy( player_t* restrict _player ) {
             goto EXIT;
         }
 
+        _player->isGuardBroken = NULL;
+        _player->healthPointsMax = NULL;
+        _player->restorableHealthPointsMax = NULL;
+        _player->guardPointsMax = NULL;
+        _player->meterPointsMax = NULL;
+        _player->healthPoints = NULL;
+        _player->restorableHealthPoints = NULL;
+        _player->guardPoints = NULL;
+        _player->meterPoints = NULL;
+
+        if ( LIKELY( _player->name ) ) {
+            free( _player->name );
+            _player->name = NULL;
+        }
+
         l_returnValue = true;
     }
 
@@ -197,7 +212,7 @@ bool player_t$load( player_t* restrict _player, SDL_Renderer* _renderer ) {
         l_returnValue = character_t$load( &( _player->character ), _renderer );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Loading player" );
+            log$transaction$query( ( logLevel_t )error, "Loading character" );
 
             goto EXIT;
         }
@@ -222,7 +237,7 @@ bool player_t$unload( player_t* restrict _player ) {
         l_returnValue = character_t$unload( &( _player->character ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Unloading player" );
+            log$transaction$query( ( logLevel_t )error, "Unloading character" );
 
             goto EXIT;
         }
@@ -247,7 +262,7 @@ bool player_t$step( player_t* restrict _player ) {
         l_returnValue = character_t$step( &( _player->character ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping player" );
+            log$transaction$query( ( logLevel_t )error, "Stepping character" );
 
             goto EXIT;
         }
@@ -281,7 +296,7 @@ bool player_t$render( const player_t* restrict _player,
                                             _cameraRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Rendering player" );
+            log$transaction$query( ( logLevel_t )error, "Rendering character" );
 
             goto EXIT;
         }

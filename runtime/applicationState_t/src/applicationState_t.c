@@ -85,7 +85,7 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
 
             // TODO
             player_t newP = player_t$create();
-            newP.isGuardBroken = true;
+            *( newP.isGuardBroken ) = true;
 
             insertIntoArray( &( _applicationState->remotePlayers ),
                              clone( &newP ) );

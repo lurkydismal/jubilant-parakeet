@@ -132,11 +132,10 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool background_t$reload(
-    void* restrict _context,
-    const char* restrict _fileName,
-    size_t _eventMask,
-    uint32_t _cookie ) {
+static FORCE_INLINE bool background_t$reload( void* restrict _context,
+                                              const char* restrict _fileName,
+                                              size_t _eventMask,
+                                              uint32_t _cookie ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_context ) ) {

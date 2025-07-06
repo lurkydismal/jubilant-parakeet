@@ -252,9 +252,9 @@ EXIT:
 }
 
 static FORCE_INLINE bool HUD_t$reload( void* restrict _context,
-                                               const char* restrict _fileName,
-                                               size_t _eventMask,
-                                               uint32_t _cookie ) {
+                                       const char* restrict _fileName,
+                                       size_t _eventMask,
+                                       uint32_t _cookie ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_context ) ) {
@@ -492,8 +492,8 @@ bool HUD_t$load( HUD_t* restrict _HUD, SDL_Renderer* _renderer ) {
         {
             watch_t l_watch = watch_t$create();
 
-            l_returnValue = watch_t$add$toPath(
-                &l_watch, _HUD->folder, HUD_t$reload, _HUD, true );
+            l_returnValue = watch_t$add$toPath( &l_watch, _HUD->folder,
+                                                HUD_t$reload, _HUD, true );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -690,8 +690,8 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
                     ->w;                                                       \
             ( animation_t$currentTargetRectangle$get(                          \
                   &( l_element->currentState->animation ) ) )                  \
-                ->w = ( ( l_widthCurrent * l_player->_name##Points ) /         \
-                        l_player->_name##PointsMax );                          \
+                ->w = ( ( l_widthCurrent * *( l_player->_name##Points ) ) /    \
+                        *( l_player->_name##PointsMax ) );                     \
             if ( _index % 2 ) {                                                \
                 const float l_widthMissing =                                   \
                     ( l_widthCurrent -                                         \
@@ -749,7 +749,7 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
             {
                 const player_t* l_player = _HUD->players[ _index ];
 
-                if ( !( l_player->isGuardBroken ) ) {
+                if ( !( *( l_player->isGuardBroken ) ) ) {
                     continue;
                 }
             }

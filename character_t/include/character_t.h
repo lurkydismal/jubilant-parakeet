@@ -13,7 +13,15 @@
         .moveNames = NULL,             \
         .moves = NULL,                 \
         .displayName = NULL,           \
-        .healthPoints = 0,             \
+        .isGuardBroken = false,              \
+        .healthPointsMax = 0,            \
+        .restorableHealthPointsMax = 0,  \
+        .guardPointsMax = 0,              \
+        .meterPointsMax = 0,               \
+        .healthPoints = 0,                \
+        .restorableHealthPoints = 0,      \
+        .guardPoints = 0,                  \
+        .meterPoints = 0,                   \
         .walkSpeed = 0,                \
         .jumpHeight = 0,               \
         .name = NULL,                  \
@@ -22,7 +30,7 @@
     }
 
 typedef struct {
-    size_t type;
+    char* type;
     input_t input;
     float* velocity;
     size_t** cancelWindows;
@@ -39,7 +47,18 @@ typedef struct {
     move_t** moves;
 
     char* displayName;
+
+    bool isGuardBroken;
+
+    size_t healthPointsMax;
+    size_t restorableHealthPointsMax;
+    size_t guardPointsMax;
+    float meterPointsMax;
+
     size_t healthPoints;
+    size_t restorableHealthPoints;
+    size_t guardPoints;
+    float meterPoints;
     float walkSpeed;
     float jumpHeight;
 
