@@ -4,6 +4,7 @@
 
 #include "log.h"
 #include "stdfunc.h"
+#include "asset_t.h"
 
 #if defined( HOT_RELOAD )
 
@@ -146,7 +147,7 @@ EXIT:
 }
 
 // TODO
-static FORCE_INLINE bool character_t$reload$element(
+static FORCE_INLINE bool character_t$reload(
     void* restrict _context,
     const char* restrict _fileName,
     size_t _eventMask,
@@ -274,6 +275,44 @@ EXIT:
     return ( l_returnValue );
 }
 
+move_t* parseMoves(const cJSON* root) {
+    for (size_t i = 0; i < count; ++i) {
+        // — velocity (float[2])
+
+        // — cancelWindows (array of [start,end])
+        cJSON* cw = cJSON_GetObjectItemCaseSensitive(l_move, "cancelWindows");
+        if (cJSON_IsArray(cw)) {
+            cJSON* pair = NULL;
+            cJSON_ArrayForEach(pair, cw) {
+                if (cJSON_IsArray(pair) && cJSON_GetArraySize(pair) == 2) {
+                    size_t* range = malloc(2 * sizeof(size_t));
+                    range[0] = (size_t)cJSON_GetArrayItem(pair,0)->valueint;
+                    range[1] = (size_t)cJSON_GetArrayItem(pair,1)->valueint;
+                    insertIntoArray(&m->cancelWindows, range);
+                }
+            }
+        }
+
+        // — startup / active / recovery
+        JSON_SET_AS(l_move, "startup",  m->startup);
+        JSON_SET_AS(l_move, "active",   m->active);
+        JSON_SET_AS(l_move, "recovery", m->recovery);
+
+        // — cancelInto (array of strings → IDs)
+        cJSON* ci = cJSON_GetObjectItemCaseSensitive(l_move, "cancelInto");
+        if (cJSON_IsArray(ci)) {
+            cJSON* entry = NULL;
+            cJSON_ArrayForEach(entry, ci) {
+                if (cJSON_IsString(entry)) {
+                    size_t id = convertTypeStringToID(entry->valuestring);
+                    insertIntoArray(&m->cancelInto, id);
+                }
+            }
+        }
+    }
+    return moves;
+}
+
 // TODO
 bool character_t$load( character_t* restrict _character,
                        SDL_Renderer* _renderer ) {
@@ -299,48 +338,75 @@ bool character_t$load( character_t* restrict _character,
 
         // Parse information
         {
-            asset_t l_asset = asset_t$create();
-            asset_t$load( &l_asset, "roa/info.json" );
+#define JSON_GET_AS(_root, _field, _type) \
+    ({ \
+        cJSON* _item = cJSON_GetObjectItemCaseSensitive((_root), (_field)); \
+        _Generic(((_type)0), \
+            int:    ((_item && cJSON_IsNumber(_item)) ? (_item->valueint) : (0)), \
+            double: ((_item && cJSON_IsNumber(_item)) ? (_item->valuedouble) : (0.0)), \
+            float: ((_item && cJSON_IsNumber(_item)) ? (_item->valuedouble) : (0.0)), \
+            char*:  ((_item && cJSON_IsString(_item)) ? (_item->valuestring) : (NULL)) \
+        ); \
+    })
 
-            cJSON* l_root = cJSON_Parse(l_asset->data);
+#define JSON_SET_AS( _root, _field, _variable ) do { \
+    (_variable) = JSON_GET_AS( _root, _field, typeof( _variable ) );\
+} while (0)
+
+            asset_t l_asset = asset_t$create();
+            asset_t$load$fromPath( &l_asset, "roa/roa.json" );
+
+            cJSON* l_root = cJSON_Parse((char*)(l_asset.data));
 
             {
-                cJSON* l_name = cJSON_GetObjectItemCaseSensitive(l_root, "name");
-                cJSON* l_startup = cJSON_GetObjectItemCaseSensitive(l_root, "startup");
-                cJSON* l_active = cJSON_GetObjectItemCaseSensitive(l_root, "active");
-                cJSON* l_recovery = cJSON_GetObjectItemCaseSensitive(l_root, "recovery");
-                cJSON* l_cancelWindow = cJSON_GetObjectItemCaseSensitive(l_root, "cancelWindow");
-
-                if (!cJSON_IsString(l_name) ||
-                        !cJSON_IsNumber(l_startup) ||
-                        !cJSON_IsNumber(l_active) ||
-                        !cJSON_IsNumber(l_recovery) ||
-                        !cJSON_IsArray(l_cancelWindow)) {
-                    cJSON_Delete(l_root);
-                    return false;
+                // Character characteristics
+                {
+                    JSON_SET_AS(l_root, "displayName", _character->displayName);
+                    JSON_SET_AS( l_root, "healthPoints", _character->healthPointsMax );
+                    JSON_SET_AS( l_root, "guardPoints", _character->guardPointsMax );
+                    JSON_SET_AS( l_root, "meterPoints", _character->meterPointsMax );
+                    JSON_SET_AS( l_root, "walkSpeed", _character->walkSpeed );
+                    JSON_SET_AS( l_root, "jumpHeight", _character->jumpHeight );
                 }
 
-                _outMove->name = strdup(l_name->valuestring);
-                _outMove->startup = l_startup->valueint;
-                _outMove->active = l_active->valueint;
-                _outMove->recovery = l_recovery->valueint;
+                // Moves
+                {
+                    move_t* moves = parseMoves( l_root );
 
-                cJSON* l_start = cJSON_GetArrayItem(l_cancelWindow, 0);
-                cJSON* l_end = cJSON_GetArrayItem(l_cancelWindow, 1);
+                    cJSON* l_moves = cJSON_GetObjectItemCaseSensitive(l_root, "moves");
 
-                if (!cJSON_IsNumber(l_start) || !cJSON_IsNumber(l_end)) {
-                    cJSON_Delete(l_root);
-                    return false;
+                    if (UNLIKELY(!cJSON_IsArray(l_moves))) {
+                        goto EXIT;
+                    }
+
+                    FOR_RANGE( int, 0, cJSON_GetArraySize(l_moves) ) {
+                        cJSON* l_move = cJSON_GetArrayItem(l_moves, i);
+
+                        if (UNLIKELY(!cJSON_IsObject(l_move))) {
+                            continue;
+                        }
+
+                        JSON_SET_AS(l_move, "type",  move->type);
+                        move->input = parseInputString(JSON_GET_AS(l_move, "input", char*));
+
+                        cJSON* vel = cJSON_GetObjectItemCaseSensitive(l_move, "velocity");
+
+                        if (cJSON_IsArray(vel) && cJSON_GetArraySize(vel) == 2) {
+                            m->velocity = malloc(2 * sizeof(float));
+                            m->velocity[0] = (float)cJSON_GetArrayItem(vel, 0)->valuedouble;
+                            m->velocity[1] = (float)cJSON_GetArrayItem(vel, 1)->valuedouble;
+                        }
+                    }
                 }
-
-                _outMove->cancelStart = l_start->valueint;
-                _outMove->cancelEnd = l_end->valueint;
             }
 
             cJSON_Delete(l_root);
 
-            asset$unload( &l_asset );
-            asset$destroy( &l_asset );
+            asset_t$unload( &l_asset );
+            asset_t$destroy( &l_asset );
+
+#undef JSON_SET_AS
+#undef JSON_GET_AS
         }
 
         {

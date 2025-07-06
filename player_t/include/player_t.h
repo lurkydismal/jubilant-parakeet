@@ -10,15 +10,15 @@
     {                                        \
         .character = DEFAULT_CHARACTER,      \
         .inputBuffer = DEFAULT_INPUT_BUFFER, \
-        .isGuardBroken = false,              \
-        .healthPointsMax = 10000,            \
-        .restorableHealthPointsMax = 10000,  \
-        .guardPointsMax = 1000,              \
-        .meterPointsMax = 100,               \
-        .healthPoints = 4321,                \
-        .restorableHealthPoints = 7654,      \
-        .guardPoints = 123,                  \
-        .meterPoints = 23,                   \
+        .isGuardBroken = NULL,               \
+        .healthPointsMax = NULL,             \
+        .restorableHealthPointsMax = NULL,   \
+        .guardPointsMax = NULL,              \
+        .meterPointsMax = NULL,              \
+        .healthPoints = NULL,                \
+        .restorableHealthPoints = NULL,      \
+        .guardPoints = NULL,                 \
+        .meterPoints = NULL,                 \
         .name = NULL,                        \
     }
 
@@ -26,17 +26,17 @@ typedef struct {
     character_t character;
     inputBuffer_t inputBuffer;
 
-    bool isGuardBroken;
+    bool* isGuardBroken;
 
-    size_t healthPointsMax;
-    size_t restorableHealthPointsMax;
-    size_t guardPointsMax;
-    float meterPointsMax;
+    size_t* healthPointsMax;
+    size_t* restorableHealthPointsMax;
+    size_t* guardPointsMax;
+    float* meterPointsMax;
 
-    size_t healthPoints;
-    size_t restorableHealthPoints;
-    size_t guardPoints;
-    float meterPoints;
+    size_t* healthPoints;
+    size_t* restorableHealthPoints;
+    size_t* guardPoints;
+    float* meterPoints;
 
     // TODO: Implement
     char* name;
