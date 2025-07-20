@@ -23,7 +23,7 @@ export BUILD_C_FLAGS_RELEASE="-fprofile-instr-use -O3 -ffast-math -funroll-loops
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
-export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -Wno-enum-enum-conversion -Wno-deprecated"
+export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -fno-rtti -fno-exceptions -fno-unwind-tables -fno-threadsafe-statics -Wno-enum-enum-conversion -Wno-deprecated -Wno-c99-designator -Wno-missing-field-initializers"
 export BUILD_CPP_FLAGS_DEBUG="$BUILD_C_FLAGS_DEBUG"
 export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE"
 export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE"
@@ -62,6 +62,7 @@ export declare BUILD_DEFINES_HOT_RELOAD=(
 )
 
 export declare BUILD_INCLUDES=(
+    "gameStates/include"
     "runtime/include"
     "runtime/applicationState_t/include"
     "controls_t/include"
@@ -121,6 +122,11 @@ if [ ! -z "${DISABLE_OPTIMIZATIONS+x}" ]; then
     BUILD_C_FLAGS_RELEASE+=" -O0"
     BUILD_C_FLAGS_PROFILE+=" -O0"
     BUILD_C_FLAGS_TESTS+=" -O0"
+
+    BUILD_CPP_FLAGS_DEBUG+=" -O0"
+    BUILD_CPP_FLAGS_RELEASE+=" -O0"
+    BUILD_CPP_FLAGS_PROFILE+=" -O0"
+    BUILD_CPP_FLAGS_TESTS+=" -O0"
 fi
 
 if [ ! -z "${ENABLE_MUSL+x}" ]; then
@@ -144,6 +150,7 @@ if [ -z "${DISABLE_CLANG+x}" ]; then
     CPP_COMPILER="clang++"
 
     BUILD_C_FLAGS+=" -Wno-c23-extensions -Wno-gnu-folding-constant"
+    BUILD_CPP_FLAGS+=" -Wno-c23-extensions -Wno-gnu-folding-constant"
 
     # Debug or Tests
     if [ $BUILD_TYPE -eq 0 ] || [ $BUILD_TYPE -eq 3 ]; then

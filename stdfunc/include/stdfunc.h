@@ -19,6 +19,8 @@
 #include <unistd.h>
 #include <xxhash.h>
 
+#include "cpp_compatibility.h"
+
 // Function attributes
 #define FORCE_INLINE __attribute__( ( always_inline ) ) inline
 #define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
@@ -426,9 +428,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-size_t concatBeforeAndAfterString( char* restrict* restrict _string,
-                                   const char* restrict _beforeString,
-                                   const char* restrict _afterString );
+EXPORT size_t concatBeforeAndAfterString( char* restrict* restrict _string,
+                                          const char* restrict _beforeString,
+                                          const char* restrict _afterString );
 char* sanitizeString( const char* restrict _string );
 char** splitStringIntoArray( const char* restrict _string,
                              const char* restrict _delimiter );
@@ -441,6 +443,17 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
             ( arrayLength_t* )malloc( sizeof( arrayLength_t ) ); \
         *l_array = ( arrayLength_t )0;                           \
         ( _elementType* )( l_array + 1 );                        \
+    } )
+
+#define createArrayFromNative( _arrayNative )                            \
+    ( {                                                                  \
+        typeof( *_arrayNative )* l_array =                               \
+            createArray( typeof( *_arrayNative ) );                      \
+        preallocateArray( &l_array, arrayLengthNative( _arrayNative ) ); \
+        __builtin_memcpy( l_array, _arrayNative,                         \
+                          ( arrayLengthNative( _arrayNative ) *          \
+                            sizeof( typeof( *_arrayNative ) ) ) );       \
+        ( l_array );                                                     \
     } )
 
 #define preallocateArray( _array, _length )                                    \

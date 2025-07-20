@@ -2,9 +2,7 @@
 <!-- :toc-title: -->
 <!-- :toclevels: 99 -->
 
-# fgengine <!-- omit from toc -->
-
-<!-- Codacy bagde -->
+# jubilant-parakeet <!-- omit from toc -->
 
 > Outline a brief description of your project.
 > Live demo [_here_](https://www.example.com). <!-- If you have the project hosted somewhere, include the link here. -->
