@@ -18,8 +18,8 @@
         .names = NULL,                     \
         .meterBars = NULL,                 \
         .meterGauges = NULL,               \
-        .timer = DEFAULT_OBJECT,           \
         .timerBackground = DEFAULT_OBJECT, \
+        .timer = DEFAULT_OBJECT,           \
         .logicalWidth = 0,                 \
         .logicalHeight = 0,                \
         .name = NULL,                      \

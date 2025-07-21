@@ -24,6 +24,8 @@
 // Function attributes
 #define FORCE_INLINE __attribute__( ( always_inline ) ) inline
 #define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
+#define DEPRECATED( ... ) \
+    __attribute__( ( deprecated __VA_OPT__( ( __VA_ARGS__ ) ) ) )
 #define NO_RETURN __attribute__( ( noreturn ) )
 #define CONST __attribute__( ( const ) )
 #define PURE __attribute__( ( pure ) )
@@ -704,9 +706,9 @@ EXIT:
     va_end( l_arguments );
 }
 
-#define iterateTopMostFields( _type, _callback, _context )                   \
-    do {                                                                     \
-        _type l_structSample = { 0 };                                        \
-        __builtin_dump_struct( &l_structSample, dumpCallback, ( _callback ), \
-                               ( _context ) );                               \
+#define iterateTopMostFields( _type, _callback, _context )             \
+    do {                                                               \
+        _type l_structSample = { 0 };                                  \
+        __builtin_dump_struct( &l_structSample, dumpCallback,          \
+                               ( void* )( _callback ), ( _context ) ); \
     } while ( 0 )

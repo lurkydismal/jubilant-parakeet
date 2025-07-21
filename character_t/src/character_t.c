@@ -120,9 +120,12 @@ static FORCE_INLINE bool load( character_t* restrict _character,
                                             _character->folder, NULL );
             }
 
+            char* l_stateName = ( char* )__builtin_alloca( 1 * sizeof( char ) );
+            l_stateName[ 0 ] = '\0';
+
             l_returnValue = object_t$state$add$fromGlob(
                 &( _character->movesObject ), _renderer, l_boxesGlob,
-                l_animationGlob, "", false, true );
+                l_animationGlob, l_stateName, false, true );
 
             free( l_boxesGlob );
             free( l_animationGlob );
@@ -570,7 +573,7 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** restrict _state,
+EXPORT bool hotReload$unload( void** restrict _state,
                        size_t* restrict _stateSize,
                        applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
@@ -590,7 +593,7 @@ bool hotReload$unload( void** restrict _state,
     return ( true );
 }
 
-bool hotReload$load( void* restrict _state,
+EXPORT bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
                      applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
