@@ -19,7 +19,7 @@ static size_t g_currentFramesPerSecond = 0;
 static size_t* g_totalFramesPassed = NULL;
 
 static void* FPS$count( void* _data ) {
-    ( void )( sizeof( _data ) );
+    UNUSED( _data );
 
     const struct timespec l_sleepTime = {
         .tv_sec = 1,
@@ -85,15 +85,17 @@ bool FPS$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        log$transaction$query( ( logLevel_t )error, "No total frames passed" );
+        log$transaction$query( ( logLevel_t )error, "Not initialized" );
 
         goto EXIT;
     }
 
     {
-        g_shouldFPSCountThreadWork = false;
+        if ( LIKELY( g_shouldFPSCountThreadWork ) ) {
+            g_shouldFPSCountThreadWork = false;
 
-        pthread_join( g_FPSCountThread, NULL );
+            pthread_join( g_FPSCountThread, NULL );
+        }
 
         g_currentFramesPerSecond = 0;
 

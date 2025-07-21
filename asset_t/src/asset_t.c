@@ -1,10 +1,12 @@
-#include "asset_t.h"
+#include <pthread.h>
+#undef clone
 
 #include <fcntl.h>
 #include <snappy-c.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "asset_t.h"
 #include "log.h"
 
 #if defined( HOT_RELOAD )
@@ -13,7 +15,72 @@
 
 #endif
 
+#define MAX_REQUESTS 1000
+
+struct saveRequest {
+    asset_t* asset;
+    char* path;
+    bool needTruncate;
+};
+
 static char* g_assetsDirectory = NULL;
+static pthread_t g_assetSaveQueueResolveThread;
+static bool g_shouldAssetSaveQueueResolveThreadWork = false;
+static struct saveRequest g_saveQueue[ MAX_REQUESTS ];
+static size_t g_saveQueueLength = 0;
+static pthread_mutex_t g_saveQueueMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t g_saveQueueCondition = PTHREAD_COND_INITIALIZER;
+
+static void* asset_t$saveQueue$resolve( void* _data ) {
+    UNUSED( _data );
+
+    for ( ;; ) {
+        struct saveRequest l_saveRequest = { 0 };
+
+        {
+            pthread_mutex_lock( &g_saveQueueMutex );
+
+            while ( !g_saveQueueLength &&
+                    LIKELY( g_shouldAssetSaveQueueResolveThreadWork ) ) {
+                pthread_cond_wait( &g_saveQueueCondition, &g_saveQueueMutex );
+            }
+
+            if ( UNLIKELY( !g_shouldAssetSaveQueueResolveThreadWork ) &&
+                 !g_saveQueueLength ) {
+                pthread_mutex_unlock( &g_saveQueueMutex );
+
+                break;
+            }
+
+            // Copy request locally to process without holding lock
+            l_saveRequest = g_saveQueue[ 0 ];
+
+            // Move the reft of queue
+            __builtin_memmove(
+                &( g_saveQueue[ 0 ] ), &( g_saveQueue[ 1 ] ),
+                ( ( g_saveQueueLength - 1 ) * sizeof( struct saveRequest ) ) );
+
+            g_saveQueueLength--;
+
+            pthread_mutex_unlock( &g_saveQueueMutex );
+        }
+
+        {
+            const bool l_result = asset_t$save$sync$toPath(
+                l_saveRequest.asset, l_saveRequest.path,
+                l_saveRequest.needTruncate );
+
+            if ( UNLIKELY( !l_result ) ) {
+                log$transaction$query$format(
+                    ( logLevel_t )error,
+                    "Saving asset of size %zu to path: '%s'",
+                    l_saveRequest.asset->size, l_saveRequest.path );
+            }
+        }
+    }
+
+    return ( NULL );
+}
 
 bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
     bool l_returnValue = false;
@@ -44,6 +111,22 @@ bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
 
         g_assetsDirectory = l_assetsDirectory;
 
+        g_shouldAssetSaveQueueResolveThreadWork = true;
+
+        if ( UNLIKELY( pthread_create( &g_assetSaveQueueResolveThread, NULL,
+                                       asset_t$saveQueue$resolve, NULL ) ) ) {
+            log$transaction$query$format(
+                ( logLevel_t )error,
+                "%d: Insufficient resources to create another thread, or a "
+                "system-imposed limit on the number of threads was "
+                "encountered",
+                EAGAIN );
+
+            asset_t$loader$quit();
+
+            goto EXIT;
+        }
+
         l_returnValue = true;
     }
 
@@ -61,6 +144,18 @@ bool asset_t$loader$quit( void ) {
     }
 
     {
+        if ( LIKELY( g_shouldAssetSaveQueueResolveThreadWork ) ) {
+            pthread_mutex_lock( &g_saveQueueMutex );
+
+            g_shouldAssetSaveQueueResolveThreadWork = false;
+
+            pthread_cond_signal( &g_saveQueueCondition );
+
+            pthread_mutex_unlock( &g_saveQueueMutex );
+
+            pthread_join( g_assetSaveQueueResolveThread, NULL );
+        }
+
         free( g_assetsDirectory );
 
         g_assetsDirectory = NULL;
@@ -660,7 +755,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 bool asset_t$save$async$toPath( asset_t* restrict _asset,
                                 const char* restrict _path,
                                 const bool _needTruncate ) {
@@ -685,14 +779,35 @@ bool asset_t$save$async$toPath( asset_t* restrict _asset,
     }
 
     {
-        l_returnValue =
-            asset_t$save$sync$toPath( _asset, _path, _needTruncate );
+        {
+            pthread_mutex_lock( &g_saveQueueMutex );
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Saving asset to path" );
+            if ( g_saveQueueLength >= MAX_REQUESTS ) {
+                log$transaction$query( ( logLevel_t )error, "TODO\n" );
 
-            goto EXIT;
+                pthread_mutex_unlock( &g_saveQueueMutex );
+
+                goto EXIT;
+            }
+
+            asset_t l_asset = asset_t$create();
+
+            l_asset.data = ( uint8_t* )malloc( _asset->size );
+            __builtin_memcpy( l_asset.data, _asset->data, _asset->size );
+            l_asset.size = _asset->size;
+
+            struct saveRequest l_saveRequest = {
+                .asset = clone( &l_asset ),
+                .path = duplicateString( _path ),
+                .needTruncate = _needTruncate,
+            };
+
+            g_saveQueue[ g_saveQueueLength ] = l_saveRequest;
+
+            g_saveQueueLength++;
+
+            pthread_cond_signal( &g_saveQueueCondition );
+            pthread_mutex_unlock( &g_saveQueueMutex );
         }
 
         l_returnValue = true;
@@ -709,7 +824,7 @@ const char* asset_t$loader$assetsDirectory$get( void ) {
 
         trap();
 
-        return ( "" );
+        return ( "/tmp/" );
     }
 
     return ( g_assetsDirectory );

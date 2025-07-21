@@ -186,9 +186,12 @@ static FORCE_INLINE bool HUD_t$element$load$one(
                 concatBeforeAndAfterString( &l_animationGlob, l_folder, NULL );
             }
 
-            l_returnValue =
-                object_t$state$add$fromGlob( _element, _renderer, l_boxesGlbb,
-                                             l_animationGlob, "", false, true );
+            char* l_stateName = ( char* )__builtin_alloca( 1 * sizeof( char ) );
+            l_stateName[ 0 ] = '\0';
+
+            l_returnValue = object_t$state$add$fromGlob(
+                _element, _renderer, l_boxesGlbb, l_animationGlob, l_stateName,
+                false, true );
 
             free( l_boxesGlbb );
             free( l_animationGlob );
@@ -218,23 +221,26 @@ static FORCE_INLINE bool HUD_t$element$load$one(
                 goto EXIT_ASSIGN;
             }
 
-            const SDL_FRect* l_boxesKeyFrame =
-                arrayFirstElement( l_boxesKeyFrames );
+            {
+                const SDL_FRect* l_boxesKeyFrame =
+                    arrayFirstElement( l_boxesKeyFrames );
 
-            const SDL_FRect* l_elementRectangle =
-                animation_t$currentTargetRectangle$get(
-                    &( _element->currentState->animation ) );
+                const SDL_FRect* l_elementRectangle =
+                    animation_t$currentTargetRectangle$get(
+                        &( _element->currentState->animation ) );
 
-            _element->worldX = l_boxesKeyFrame->x;
-            _element->worldXMin = l_boxesKeyFrame->x;
-            _element->worldXMax = ( _HUD->logicalWidth - l_elementRectangle->w -
-                                    l_boxesKeyFrame->x );
+                _element->worldX = l_boxesKeyFrame->x;
+                _element->worldXMin = l_boxesKeyFrame->x;
+                _element->worldXMax =
+                    ( _HUD->logicalWidth - l_elementRectangle->w -
+                      l_boxesKeyFrame->x );
 
-            _element->worldY = l_boxesKeyFrame->y;
-            _element->worldYMin = l_boxesKeyFrame->y;
-            _element->worldYMax =
-                ( _HUD->logicalHeight - l_elementRectangle->h -
-                  l_boxesKeyFrame->y );
+                _element->worldY = l_boxesKeyFrame->y;
+                _element->worldYMin = l_boxesKeyFrame->y;
+                _element->worldYMax =
+                    ( _HUD->logicalHeight - l_elementRectangle->h -
+                      l_boxesKeyFrame->y );
+            }
 
         EXIT_ASSIGN:
             FREE_ARRAY( l_boxesKeyFrames );
@@ -817,7 +823,7 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** restrict _state,
+EXPORT bool hotReload$unload( void** restrict _state,
                        size_t* restrict _stateSize,
                        applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
@@ -837,7 +843,7 @@ bool hotReload$unload( void** restrict _state,
     return ( true );
 }
 
-bool hotReload$load( void* restrict _state,
+EXPORT bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
                      applicationState_t* restrict _applicationState ) {
     UNUSED( _state );

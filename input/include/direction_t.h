@@ -40,17 +40,18 @@ static FORCE_INLINE const char* direction_t$convert$toStaticString(
     }
 
     {
-#define APPEND_IF_DIRECTION_MATCH( _buffer, _bufferLength, _direction,        \
-                                   _directionType, _matchExactly )            \
-    do {                                                                      \
-        if ( ( _matchExactly ) ? ( ( ( _direction ) & ( _directionType ) ) == \
-                                   ( _directionType ) )                       \
-                               : ( ( _direction ) & ( _directionType ) ) ) {  \
-            ( _buffer )[ _bufferLength ] =                                    \
-                DIRECTION_TYPE_TO_CHAR( _directionType );                     \
-            ( _direction ) &= ~( _directionType );                            \
-            ( _bufferLength )++;                                              \
-        }                                                                     \
+#define APPEND_IF_DIRECTION_MATCH( _buffer, _bufferLength, _direction,      \
+                                   _directionType, _matchExactly )          \
+    do {                                                                    \
+        uint8_t* l_direction = ( uint8_t* )( &( _direction ) );             \
+        if ( ( _matchExactly ) ? ( ( *l_direction & ( _directionType ) ) == \
+                                   ( _directionType ) )                     \
+                               : ( *l_direction & ( _directionType ) ) ) {  \
+            ( _buffer )[ _bufferLength ] =                                  \
+                DIRECTION_TYPE_TO_CHAR( _directionType );                   \
+            *l_direction &= ~( _directionType );                            \
+            ( _bufferLength )++;                                            \
+        }                                                                   \
     } while ( 0 )
 
         size_t l_length = 0;

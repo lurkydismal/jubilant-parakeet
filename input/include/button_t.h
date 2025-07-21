@@ -34,9 +34,10 @@ static FORCE_INLINE const char* button_t$convert$toStaticString(
     {
 #define APPEND_IF_BUTTON_SET( _buffer, _bufferLength, _button, _buttonType )   \
     do {                                                                       \
-        if ( ( _button ) & ( _buttonType ) ) {                                 \
+        uint8_t* l_button = ( uint8_t* )( &( _button ) );                      \
+        if ( *l_button & ( _buttonType ) ) {                                   \
             ( _buffer )[ _bufferLength ] = BUTTON_TYPE_TO_CHAR( _buttonType ); \
-            ( _button ) &= ~( _buttonType );                                   \
+            *l_button &= ~( _buttonType );                                     \
             ( _bufferLength )++;                                               \
         }                                                                      \
     } while ( 0 )

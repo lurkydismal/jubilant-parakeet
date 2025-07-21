@@ -79,7 +79,7 @@ color_t$convert$fromString( const char* restrict _string ) {
         }
 
 #define GET_COLOR_FROM_NUMBER( _number, _colorChannel ) \
-    ( ( ( _number ) >> ( 8 * _colorChannel ) ) & 0xFF )
+    ( ( ( _number ) >> ( 8 * ( uint8_t )_colorChannel ) ) & 0xFF )
 
         if ( l_stringLength == 6 ) {
             typedef enum {
