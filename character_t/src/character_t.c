@@ -2,9 +2,9 @@
 
 #include <cJSON.h>
 
+#include "asset_t.h"
 #include "log.h"
 #include "stdfunc.h"
-#include "asset_t.h"
 
 #if defined( HOT_RELOAD )
 
@@ -147,11 +147,10 @@ EXIT:
 }
 
 // TODO
-static FORCE_INLINE bool character_t$reload(
-    void* restrict _context,
-    const char* restrict _fileName,
-    size_t _eventMask,
-    uint32_t _cookie ) {
+static FORCE_INLINE bool character_t$reload( void* restrict _context,
+                                             const char* restrict _fileName,
+                                             size_t _eventMask,
+                                             uint32_t _cookie ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_context ) ) {
@@ -275,6 +274,7 @@ EXIT:
     return ( l_returnValue );
 }
 
+#if 0
 move_t* parseMoves(const cJSON* root) {
     for (size_t i = 0; i < count; ++i) {
         // — velocity (float[2])
@@ -312,6 +312,7 @@ move_t* parseMoves(const cJSON* root) {
     }
     return moves;
 }
+#endif
 
 // TODO
 bool character_t$load( character_t* restrict _character,
@@ -332,26 +333,35 @@ bool character_t$load( character_t* restrict _character,
         goto EXIT;
     }
 
+#if 0
     {
         log$transaction$query$format(
             ( logLevel_t )info, "Loading character: '%s'", _character->name );
 
         // Parse information
         {
-#define JSON_GET_AS(_root, _field, _type) \
-    ({ \
-        cJSON* _item = cJSON_GetObjectItemCaseSensitive((_root), (_field)); \
-        _Generic(((_type)0), \
-            int:    ((_item && cJSON_IsNumber(_item)) ? (_item->valueint) : (0)), \
-            double: ((_item && cJSON_IsNumber(_item)) ? (_item->valuedouble) : (0.0)), \
-            float: ((_item && cJSON_IsNumber(_item)) ? (_item->valuedouble) : (0.0)), \
-            char*:  ((_item && cJSON_IsString(_item)) ? (_item->valuestring) : (NULL)) \
-        ); \
-    })
+#define JSON_GET_AS( _root, _field, _type )                                   \
+    ( {                                                                       \
+        cJSON* _item =                                                        \
+            cJSON_GetObjectItemCaseSensitive( ( _root ), ( _field ) );        \
+        _Generic( ( ( _type )0 ),                                             \
+            int: ( ( _item && cJSON_IsNumber( _item ) ) ? ( _item->valueint ) \
+                                                        : ( 0 ) ),            \
+            double: ( ( _item && cJSON_IsNumber( _item ) )                    \
+                          ? ( _item->valuedouble )                            \
+                          : ( 0.0 ) ),                                        \
+            float: ( ( _item && cJSON_IsNumber( _item ) )                     \
+                         ? ( _item->valuedouble )                             \
+                         : ( 0.0 ) ),                                         \
+            char*: ( ( _item && cJSON_IsString( _item ) )                     \
+                         ? ( _item->valuestring )                             \
+                         : ( NULL ) ) );                                      \
+    } )
 
-#define JSON_SET_AS( _root, _field, _variable ) do { \
-    (_variable) = JSON_GET_AS( _root, _field, typeof( _variable ) );\
-} while (0)
+#define JSON_SET_AS( _root, _field, _variable )                            \
+    do {                                                                   \
+        ( _variable ) = JSON_GET_AS( _root, _field, typeof( _variable ) ); \
+    } while ( 0 )
 
             asset_t l_asset = asset_t$create();
             asset_t$load$fromPath( &l_asset, "roa/roa.json" );
@@ -442,6 +452,7 @@ bool character_t$load( character_t* restrict _character,
 
         l_returnValue = true;
     }
+#endif
 
 EXIT:
     return ( l_returnValue );
