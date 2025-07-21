@@ -7,26 +7,26 @@
 #include "object_t.h"
 #include "watch_t.h"
 
-#define DEFAULT_CHARACTER              \
-    {                                  \
-        .movesObject = DEFAULT_OBJECT, \
-        .moveNames = NULL,             \
-        .moves = NULL,                 \
-        .displayName = NULL,           \
-        .isGuardBroken = false,              \
-        .healthPointsMax = 0,            \
-        .restorableHealthPointsMax = 0,  \
-        .guardPointsMax = 0,              \
-        .meterPointsMax = 0,               \
-        .healthPoints = 0,                \
-        .restorableHealthPoints = 0,      \
-        .guardPoints = 0,                  \
-        .meterPoints = 0,                   \
-        .walkSpeed = 0,                \
-        .jumpHeight = 0,               \
-        .name = NULL,                  \
-        .folder = NULL,                \
-        .extension = NULL,             \
+#define DEFAULT_CHARACTER               \
+    {                                   \
+        .movesObject = DEFAULT_OBJECT,  \
+        .moveNames = NULL,              \
+        .moves = NULL,                  \
+        .displayName = NULL,            \
+        .isGuardBroken = false,         \
+        .healthPointsMax = 0,           \
+        .restorableHealthPointsMax = 0, \
+        .guardPointsMax = 0,            \
+        .meterPointsMax = 0,            \
+        .healthPoints = 0,              \
+        .restorableHealthPoints = 0,    \
+        .guardPoints = 0,               \
+        .meterPoints = 0,               \
+        .walkSpeed = 0,                 \
+        .jumpHeight = 0,                \
+        .name = NULL,                   \
+        .folder = NULL,                 \
+        .extension = NULL,              \
     }
 
 typedef struct {
