@@ -431,8 +431,8 @@ EXIT:
 #if defined( HOT_RELOAD )
 
 EXPORT bool hotReload$unload( void** restrict _state,
-                       size_t* restrict _stateSize,
-                       applicationState_t* restrict _applicationState ) {
+                              size_t* restrict _stateSize,
+                              applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 
@@ -451,8 +451,8 @@ EXPORT bool hotReload$unload( void** restrict _state,
 }
 
 EXPORT bool hotReload$load( void* restrict _state,
-                     size_t _stateSize,
-                     applicationState_t* restrict _applicationState ) {
+                            size_t _stateSize,
+                            applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 
