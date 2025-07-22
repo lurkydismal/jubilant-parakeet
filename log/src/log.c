@@ -441,19 +441,25 @@ EXPORT bool hotReload$unload( void** restrict _state,
                               applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
-    *_stateSize = sizeof( struct state );
-    *_state = malloc( *_stateSize );
+    bool l_returnValue = false;
 
-    struct state l_state = {
-        .g_fileDescriptor = g_fileDescriptor,
-        .g_transactionString = g_transactionString,
-        .g_transactionSize = g_transactionSize,
-        .g_currentLogLevel = g_currentLogLevel,
-    };
+    {
+        *_stateSize = sizeof( struct state );
+        *_state = malloc( *_stateSize );
 
-    __builtin_memcpy( *_state, clone( &l_state ), *_stateSize );
+        struct state l_state = {
+            .g_fileDescriptor = g_fileDescriptor,
+            .g_transactionString = g_transactionString,
+            .g_transactionSize = g_transactionSize,
+            .g_currentLogLevel = g_currentLogLevel,
+        };
 
-    return ( true );
+        __builtin_memcpy( *_state, &l_state, *_stateSize );
+
+        l_returnValue = true;
+    }
+
+    return ( l_returnValue );
 }
 
 EXPORT bool hotReload$load( void* restrict _state,
@@ -467,8 +473,6 @@ EXPORT bool hotReload$load( void* restrict _state,
         const size_t l_stateSize = sizeof( struct state );
 
         if ( UNLIKELY( _stateSize != l_stateSize ) ) {
-            trap( "Corrupted state" );
-
             goto EXIT;
         }
 
@@ -478,6 +482,8 @@ EXPORT bool hotReload$load( void* restrict _state,
         g_transactionString = l_state->g_transactionString;
         g_transactionSize = l_state->g_transactionSize;
         g_currentLogLevel = l_state->g_currentLogLevel;
+
+        l_returnValue = true;
     }
 
 EXIT:

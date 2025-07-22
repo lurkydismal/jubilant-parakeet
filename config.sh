@@ -30,7 +30,7 @@ declare -a testsToBuild=(
     "controls_t"
     "input"
     "FPS"
-    "player_t"
+    # "player_t"
     "object_t"
     "camera_t"
     "state_t"

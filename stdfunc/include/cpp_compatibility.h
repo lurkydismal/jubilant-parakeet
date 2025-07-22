@@ -1,16 +1,16 @@
 #pragma once
 
-#define EXPORT
-
 #if defined( __cplusplus )
 
-#undef EXPORT
 #define EXPORT extern "C"
-
-#if !defined( restrict )
-
 #define restrict __restrict
+#define register
 
-#endif
+#else
+
+#define EXPORT
+#define constinit
+#define constexpr
+#define consteval
 
 #endif
