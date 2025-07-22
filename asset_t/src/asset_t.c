@@ -56,7 +56,7 @@ static void* asset_t$saveQueue$resolve( void* _data ) {
             // Copy request locally to process without holding lock
             l_saveRequest = g_saveQueue[ 0 ];
 
-            // Move the reft of queue
+            // Move the rest of queue
             __builtin_memmove(
                 &( g_saveQueue[ 0 ] ), &( g_saveQueue[ 1 ] ),
                 ( ( g_saveQueueLength - 1 ) * sizeof( struct saveRequest ) ) );
@@ -67,7 +67,7 @@ static void* asset_t$saveQueue$resolve( void* _data ) {
         }
 
         {
-            const bool l_result = asset_t$save$sync$toPath(
+            bool l_result = asset_t$save$sync$toPath(
                 l_saveRequest.asset, l_saveRequest.path,
                 l_saveRequest.needTruncate );
 
@@ -77,6 +77,21 @@ static void* asset_t$saveQueue$resolve( void* _data ) {
                     "Saving asset of size %zu to path: '%s'",
                     l_saveRequest.asset->size, l_saveRequest.path );
             }
+
+            l_result = asset_t$unload( l_saveRequest.asset );
+
+            if ( UNLIKELY( !l_result ) ) {
+                log$transaction$query( ( logLevel_t )error, "Unloading asset" );
+            }
+
+            l_result = asset_t$destroy( l_saveRequest.asset );
+
+            if ( UNLIKELY( !l_result ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Destroying asset" );
+            }
+
+            free( l_saveRequest.path );
         }
     }
 
@@ -784,7 +799,8 @@ bool asset_t$save$async$toPath( asset_t* restrict _asset,
             pthread_mutex_lock( &g_saveQueueMutex );
 
             if ( g_saveQueueLength >= MAX_REQUESTS ) {
-                log$transaction$query( ( logLevel_t )error, "TODO\n" );
+                log$transaction$query( ( logLevel_t )error,
+                                       "Save queue length is already full" );
 
                 pthread_mutex_unlock( &g_saveQueueMutex );
 
@@ -842,16 +858,22 @@ EXPORT bool hotReload$unload( void** restrict _state,
                               applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
-    *_stateSize = sizeof( struct state );
-    *_state = malloc( *_stateSize );
+    bool l_returnValue = false;
 
-    struct state l_state = {
-        .g_assetsDirectory = g_assetsDirectory,
-    };
+    {
+        *_stateSize = sizeof( struct state );
+        *_state = malloc( *_stateSize );
 
-    __builtin_memcpy( *_state, clone( &l_state ), *_stateSize );
+        struct state l_state = {
+            .g_assetsDirectory = g_assetsDirectory,
+        };
 
-    return ( true );
+        __builtin_memcpy( *_state, &l_state, *_stateSize );
+
+        l_returnValue = true;
+    }
+
+    return ( l_returnValue );
 }
 
 EXPORT bool hotReload$load( void* restrict _state,
@@ -865,8 +887,6 @@ EXPORT bool hotReload$load( void* restrict _state,
         const size_t l_stateSize = sizeof( struct state );
 
         if ( UNLIKELY( _stateSize != l_stateSize ) ) {
-            trap( "Corrupted state" );
-
             goto EXIT;
         }
 

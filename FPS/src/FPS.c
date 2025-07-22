@@ -157,24 +157,29 @@ EXPORT bool hotReload$unload( void** restrict _state,
                               applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
-    *_stateSize = sizeof( struct state );
-    *_state = malloc( *_stateSize );
+    bool l_returnValue = false;
 
-    struct state l_state = {
-        .g_totalFramesPassed = g_totalFramesPassed,
-    };
+    {
+        *_stateSize = sizeof( struct state );
+        *_state = malloc( *_stateSize );
 
-    __builtin_memcpy( *_state, clone( &l_state ), *_stateSize );
+        struct state l_state = {
+            .g_totalFramesPassed = g_totalFramesPassed,
+        };
 
-    if ( LIKELY( g_totalFramesPassed ) ) {
-        if ( UNLIKELY( !FPS$quit() ) ) {
-            trap( "Quitting FPS" );
+        __builtin_memcpy( *_state, &l_state, *_stateSize );
 
-            return ( false );
+        if ( LIKELY( g_totalFramesPassed ) ) {
+            if ( UNLIKELY( !FPS$quit() ) ) {
+                goto EXIT;
+            }
         }
+
+        l_returnValue = true;
     }
 
-    return ( true );
+EXIT:
+    return ( l_returnValue );
 }
 
 EXPORT bool hotReload$load( void* restrict _state,
@@ -188,8 +193,6 @@ EXPORT bool hotReload$load( void* restrict _state,
         const size_t l_stateSize = sizeof( struct state );
 
         if ( UNLIKELY( _stateSize != l_stateSize ) ) {
-            trap( "Corrupted state" );
-
             goto EXIT;
         }
 
@@ -199,7 +202,7 @@ EXPORT bool hotReload$load( void* restrict _state,
 
         if ( LIKELY( l_totalFramesPassed ) ) {
             if ( UNLIKELY( !FPS$init( l_totalFramesPassed ) ) ) {
-                trap( "Initializing FPS" );
+                goto EXIT;
             }
         }
 

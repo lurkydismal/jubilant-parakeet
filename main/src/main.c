@@ -124,23 +124,24 @@ static FORCE_INLINE bool collectStatesFromHandle(
         // Call each module state saving function
         for ( struct link_map* _linkMap = l_linkMap; _linkMap;
               _linkMap = _linkMap->l_next ) {
-            if ( UNLIKELY( !( _linkMap->l_name ) ||
-                           !( *( _linkMap->l_name ) ) ) ) {
+            const char* l_soPath = _linkMap->l_name;
+
+            if ( UNLIKELY( !l_soPath || !( *l_soPath ) ) ) {
                 continue;
             }
 
-            if ( UNLIKELY( __builtin_strcmp( _linkMap->l_name,
+            if ( UNLIKELY( __builtin_strcmp( l_soPath,
                                              g_rootSharedObjectPath ) == 0 ) ) {
                 continue;
             }
 
-            if ( !comparePathsDirectories( _linkMap->l_name,
+            if ( !comparePathsDirectories( l_soPath,
                                            g_rootSharedObjectPath ) ) {
                 continue;
             }
 
-            void* l_handle = dlmopen( l_namespaceId, _linkMap->l_name,
-                                      ( RTLD_LAZY | RTLD_NOLOAD ) );
+            void* l_handle =
+                dlmopen( l_namespaceId, l_soPath, ( RTLD_LAZY | RTLD_NOLOAD ) );
 
             assert( l_handle != NULL );
 
@@ -157,8 +158,7 @@ static FORCE_INLINE bool collectStatesFromHandle(
                     goto EXIT;
                 }
 
-                insertIntoArray( _stateNames,
-                                 duplicateString( _linkMap->l_name ) );
+                insertIntoArray( _stateNames, duplicateString( l_soPath ) );
                 insertIntoArray( _states, clone( &l_state ) );
             }
         }
@@ -225,7 +225,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
 static FORCE_INLINE const char** getMainExecutableFunctionNamesToPatch( void ) {
     const char** l_returnValue = NULL;
 
@@ -325,26 +324,26 @@ static bool hotReloadSo( const char* restrict _soPath ) {
 
                         for ( struct link_map* _linkMap = l_linkMap; _linkMap;
                               _linkMap = _linkMap->l_next ) {
-                            if ( UNLIKELY( !( _linkMap->l_name ) ||
-                                           !( *( _linkMap->l_name ) ) ) ) {
+                            const char* l_soPath = _linkMap->l_name;
+
+                            if ( UNLIKELY( !l_soPath || !( *l_soPath ) ) ) {
                                 continue;
                             }
 
-                            if ( UNLIKELY( __builtin_strcmp(
-                                               _linkMap->l_name,
-                                               g_rootSharedObjectPath ) ==
-                                           0 ) ) {
+                            if ( UNLIKELY(
+                                     __builtin_strcmp(
+                                         l_soPath, g_rootSharedObjectPath ) ==
+                                     0 ) ) {
                                 continue;
                             }
 
                             if ( !comparePathsDirectories(
-                                     _linkMap->l_name,
-                                     g_rootSharedObjectPath ) ) {
+                                     l_soPath, g_rootSharedObjectPath ) ) {
                                 continue;
                             }
 
                             void* l_handle =
-                                dlmopen( l_namespaceId, _linkMap->l_name,
+                                dlmopen( l_namespaceId, l_soPath,
                                          ( RTLD_LAZY | RTLD_NOLOAD ) );
 
                             assert( l_handle != NULL );
@@ -356,28 +355,25 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                                         HOT_RELOAD_LOAD_FUNCTION_SIGNATURE );
 
                                 if ( l_loadCallback ) {
-                                    FOR_RANGE( arrayLength_t, 0,
-                                               arrayLength( l_stateNames ) ) {
-                                        const char* l_name =
-                                            l_stateNames[ _index ];
+                                    const ssize_t l_nameIndex =
+                                        _findStringInArray( l_stateNames,
+                                                            l_soPath );
 
-                                        if ( __builtin_strcmp(
-                                                 l_name, _linkMap->l_name ) ==
-                                             0 ) {
-                                            struct state* l_state =
-                                                l_states[ _index ];
+                                    if ( LIKELY( l_nameIndex != -1 ) ) {
+                                        struct state* l_state =
+                                            l_states[ l_nameIndex ];
 
-                                            void* l_stateData = l_state->data;
-                                            size_t l_stateDataSize =
-                                                l_state->size;
+                                        void* l_stateData = l_state->data;
+                                        size_t l_stateDataSize = l_state->size;
 
-                                            l_returnValue = l_loadCallback(
-                                                l_stateData, l_stateDataSize,
-                                                &g_applicationState );
+                                        l_returnValue = l_loadCallback(
+                                            l_stateData, l_stateDataSize,
+                                            &g_applicationState );
 
-                                            if ( UNLIKELY( !l_returnValue ) ) {
-                                                continue;
-                                            }
+                                        if ( UNLIKELY( !l_returnValue ) ) {
+                                            trap(
+                                                HOT_RELOAD_LOAD_FUNCTION_SIGNATURE
+                                                " failed" );
                                         }
                                     }
                                 }
@@ -519,7 +515,7 @@ int main( int _argumentCount, char** _argumentVector ) {
 
 #endif
 
-        while ( true ) {
+        for ( ;; ) {
             SDL_PumpEvents();
 
             event_t l_event;
@@ -532,11 +528,11 @@ int main( int _argumentCount, char** _argumentVector ) {
                 }
             }
 
-            // TODO: Improve
+            // NULL means last event on current frame
             l_returnValue = event( &g_applicationState, NULL );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                goto EXIT;
+                break;
             }
 
             l_returnValue = iterate( &g_applicationState );
