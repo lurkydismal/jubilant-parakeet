@@ -1,6 +1,7 @@
 #include <pthread.h>
 #undef clone
 
+#include <errno.h>
 #include <fcntl.h>
 #include <snappy-c.h>
 #include <stdlib.h>
