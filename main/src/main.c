@@ -17,6 +17,7 @@
 #endif
 
 #include "applicationState_t.h"
+#include "asset_t.h"
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
@@ -507,6 +508,17 @@ int main( int _argumentCount, char** _argumentVector ) {
     if ( UNLIKELY( !l_returnValue ) ) {
         goto EXIT;
     }
+
+    // TODO
+    asset_t l_asset = asset_t$create();
+    l_asset.data = ( uint8_t* )malloc( 1 );
+    l_asset.data[ 0 ] = 'T';
+    l_asset.size = 1;
+
+    asset_t$save$async$toPath( &l_asset, "Test.txt", true );
+
+    asset_t$unload( &l_asset );
+    asset_t$destroy( &l_asset );
 
     {
 #if defined( HOT_RELOAD )
