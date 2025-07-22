@@ -35,8 +35,8 @@ __attribute__( ( used ) ) static int g_status = 0;
         _name##_test_implementation();                                         \
         return ( g_status );                                                   \
     }                                                                          \
-    __attribute__( ( constructor,                                              \
-                     used ) ) static void register_##_name##_test( void ) {    \
+    __attribute__( ( constructor, used ) ) static void                         \
+    register_##_name##_test( void ) {                                          \
         if ( g_testCount < MAX_TESTS ) {                                       \
             g_testRegistry[ g_testCount++ ] =                                  \
                 ( testEntry_t ){ #_name, _name##_test };                       \

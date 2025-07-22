@@ -10,7 +10,7 @@ applicationState_t applicationState_t$create( void ) {
         l_returnValue.settings = settings_t$create();
         l_returnValue.config = config_t$create();
         l_returnValue.camera = camera_t$create();
-        l_returnValue.localPlayer = player_t$create();
+        // l_returnValue.localPlayer = player_t$create();
         l_returnValue.remotePlayers = createArray( player_t* );
     }
 
@@ -50,6 +50,7 @@ bool applicationState_t$destroy(
 
 #undef TRY_DESTROY_OR_EXIT
 
+#if 0
         l_returnValue = player_t$destroy( &( _applicationState->localPlayer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
@@ -58,6 +59,7 @@ bool applicationState_t$destroy(
 
             goto EXIT;
         }
+#endif
 
         FREE_ARRAY( _applicationState->remotePlayers );
         _applicationState->remotePlayers = NULL;
@@ -152,6 +154,7 @@ bool applicationState_t$unload(
 
 #undef TRY_UNLOAD_OR_EXIT
 
+#if 0
         l_returnValue = player_t$unload( &( _applicationState->localPlayer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
@@ -180,6 +183,7 @@ bool applicationState_t$unload(
                 goto EXIT;
             }
         }
+#endif
 
         l_returnValue = true;
     }

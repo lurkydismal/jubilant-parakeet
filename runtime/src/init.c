@@ -346,7 +346,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Improve
 static FORCE_INLINE bool parseArguments(
     applicationState_t* restrict _applicationState,
     int _argumentCount,
@@ -581,7 +580,6 @@ bool init( applicationState_t* restrict _applicationState,
                 }
             }
 
-            // TODO: Improve
             // Default scale mode
             {
                 if ( UNLIKELY( !SDL_SetDefaultTextureScaleMode(
@@ -589,8 +587,12 @@ bool init( applicationState_t* restrict _applicationState,
                          SDL_SCALEMODE_PIXELART ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
-                        "Setting render pixel scale mode: '%s'",
+                        "Setting render pixel art scale mode: '%s'",
                         SDL_GetError() );
+
+                    log$transaction$query(
+                        ( logLevel_t )info,
+                        "Falling back to render nearest scale mode" );
 
                     if ( UNLIKELY( !SDL_SetDefaultTextureScaleMode(
                              _applicationState->renderer,
@@ -604,6 +606,9 @@ bool init( applicationState_t* restrict _applicationState,
                     }
                 }
             }
+
+            // TODO: Set SDL3 logical resolution
+            // TODO: Set new SDL3 things
 
             // Scaling
             {

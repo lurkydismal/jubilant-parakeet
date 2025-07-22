@@ -94,15 +94,17 @@
 
 #endif
 
+#define TRAP_COLOR_LEVEL ASCII_COLOR_RED
 #define TRAP_COLOR_FILE_NAME ASCII_COLOR_PURPLE_LIGHT
 #define TRAP_COLOR_LINE_NUMBER ASCII_COLOR_PURPLE_LIGHT
 #define TRAP_COLOR_FUNCTION_NAME ASCII_COLOR_PURPLE_LIGHT
 
-#define DEBUG_INFORMATION1                                                  \
-    TRAP_COLOR_FILE_NAME ASCII_COLOR_RESET_FOREGROUND                       \
-        "File '" TRAP_COLOR_FILE_NAME __FILE__ ASCII_COLOR_RESET_FOREGROUND \
-        "': line " TRAP_COLOR_LINE_NUMBER                                   \
-        MACRO_TO_STRING( __LINE__ ) ASCII_COLOR_RESET_FOREGROUND            \
+#define DEBUG_INFORMATION1                                              \
+    TRAP_COLOR_LEVEL                                                    \
+    "[TRAP] " ASCII_COLOR_RESET_FOREGROUND                              \
+    "File '" TRAP_COLOR_FILE_NAME __FILE__ ASCII_COLOR_RESET_FOREGROUND \
+    "': line " TRAP_COLOR_LINE_NUMBER                                   \
+    MACRO_TO_STRING( __LINE__ ) ASCII_COLOR_RESET_FOREGROUND            \
         " in function '" TRAP_COLOR_FUNCTION_NAME
 
 #define DEBUG_INFORMATION2 ASCII_COLOR_RESET_FOREGROUND "'"
@@ -535,18 +537,19 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
     } while ( 0 )
 
-ssize_t findStringInArray( char* restrict* restrict _array,
+ssize_t findStringInArray( const char* restrict const* restrict _array,
                            const size_t _arrayLength,
-                           char* restrict _value );
+                           const char* restrict _string );
 
 ssize_t findInArray( const size_t* restrict _array,
                      const size_t _arrayLength,
                      const size_t _value );
 
-static FORCE_INLINE bool containsString( char* restrict* restrict _array,
-                                         const size_t _arrayLength,
-                                         char* restrict _value ) {
-    return ( findStringInArray( _array, _arrayLength, _value ) >= 0 );
+static FORCE_INLINE bool containsString(
+    const char* restrict const* restrict _array,
+    const size_t _arrayLength,
+    const char* restrict _string ) {
+    return ( findStringInArray( _array, _arrayLength, _string ) >= 0 );
 }
 
 static FORCE_INLINE bool contains( const size_t* restrict _array,
@@ -556,8 +559,9 @@ static FORCE_INLINE bool contains( const size_t* restrict _array,
 }
 
 // Utility functions ( no side-effects ) wrappers for non-naitve array
-static FORCE_INLINE ssize_t _findStringInArray( char* restrict* restrict _array,
-                                                char* restrict _string ) {
+static FORCE_INLINE ssize_t
+_findStringInArray( const char* restrict const* restrict _array,
+                    const char* restrict _string ) {
     return ( findStringInArray( arrayFirstElementPointer( _array ),
                                 arrayLength( _array ), _string ) );
 }
@@ -568,8 +572,9 @@ static FORCE_INLINE ssize_t _findInArray( const size_t* restrict _array,
                           arrayLength( _array ), _value ) );
 }
 
-static FORCE_INLINE bool _containsString( char* restrict* restrict _array,
-                                          char* restrict _string ) {
+static FORCE_INLINE bool _containsString(
+    const char* restrict const* restrict _array,
+    const char* restrict _string ) {
     return ( containsString( arrayFirstElementPointer( _array ),
                              arrayLength( _array ), _string ) );
 }

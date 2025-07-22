@@ -1,13 +1,13 @@
 #!/bin/bash
 shopt -s nullglob
 
-trap 'echo "Line $LINENO: $BASH_COMMAND";echo; exit 1' ERR
+# trap 'echo "Line $LINENO: $BASH_COMMAND";echo; exit 1' ERR
 
 export SCRIPT_DIRECTORY=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export BUILD_DIRECTORY_NAME="out"
 export TESTS_DIRECTORY_NAME="tests"
 export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
-export TESTS_DIRECTORY="$SCRIPT_DIRECTORY/$TESTS_DIRECTORY_NAME"
+export TESTS_DIRECTORY="$TESTS_DIRECTORY_NAME"
 
 export HASH_FUNCTION="sha512sum"
 
@@ -17,16 +17,16 @@ export HASH_FUNCTION="sha512sum"
 # 3 - Tests
 export BUILD_TYPE=${BUILD_TYPE:-0}
 
-export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat"
+export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat -Wno-incompatible-pointer-types-discards-qualifiers"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
-export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -fno-rtti -fno-exceptions -fno-unwind-tables -fno-threadsafe-statics -Wno-enum-enum-conversion -Wno-deprecated -Wno-c99-designator -Wno-missing-field-initializers"
+export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -fno-rtti -fno-exceptions -fno-threadsafe-statics -Wno-enum-enum-conversion -Wno-deprecated -Wno-c99-designator -Wno-missing-field-initializers"
 export BUILD_CPP_FLAGS_DEBUG="$BUILD_C_FLAGS_DEBUG"
-export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE"
-export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE"
+export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE -fno-unwind-tables"
+export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE -fno-unwind-tables"
 export BUILD_CPP_FLAGS_TESTS="$BUILD_C_FLAGS_TESTS"
 
 # TODO: checker alpha
@@ -104,6 +104,7 @@ export LINK_FLAGS_HOT_RELOAD=""
 export declare LIBRARIES_TO_LINK=(
     "mimalloc"
     "elf"
+    "unwind"
 )
 export declare EXTERNAL_LIBRARIES_TO_LINK=(
     "snappy"

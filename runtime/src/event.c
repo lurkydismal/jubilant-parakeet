@@ -11,8 +11,8 @@
 
 static FORCE_INLINE bool onWindowResize(
     applicationState_t* restrict _applicationState,
-    float _width,
-    float _height ) {
+    const float _width,
+    const float _height ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
@@ -168,7 +168,6 @@ bool event( applicationState_t* restrict _applicationState,
     }
 
     {
-        // TODO: Improve
         if ( !_event ) {
             l_returnValue = handleKeyboardState( _applicationState );
 
@@ -204,18 +203,6 @@ bool event( applicationState_t* restrict _applicationState,
                     }
 
                     break;
-                }
-
-                case SDL_EVENT_KEY_DOWN:
-                case SDL_EVENT_KEY_UP: {
-                    l_returnValue = handleKeyboardState( _applicationState );
-
-                    if ( UNLIKELY( !l_returnValue ) ) {
-                        log$transaction$query( ( logLevel_t )error,
-                                               "Handling keyboard state" );
-
-                        goto EXIT;
-                    }
                 }
 
                 default: {
