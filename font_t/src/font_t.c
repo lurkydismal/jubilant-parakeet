@@ -6,15 +6,12 @@
 
 #include "font_t.h"
 
-#if defined( WRITE_FONT_TO_IMAGE )
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-
-#include <stb/stb_image_write.h>
-
-#endif
-
 #include "log.h"
+
+#define FONT_ATLAS_WIDTH( _font )    \
+    ( ( size_t )( ( _font ).height * \
+                  CHARACTERS_COUNT( ASCII_START, ASCII_END ) ) )
+#define FONT_ATLAS_HEIGHT( _font ) ( ( size_t )( ( _font ).height ) )
 
 static FORCE_INLINE uint8_t* font_t$bake$range( font_t* restrict _font,
                                                 const size_t _start,
@@ -201,21 +198,6 @@ bool font_t$load$fromAsset( font_t* restrict _font, asset_t* restrict _asset ) {
                 free( l_bitmap );
             }
 
-#if defined( WRITE_FONT_TO_IMAGE )
-
-            const char* l_exportFileName = "fontAtlas.png";
-
-            stbi_write_png( l_exportFileName, _font->atlasWidth,
-                            _font->atlasHeight, 1, l_bitmapTrimmed,
-                            _font->atlasWidth );
-
-            log$transaction$query$format(
-                ( logLevel_t )info,
-                "'%s' file was created with trimmed fomt bitmap\n",
-                l_exportFileName );
-
-#endif
-
             // Texture
             {
                 glGenTextures( 1, &( _font->texture ) );
@@ -352,6 +334,11 @@ bool font_t$load$fromPath( font_t* restrict _font,
 
 EXIT:
     return ( l_returnValue );
+}
+
+// TODO: Implement
+bool font_t$load$fromGlob( font_t* restrict _font, const char* restrict _glob ) {
+    return ( false );
 }
 
 bool font_t$unload( font_t* restrict _font ) {

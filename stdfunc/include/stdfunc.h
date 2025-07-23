@@ -178,6 +178,8 @@
 
 #define arrayLastElementIndex( _array ) \
     ( arrayLastElementPointer( _array ) - arrayFirstElementPointer( _array ) )
+#define arrayElementIndex( _array, _element ) \
+    ( arrayLastElementPointer( _array ) - _element )
 
 #define randomValueFromArray( _array ) \
     ( ( _array )[ randomNumber() % arrayLength( _array ) ] )
@@ -197,6 +199,8 @@
 #define arrayLastElementIndexNative( _array )   \
     ( arrayLastElementPointerNative( _array ) - \
       arrayFirstElementPointerNative( _array ) )
+#define arrayElementIndexNative( _array, _element ) \
+    ( arrayLastElementPointerNative( _array ) - _element )
 
 #define randomValueFromArrayNative( _array ) \
     ( ( _array )[ randomNumber() % arrayLengthNative( _array ) ] )
@@ -355,11 +359,11 @@ EXIT:
 
 #define clone( _element )                                                  \
     ( {                                                                    \
-        typeof( _element ) l_allocated =                                   \
+        typeof( _element ) l_allocated$clone =                             \
             ( typeof( _element ) )malloc( sizeof( typeof( *_element ) ) ); \
-        __builtin_memcpy( l_allocated, _element,                           \
+        __builtin_memcpy( l_allocated$clone, _element,                     \
                           sizeof( typeof( *_element ) ) );                 \
-        ( l_allocated );                                                   \
+        ( l_allocated$clone );                                             \
     } )
 
 static FORCE_INLINE char* duplicateString( const char* restrict _string ) {
@@ -384,9 +388,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE ssize_t findSymbolInString( const char* restrict _string,
-                                                const char _symbol ) {
-    ssize_t l_returnValue = -1;
+static FORCE_INLINE size_t findSymbolInString( const char* restrict _string,
+                                               const char _symbol ) {
+    size_t l_returnValue = SIZE_MAX;
 
     if ( UNLIKELY( !_string ) ) {
         trap();
@@ -408,9 +412,9 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE ssize_t
-findLastSymbolInString( const char* restrict _string, const char _symbol ) {
-    ssize_t l_returnValue = -1;
+static FORCE_INLINE size_t findLastSymbolInString( const char* restrict _string,
+                                                   const char _symbol ) {
+    size_t l_returnValue = SIZE_MAX;
 
     if ( UNLIKELY( !_string ) ) {
         trap();
@@ -443,21 +447,22 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
 
 #define createArray( _elementType )                              \
     ( {                                                          \
-        arrayLength_t* l_array =                                 \
+        arrayLength_t* l_array$createArray =                     \
             ( arrayLength_t* )malloc( sizeof( arrayLength_t ) ); \
-        *l_array = ( arrayLength_t )0;                           \
-        ( _elementType* )( l_array + 1 );                        \
+        *l_array$createArray = ( arrayLength_t )0;               \
+        ( _elementType* )( l_array$createArray + 1 );            \
     } )
 
-#define createArrayFromNative( _arrayNative )                            \
-    ( {                                                                  \
-        typeof( *_arrayNative )* l_array =                               \
-            createArray( typeof( *_arrayNative ) );                      \
-        preallocateArray( &l_array, arrayLengthNative( _arrayNative ) ); \
-        __builtin_memcpy( l_array, _arrayNative,                         \
-                          ( arrayLengthNative( _arrayNative ) *          \
-                            sizeof( typeof( *_arrayNative ) ) ) );       \
-        ( l_array );                                                     \
+#define createArrayFromNative( _arrayNative )                          \
+    ( {                                                                \
+        typeof( *( _arrayNative ) )* l_array$createArrayFromNative =   \
+            createArray( typeof( *( _arrayNative ) ) );                \
+        preallocateArray( &l_array$createArrayFromNative,              \
+                          arrayLengthNative( _arrayNative ) );         \
+        __builtin_memcpy( l_array$createArrayFromNative, _arrayNative, \
+                          ( arrayLengthNative( _arrayNative ) *        \
+                            sizeof( typeof( *( _arrayNative ) ) ) ) ); \
+        ( l_array$createArrayFromNative );                             \
     } )
 
 #define preallocateArray( _array, _length )                                    \
@@ -478,112 +483,147 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
         }                                                                      \
     } while ( 0 )
 
-#define insertIntoArray( _array, _value )                                      \
-    ( {                                                                        \
-        arrayLength_t* l_arrayAllocationCurrent =                              \
-            arrayAllocationPointer( *( _array ) );                             \
-        const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
-        const arrayLength_t l_arrayLengthNew = ( l_arrayLengthCurrent + 1 );   \
-        arrayLength_t* l_arrayAllocationNew = ( arrayLength_t* )realloc(       \
-            l_arrayAllocationCurrent,                                          \
-            ( sizeof( arrayLength_t ) +                                        \
-              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) );      \
-        *l_arrayAllocationNew = l_arrayLengthNew;                              \
-        *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
-        ( *( _array ) )[ l_arrayLengthCurrent ] =                              \
-            ( typeof( **( _array ) ) )( _value );                              \
-        ( ( arrayLength_t )l_arrayLengthCurrent );                             \
+#define insertIntoArray( _array, _value )                                     \
+    ( {                                                                       \
+        arrayLength_t* l_arrayAllocationCurrent$insertIntoArray =             \
+            arrayAllocationPointer( *( _array ) );                            \
+        const arrayLength_t l_arrayLengthCurrent$insertIntoArray =            \
+            arrayLength( *( _array ) );                                       \
+        const arrayLength_t l_arrayLengthNew$insertIntoArray =                \
+            ( l_arrayLengthCurrent$insertIntoArray + 1 );                     \
+        arrayLength_t* l_arrayAllocationNew$insertIntoArray =                 \
+            ( arrayLength_t* )realloc(                                        \
+                l_arrayAllocationCurrent$insertIntoArray,                     \
+                ( sizeof( arrayLength_t ) +                                   \
+                  ( l_arrayLengthNew$insertIntoArray *                        \
+                    sizeof( typeof( *( _array ) ) ) ) ) );                    \
+        *l_arrayAllocationNew$insertIntoArray =                               \
+            l_arrayLengthNew$insertIntoArray;                                 \
+        *( _array ) =                                                         \
+            ( typeof( *( _array ) ) )( l_arrayAllocationNew$insertIntoArray + \
+                                       1 );                                   \
+        ( *( _array ) )[ l_arrayLengthCurrent$insertIntoArray ] =             \
+            ( typeof( **( _array ) ) )( _value );                             \
+        ( ( arrayLength_t )l_arrayLengthCurrent$insertIntoArray );            \
     } )
 
-#define pluckArray( _array, _value )                                           \
-    ( {                                                                        \
-        arrayLength_t* l_arrayAllocationCurrent =                              \
-            arrayAllocationPointer( *( _array ) );                             \
-        const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
-        FOR_ARRAY( typeof( *_array ), *_array ) {                              \
-            if ( *_element == ( typeof( **( _array ) ) )( _value ) ) {         \
-                if ( _element != arrayLastElementPointer( *_array ) ) {        \
-                    *arrayLastElementPointer( *_array ) =                      \
-                        ( typeof( **( _array ) ) )( _value );                  \
-                }                                                              \
-                const arrayLength_t l_arrayLengthNew =                         \
-                    ( l_arrayLengthCurrent - 1 );                              \
-                arrayLength_t* l_arrayAllocationNew =                          \
-                    ( arrayLength_t* )realloc(                                 \
-                        l_arrayAllocationCurrent,                              \
-                        ( sizeof( arrayLength_t ) +                            \
-                          ( l_arrayLengthNew *                                 \
-                            sizeof( typeof( *( _array ) ) ) ) ) );             \
-                *l_arrayAllocationNew = l_arrayLengthNew;                      \
-                *( _array ) =                                                  \
-                    ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );     \
-                break;                                                         \
-            }                                                                  \
-        }                                                                      \
-        ( arrayLength( *( _array ) ) != l_arrayLengthCurrent );                \
+#define pluckArrayByIndex( _array, _index )                                   \
+    ( {                                                                       \
+        arrayLength_t* l_arrayAllocationCurrent$pluckArrayByIndex =           \
+            arrayAllocationPointer( *( _array ) );                            \
+        const arrayLength_t l_arrayLengthCurrent$pluckArrayByIndex =          \
+            arrayLength( *( _array ) );                                       \
+        if ( ( _index ) == l_arrayLengthCurrent$pluckArrayByIndex ) {         \
+            removeLastElementArray( _array );                                 \
+        } else if ( ( _index ) != SIZE_MAX ) {                                \
+            __builtin_memmove(                                                \
+                &( ( _array )[ _index ] ), &( ( _array )[ ( _index ) + 1 ] ), \
+                ( ( l_arrayLengthCurrent$pluckArrayByIndex - 1 ) *            \
+                  sizeof( typeof( *( _array ) ) ) ) );                        \
+            const arrayLength_t l_arrayLengthNew$pluckArrayByIndex =          \
+                ( l_arrayLengthCurrent$pluckArrayByIndex - 1 );               \
+            arrayLength_t* l_arrayAllocationNew$pluckArrayByIndex =           \
+                ( arrayLength_t* )realloc(                                    \
+                    l_arrayAllocationCurrent$pluckArrayByIndex,               \
+                    ( sizeof( arrayLength_t ) +                               \
+                      ( l_arrayLengthNew$pluckArrayByIndex *                  \
+                        sizeof( typeof( *( _array ) ) ) ) ) );                \
+            *l_arrayAllocationNew$pluckArrayByIndex =                         \
+                l_arrayLengthNew$pluckArrayByIndex;                           \
+            *( _array ) = ( typeof( *(                                        \
+                _array ) ) )( l_arrayAllocationNew$pluckArrayByIndex + 1 );   \
+        }                                                                     \
+        ( arrayLength( *( _array ) ) !=                                       \
+          l_arrayLengthCurrent$pluckArrayByIndex );                           \
     } )
 
-#define removeLastArray( _array )                                              \
-    do {                                                                       \
-        arrayLength_t* l_arrayAllocationCurrent =                              \
-            arrayAllocationPointer( *( _array ) );                             \
-        const arrayLength_t l_arrayLengthCurrent = arrayLength( *( _array ) ); \
-        const arrayLength_t l_arrayLengthNew = ( l_arrayLengthCurrent - 1 );   \
-        arrayLength_t* l_arrayAllocationNew = ( arrayLength_t* )realloc(       \
-            l_arrayAllocationCurrent,                                          \
-            ( sizeof( arrayLength_t ) +                                        \
-              ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) );      \
-        *l_arrayAllocationNew = l_arrayLengthNew;                              \
-        *( _array ) = ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );   \
+#define pluckArrayByValue( _array, _value )                             \
+    ( {                                                                 \
+        size_t l_index$pluckArrayByValue = SIZE_MAX;                    \
+        FOR_ARRAY( typeof( *( _array ) ), *( _array ) ) {               \
+            if ( *_element == ( typeof( **( _array ) ) )( _value ) ) {  \
+                l_index$pluckArrayByValue =                             \
+                    arrayElementIndex( *( _array ), _element );         \
+                break;                                                  \
+            }                                                           \
+        }                                                               \
+        ( pluckArrayByIndex( ( _array ), l_index$pluckArrayByValue ) ); \
+    } )
+
+#define removeLastElementArray( _array )                                      \
+    do {                                                                      \
+        arrayLength_t* l_arrayAllocationCurrent$removeLastElementArray =      \
+            arrayAllocationPointer( *( _array ) );                            \
+        const arrayLength_t l_arrayLengthCurrent$removeLastElementArray =     \
+            arrayLength( *( _array ) );                                       \
+        if ( l_arrayLengthCurrent$removeLastElementArray > 0 ) {              \
+            const arrayLength_t l_arrayLengthNew =                            \
+                ( l_arrayLengthCurrent$removeLastElementArray - 1 );          \
+            arrayLength_t* l_arrayAllocationNew = ( arrayLength_t* )realloc(  \
+                l_arrayAllocationCurrent$removeLastElementArray,              \
+                ( sizeof( arrayLength_t ) +                                   \
+                  ( l_arrayLengthNew * sizeof( typeof( *( _array ) ) ) ) ) ); \
+            *l_arrayAllocationNew = l_arrayLengthNew;                         \
+            *( _array ) =                                                     \
+                ( typeof( *( _array ) ) )( l_arrayAllocationNew + 1 );        \
+        }                                                                     \
     } while ( 0 )
 
-ssize_t findStringInArray( const char* restrict const* restrict _array,
-                           const size_t _arrayLength,
-                           const char* restrict _string );
+size_t findStringInArrayNative( const char* restrict const* restrict _array,
+                                const size_t _arrayLength,
+                                const char* restrict _string );
 
-ssize_t findInArray( const size_t* restrict _array,
-                     const size_t _arrayLength,
-                     const size_t _value );
+#define findInArrayNative( _array, _arrayLength, _value ) \
+    ( {                                                   \
+        size_t l_index$findInArrayNative = SIZE_MAX;      \
+        FOR_RANGE( size_t, 0, _arrayLength ) {            \
+            if ( _array[ _index ] == _value ) {           \
+                l_index$findInArrayNative = _index;       \
+                break;                                    \
+            }                                             \
+        }                                                 \
+        ( l_index$findInArrayNative );                    \
+    } )
 
-static FORCE_INLINE bool containsString(
+static FORCE_INLINE bool containsStringNative(
     const char* restrict const* restrict _array,
     const size_t _arrayLength,
     const char* restrict _string ) {
-    return ( findStringInArray( _array, _arrayLength, _string ) >= 0 );
+    return ( findStringInArrayNative( _array, _arrayLength, _string ) >= 0 );
 }
 
-static FORCE_INLINE bool contains( const size_t* restrict _array,
-                                   const size_t _arrayLength,
-                                   const size_t _value ) {
-    return ( findInArray( _array, _arrayLength, _value ) >= 0 );
+#define containsNative( _array, _arrayLength, _value ) \
+    ( { ( findInArrayNative( _array, _arrayLength, _value ) >= 0 ); } )
+
+// Utility functions ( no side-effects ) wrappers for non-native array
+static FORCE_INLINE size_t
+findStringInArray( const char* restrict const* restrict _array,
+                   const char* restrict _string ) {
+    return ( findStringInArrayNative( arrayFirstElementPointer( _array ),
+                                      arrayLength( _array ), _string ) );
 }
 
-// Utility functions ( no side-effects ) wrappers for non-naitve array
-static FORCE_INLINE ssize_t
-_findStringInArray( const char* restrict const* restrict _array,
-                    const char* restrict _string ) {
-    return ( findStringInArray( arrayFirstElementPointer( _array ),
-                                arrayLength( _array ), _string ) );
-}
+#define findInArray( _array, _value )                   \
+    ( {                                                 \
+        size_t l_index$findInArray = SIZE_MAX;          \
+        FOR_RANGE( size_t, 0, arrayLength( _array ) ) { \
+            if ( _array[ _index ] == _value ) {         \
+                l_index$findInArray = _index;           \
+                break;                                  \
+            }                                           \
+        }                                               \
+        ( l_index$findInArray );                        \
+    } )
 
-static FORCE_INLINE ssize_t _findInArray( const size_t* restrict _array,
-                                          const size_t _value ) {
-    return ( findInArray( arrayFirstElementPointer( _array ),
-                          arrayLength( _array ), _value ) );
-}
-
-static FORCE_INLINE bool _containsString(
+static FORCE_INLINE bool containsString(
     const char* restrict const* restrict _array,
     const char* restrict _string ) {
-    return ( containsString( arrayFirstElementPointer( _array ),
-                             arrayLength( _array ), _string ) );
+    return ( containsStringNative( arrayFirstElementPointer( _array ),
+                                   arrayLength( _array ), _string ) );
 }
 
-static FORCE_INLINE bool _contains( const size_t* restrict _array,
-                                    const size_t _value ) {
-    return ( contains( arrayFirstElementPointer( _array ),
-                       arrayLength( _array ), _value ) );
-}
+#define contains( _array, _value ) \
+    ( { ( findInArray( _array, _value ) >= 0 ); } )
 
 // Utility OS specific functions ( no side-effects )
 static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {
@@ -677,12 +717,13 @@ static FORCE_INLINE void dumpCallback( void* _callback,
     va_start( l_arguments, _format );
 
     // Skip nested structs
-    if ( findSymbolInString( _format, '{' ) != -1 ) {
+    if ( findSymbolInString( _format, '{' ) != SIZE_MAX ) {
         l_depth++;
     }
 
     // Only act on top-level fields
-    if ( ( l_depth == 1 ) && ( findSymbolInString( _format, '=' ) != -1 ) ) {
+    if ( ( l_depth == 1 ) &&
+         ( findSymbolInString( _format, '=' ) != SIZE_MAX ) ) {
         // Skip indentation
         va_arg( l_arguments, char* );
 
@@ -703,7 +744,7 @@ static FORCE_INLINE void dumpCallback( void* _callback,
         }
     }
 
-    if ( findSymbolInString( _format, '}' ) != -1 ) {
+    if ( findSymbolInString( _format, '}' ) != SIZE_MAX ) {
         l_depth--;
     }
 

@@ -231,9 +231,9 @@ bool watch_t$remove( watch_t* restrict _watch ) {
             goto EXIT;
         }
 
-        removeLastArray( &( _watch->watchDescriptors ) );
-        removeLastArray( &( _watch->watchCallbacks ) );
-        removeLastArray( &( _watch->callbackContexts ) );
+        removeLastElementArray( &( _watch->watchDescriptors ) );
+        removeLastElementArray( &( _watch->watchCallbacks ) );
+        removeLastElementArray( &( _watch->callbackContexts ) );
 
         l_returnValue = true;
     }
