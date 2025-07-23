@@ -231,10 +231,10 @@ EXIT:
     return ( l_returnValue );
 }
 
-ssize_t findStringInArray( const char* restrict const* restrict _array,
-                           const size_t _arrayLength,
-                           const char* restrict _string ) {
-    ssize_t l_returnValue = -1;
+size_t findStringInArrayNative( const char* restrict const* restrict _array,
+                                const size_t _arrayLength,
+                                const char* restrict _string ) {
+    size_t l_returnValue = SIZE_MAX;
 
     if ( UNLIKELY( !_array ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );
@@ -255,7 +255,7 @@ ssize_t findStringInArray( const char* restrict const* restrict _array,
     }
 
     {
-        ssize_t l_index = -1;
+        size_t l_index = SIZE_MAX;
 
         const size_t l_stringLength = __builtin_strlen( _string );
 
@@ -268,47 +268,6 @@ ssize_t findStringInArray( const char* restrict const* restrict _array,
 
             if ( __builtin_strncmp( l_element, _string, l_stringLength ) ==
                  0 ) {
-                l_index = _index;
-
-                break;
-            }
-        }
-
-        l_returnValue = l_index;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-ssize_t findInArray( const size_t* restrict _array,
-                     const size_t _arrayLength,
-                     const size_t _value ) {
-    ssize_t l_returnValue = -1;
-
-    if ( UNLIKELY( !_array ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    if ( UNLIKELY( !_arrayLength ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    if ( UNLIKELY( !_value ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
-        ssize_t l_index = -1;
-
-        FOR_RANGE( size_t, 0, _arrayLength ) {
-            if ( _array[ _index ] == _value ) {
                 l_index = _index;
 
                 break;
