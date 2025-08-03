@@ -19,7 +19,7 @@ declare -a partsToBuild=(
     "background_t"
     "HUD_t"
     "character_t"
-    "font_t"
+    # "font_t"
     "asset_t"
     "watch_t"
     "log"

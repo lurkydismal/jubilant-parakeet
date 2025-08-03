@@ -87,7 +87,7 @@ bool font_t$destroy( font_t* restrict _font ) {
     }
 
     {
-        _font->texture = 0;
+        _font->atlas = 0;
         _font->height = 0;
         _font->ascent = 0;
         _font->atlasWidth = 0;
@@ -200,9 +200,9 @@ bool font_t$load$fromAsset( font_t* restrict _font, asset_t* restrict _asset ) {
 
             // Texture
             {
-                glGenTextures( 1, &( _font->texture ) );
+                glGenTextures( 1, &( _font->atlas ) );
 
-                if ( UNLIKELY( !( _font->texture ) ) ) {
+                if ( UNLIKELY( !( _font->atlas ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
                                            "Generating font texture\n" );
 
@@ -211,7 +211,7 @@ bool font_t$load$fromAsset( font_t* restrict _font, asset_t* restrict _asset ) {
                     goto EXIT_BITMAP_TRIMMED;
                 }
 
-                glBindTexture( GL_TEXTURE_2D, _font->texture );
+                glBindTexture( GL_TEXTURE_2D, _font->atlas );
 
                 if ( UNLIKELY( glGetError() != GL_NO_ERROR ) ) {
                     log$transaction$query( ( logLevel_t )error,
@@ -336,11 +336,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-// TODO: Implement
-bool font_t$load$fromGlob( font_t* restrict _font, const char* restrict _glob ) {
-    return ( false );
-}
-
 bool font_t$unload( font_t* restrict _font ) {
     bool l_returnValue = false;
 
@@ -349,9 +344,11 @@ bool font_t$unload( font_t* restrict _font ) {
     }
 
     {
-        glDeleteTextures( 1, &( _font->texture ) );
+        SDL_DestroyTexture( _font->atlas.data );
 
-        if ( UNLIKELY( glGetError() != GL_NO_ERROR ) ) {
+        const char* l_error = SDL_GetError();
+
+        if ( UNLIKELY( *l_error ) ) {
             log$transaction$query( ( logLevel_t )error,
                                    "Deleting font texture\n" );
 
