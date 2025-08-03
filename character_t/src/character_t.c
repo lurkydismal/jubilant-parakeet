@@ -2,7 +2,9 @@
 
 #include <cJSON.h>
 
+#if 0
 #include "asset_t.h"
+#endif
 #include "log.h"
 #include "stdfunc.h"
 
@@ -86,6 +88,7 @@ EXIT:
 }
 
 // TODO
+#if 0
 static FORCE_INLINE bool load( character_t* restrict _character,
                                SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
@@ -148,8 +151,10 @@ static FORCE_INLINE bool load( character_t* restrict _character,
 EXIT:
     return ( l_returnValue );
 }
+#endif
 
 // TODO
+#if 0
 static FORCE_INLINE bool character_t$reload( void* restrict _context,
                                              const char* restrict _fileName,
                                              size_t _eventMask,
@@ -276,6 +281,7 @@ static FORCE_INLINE bool character_t$reload( void* restrict _context,
 EXIT:
     return ( l_returnValue );
 }
+#endif
 
 #if 0
 move_t* parseMoves(const cJSON* root) {

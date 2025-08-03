@@ -283,25 +283,25 @@ static FORCE_INLINE void trim( char* restrict* restrict _string,
 
 // clang-format off
 #define lengthOfNumber( _number ) ( {\
-    ( (_number < 10ULL) ) ? ( 1 ) :\
-    ( (_number < 100ULL) ) ? ( 2 ) :\
-    ( (_number < 1000ULL) ) ? ( 3 ) :\
-    ( (_number < 10000ULL) ) ? ( 4 ) :\
-    ( (_number < 100000ULL) ) ? ( 5 ) :\
-    ( (_number < 1000000ULL) ) ? ( 6 ) :\
-    ( (_number < 10000000ULL) ) ? ( 7 ) :\
-    ( (_number < 100000000ULL) ) ? ( 8 ) :\
-    ( (_number < 1000000000ULL) ) ? ( 9 ) :\
-    ( (_number < 10000000000ULL) ) ? ( 10 ) :\
-    ( (_number < 100000000000ULL) ) ? ( 11 ) :\
-    ( (_number < 1000000000000ULL) ) ? ( 12 ) :\
-    ( (_number < 10000000000000ULL) ) ? ( 13 ) :\
-    ( (_number < 100000000000000ULL) ) ? ( 14 ) :\
-    ( (_number < 1000000000000000ULL) ) ? ( 15 ) :\
-    ( (_number < 10000000000000000ULL) ) ? ( 16 ) :\
-    ( (_number < 100000000000000000ULL) ) ? ( 17 ) :\
-    ( (_number < 1000000000000000000ULL) ) ? ( 18 ) :\
-    ( (_number < 10000000000000000000ULL) ) ? ( 19 ) :\
+    ( ((_number) < 10ULL) ) ? ( 1 ) :\
+    ( ((_number) < 100ULL) ) ? ( 2 ) :\
+    ( ((_number) < 1000ULL) ) ? ( 3 ) :\
+    ( ((_number) < 10000ULL) ) ? ( 4 ) :\
+    ( ((_number) < 100000ULL) ) ? ( 5 ) :\
+    ( ((_number) < 1000000ULL) ) ? ( 6 ) :\
+    ( ((_number) < 10000000ULL) ) ? ( 7 ) :\
+    ( ((_number) < 100000000ULL) ) ? ( 8 ) :\
+    ( ((_number) < 1000000000ULL) ) ? ( 9 ) :\
+    ( ((_number) < 10000000000ULL) ) ? ( 10 ) :\
+    ( ((_number) < 100000000000ULL) ) ? ( 11 ) :\
+    ( ((_number) < 1000000000000ULL) ) ? ( 12 ) :\
+    ( ((_number) < 10000000000000ULL) ) ? ( 13 ) :\
+    ( ((_number) < 100000000000000ULL) ) ? ( 14 ) :\
+    ( ((_number) < 1000000000000000ULL) ) ? ( 15 ) :\
+    ( ((_number) < 10000000000000000ULL) ) ? ( 16 ) :\
+    ( ((_number) < 100000000000000000ULL) ) ? ( 17 ) :\
+    ( ((_number) < 1000000000000000000ULL) ) ? ( 18 ) :\
+    ( ((_number) < 10000000000000000000ULL) ) ? ( 19 ) :\
     ( 20 );\
 } )
 // clang-format on
@@ -357,13 +357,13 @@ EXIT:
     return ( l_returnValue );
 }
 
-#define clone( _element )                                                  \
-    ( {                                                                    \
-        typeof( _element ) l_allocated$clone =                             \
-            ( typeof( _element ) )malloc( sizeof( typeof( *_element ) ) ); \
-        __builtin_memcpy( l_allocated$clone, _element,                     \
-                          sizeof( typeof( *_element ) ) );                 \
-        ( l_allocated$clone );                                             \
+#define clone( _element )                                                      \
+    ( {                                                                        \
+        typeof( _element ) l_allocated$clone =                                 \
+            ( typeof( _element ) )malloc( sizeof( typeof( *( _element ) ) ) ); \
+        __builtin_memcpy( l_allocated$clone, _element,                         \
+                          sizeof( typeof( *( _element ) ) ) );                 \
+        ( l_allocated$clone );                                                 \
     } )
 
 static FORCE_INLINE char* duplicateString( const char* restrict _string ) {
@@ -576,8 +576,8 @@ size_t findStringInArrayNative( const char* restrict const* restrict _array,
 #define findInArrayNative( _array, _arrayLength, _value ) \
     ( {                                                   \
         size_t l_index$findInArrayNative = SIZE_MAX;      \
-        FOR_RANGE( size_t, 0, _arrayLength ) {            \
-            if ( _array[ _index ] == _value ) {           \
+        FOR_RANGE( arrayLength_t, 0, _arrayLength ) {     \
+            if ( ( _array )[ _index ] == ( _value ) ) {   \
                 l_index$findInArrayNative = _index;       \
                 break;                                    \
             }                                             \
@@ -603,16 +603,16 @@ findStringInArray( const char* restrict const* restrict _array,
                                       arrayLength( _array ), _string ) );
 }
 
-#define findInArray( _array, _value )                   \
-    ( {                                                 \
-        size_t l_index$findInArray = SIZE_MAX;          \
-        FOR_RANGE( size_t, 0, arrayLength( _array ) ) { \
-            if ( _array[ _index ] == _value ) {         \
-                l_index$findInArray = _index;           \
-                break;                                  \
-            }                                           \
-        }                                               \
-        ( l_index$findInArray );                        \
+#define findInArray( _array, _value )                          \
+    ( {                                                        \
+        size_t l_index$findInArray = SIZE_MAX;                 \
+        FOR_RANGE( arrayLength_t, 0, arrayLength( _array ) ) { \
+            if ( ( _array )[ _index ] == ( _value ) ) {        \
+                l_index$findInArray = _index;                  \
+                break;                                         \
+            }                                                  \
+        }                                                      \
+        ( l_index$findInArray );                               \
     } )
 
 static FORCE_INLINE bool containsString(

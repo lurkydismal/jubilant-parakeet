@@ -17,7 +17,6 @@
 #endif
 
 #include "applicationState_t.h"
-#include "asset_t.h"
 #include "event.h"
 #include "init.h"
 #include "iterate.h"
