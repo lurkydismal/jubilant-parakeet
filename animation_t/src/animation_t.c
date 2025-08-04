@@ -102,7 +102,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
 #endif
 
-            size_t l_keyFrameIndex;
+            size_t l_keyFrameIndex = 0;
 
             // Key frame
             {
