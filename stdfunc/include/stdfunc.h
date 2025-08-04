@@ -589,11 +589,12 @@ static FORCE_INLINE bool containsStringNative(
     const char* restrict const* restrict _array,
     const size_t _arrayLength,
     const char* restrict _string ) {
-    return ( findStringInArrayNative( _array, _arrayLength, _string ) >= 0 );
+    return ( findStringInArrayNative( _array, _arrayLength, _string ) !=
+             SIZE_MAX );
 }
 
 #define containsNative( _array, _arrayLength, _value ) \
-    ( { ( findInArrayNative( _array, _arrayLength, _value ) >= 0 ); } )
+    ( { ( findInArrayNative( _array, _arrayLength, _value ) != SIZE_MAX ); } )
 
 // Utility functions ( no side-effects ) wrappers for non-native array
 static FORCE_INLINE size_t
@@ -623,7 +624,7 @@ static FORCE_INLINE bool containsString(
 }
 
 #define contains( _array, _value ) \
-    ( { ( findInArray( _array, _value ) >= 0 ); } )
+    ( { ( findInArray( _array, _value ) != SIZE_MAX ); } )
 
 // Utility OS specific functions ( no side-effects )
 static FORCE_INLINE char* getApplicationDirectoryAbsolutePath( void ) {

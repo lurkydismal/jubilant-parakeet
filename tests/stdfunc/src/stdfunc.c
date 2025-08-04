@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <omp.h>
+#include <stdint.h>
 
 #include "stdfloat16.h"
 #include "test.h"
@@ -195,7 +196,7 @@ TEST( generateHash ) {
                     ( uint8_t* )malloc( l_bufferLength * sizeof( uint8_t ) );
 
                 FOR_RANGE( size_t, 0, _index ) {
-                    l_buffer[ _index ] = ( randomNumber() % ( 255 + 1 ) );
+                    l_buffer[ _index ] = ( randomNumber() % ( UINT8_MAX + 1 ) );
                 }
 
                 const size_t l_actualHash =
@@ -343,7 +344,7 @@ TEST( sanitizeString ) {
         free( l_result );                              \
     } while ( 0 )
 
-    char* l_result;
+    char* l_result = NULL;
 
     // Normal case with spaces and a comment
     sanitizeStringTest( "  Hello  World   # Comment here", "HelloWorld" );
@@ -373,7 +374,7 @@ TEST( sanitizeString ) {
 }
 
 TEST( splitStringIntoArray ) {
-    char** l_result;
+    char** l_result = NULL;
 
     // Basic case
     {
@@ -441,7 +442,7 @@ TEST( splitStringIntoArray ) {
 }
 
 TEST( splitStringIntoArrayBySymbol ) {
-    char** l_result;
+    char** l_result = NULL;
 
     // Basic case
     {
@@ -649,8 +650,8 @@ TEST( preallocateArray ) {
 
         // Insert values
         {
-            insertIntoArray( &l_array, 100 );
-            insertIntoArray( &l_array, 200 );
+            insertIntoArray( &l_array, ( void* )100 );
+            insertIntoArray( &l_array, ( void* )200 );
         }
 
         // Preallocate more space
@@ -784,8 +785,10 @@ TEST( insertIntoArray ) {
 
     // Insert values
     {
-        ASSERT_EQ( "%zu", insertIntoArray( &l_array, 200 ), ( size_t )0 );
-        ASSERT_EQ( "%zu", insertIntoArray( &l_array, 300 ), ( size_t )1 );
+        ASSERT_EQ( "%zu", insertIntoArray( &l_array, ( void* )200 ),
+                   ( size_t )0 );
+        ASSERT_EQ( "%zu", insertIntoArray( &l_array, ( void* )300 ),
+                   ( size_t )1 );
     }
 
     // Ensure array length is updated correctly
@@ -850,143 +853,150 @@ TEST( insertIntoArray ) {
     FREE_ARRAY( l_array );
 }
 
-TEST( findStringInArray ) {
+TEST( findStringInArrayNative ) {
     const char* l_array[] = { "apple", "banana", "cherry", "date",
                               "elderberry" };
 
     // Cases
     {
-        ASSERT_EQ(
-            "%zd",
-            findStringInArray( l_array, arrayLengthNative( l_array ), "apple" ),
-            ( size_t )0 );
         ASSERT_EQ( "%zd",
-                   findStringInArray( l_array, arrayLengthNative( l_array ),
-                                      "banana" ),
+                   findStringInArrayNative(
+                       l_array, arrayLengthNative( l_array ), "apple" ),
+                   ( size_t )0 );
+        ASSERT_EQ( "%zd",
+                   findStringInArrayNative(
+                       l_array, arrayLengthNative( l_array ), "banana" ),
                    ( size_t )1 );
         ASSERT_EQ( "%zd",
-                   findStringInArray( l_array, arrayLengthNative( l_array ),
-                                      "cherry" ),
+                   findStringInArrayNative(
+                       l_array, arrayLengthNative( l_array ), "cherry" ),
                    ( size_t )2 );
-        ASSERT_EQ(
-            "%zd",
-            findStringInArray( l_array, arrayLengthNative( l_array ), "date" ),
-            ( size_t )3 );
         ASSERT_EQ( "%zd",
-                   findStringInArray( l_array, arrayLengthNative( l_array ),
-                                      "elderberry" ),
+                   findStringInArrayNative(
+                       l_array, arrayLengthNative( l_array ), "date" ),
+                   ( size_t )3 );
+        ASSERT_EQ( "%zd",
+                   findStringInArrayNative(
+                       l_array, arrayLengthNative( l_array ), "elderberry" ),
                    ( size_t )4 );
     }
 
     // String not found
     ASSERT_EQ(
         "%zd",
-        findStringInArray( l_array, arrayLengthNative( l_array ), "fig" ),
+        findStringInArrayNative( l_array, arrayLengthNative( l_array ), "fig" ),
         ( size_t )( -1 ) );
 
     // Empty array
-    ASSERT_EQ( "%zd", findStringInArray( NULL, 0, "apple" ),
+    ASSERT_EQ( "%zd", findStringInArrayNative( NULL, 0, "apple" ),
                ( size_t )( -1 ) );
 
     // NULL search string
-    ASSERT_EQ( "%zd",
-               findStringInArray( l_array, arrayLengthNative( l_array ), NULL ),
-               ( size_t )( -1 ) );
+    ASSERT_EQ(
+        "%zd",
+        findStringInArrayNative( l_array, arrayLengthNative( l_array ), NULL ),
+        ( size_t )( -1 ) );
 }
 
-TEST( findInArray ) {
+TEST( findInArrayNative ) {
     const size_t l_array[] = { 10, 20, 30, 40, 50 };
 
     // Cases
     {
-        ASSERT_EQ( "%zd",
-                   findInArray( l_array, arrayLengthNative( l_array ), 10 ),
-                   ( size_t )0 );
-        ASSERT_EQ( "%zd",
-                   findInArray( l_array, arrayLengthNative( l_array ), 20 ),
-                   ( size_t )1 );
-        ASSERT_EQ( "%zd",
-                   findInArray( l_array, arrayLengthNative( l_array ), 30 ),
-                   ( size_t )2 );
-        ASSERT_EQ( "%zd",
-                   findInArray( l_array, arrayLengthNative( l_array ), 40 ),
-                   ( size_t )3 );
-        ASSERT_EQ( "%zd",
-                   findInArray( l_array, arrayLengthNative( l_array ), 50 ),
-                   ( size_t )4 );
+        ASSERT_EQ(
+            "%zd",
+            findInArrayNative( l_array, arrayLengthNative( l_array ), 10 ),
+            ( size_t )0 );
+        ASSERT_EQ(
+            "%zd",
+            findInArrayNative( l_array, arrayLengthNative( l_array ), 20 ),
+            ( size_t )1 );
+        ASSERT_EQ(
+            "%zd",
+            findInArrayNative( l_array, arrayLengthNative( l_array ), 30 ),
+            ( size_t )2 );
+        ASSERT_EQ(
+            "%zd",
+            findInArrayNative( l_array, arrayLengthNative( l_array ), 40 ),
+            ( size_t )3 );
+        ASSERT_EQ(
+            "%zd",
+            findInArrayNative( l_array, arrayLengthNative( l_array ), 50 ),
+            ( size_t )4 );
     }
 
     // String not found
-    ASSERT_EQ( "%zd", findInArray( l_array, arrayLengthNative( l_array ), 60 ),
+    ASSERT_EQ( "%zd",
+               findInArrayNative( l_array, arrayLengthNative( l_array ), 60 ),
                ( size_t )( -1 ) );
 
     // Empty array
-    ASSERT_EQ( "%zd", findInArray( ( size_t* )NULL, 0, 0 ), ( size_t )( -1 ) );
+    {
+        const size_t l_array[] = {};
+        ASSERT_EQ( "%zd", findInArrayNative( l_array, 0, 0 ),
+                   ( size_t )( -1 ) );
+    }
 
     // NULL search string
-    ASSERT_EQ(
-        "%zd",
-        findInArray( l_array, arrayLengthNative( l_array ), ( size_t )NULL ),
-        ( size_t )( -1 ) );
+    ASSERT_EQ( "%zd",
+               findInArrayNative( l_array, arrayLengthNative( l_array ),
+                                  ( size_t )NULL ),
+               ( size_t )( -1 ) );
 }
 
-TEST( containsString ) {
+TEST( containsStringNative ) {
     const char* l_array[] = { "apple", "banana", "cherry", "date" };
 
     // Value exists in the array
     {
-        ASSERT_TRUE(
-            containsString( l_array, arrayLengthNative( l_array ), "banana" ) );
-        ASSERT_TRUE(
-            containsString( l_array, arrayLengthNative( l_array ), "date" ) );
+        ASSERT_TRUE( containsStringNative(
+            l_array, arrayLengthNative( l_array ), "banana" ) );
+        ASSERT_TRUE( containsStringNative(
+            l_array, arrayLengthNative( l_array ), "date" ) );
     }
 
     // Value does not exist in the array
-    ASSERT_FALSE(
-        containsString( l_array, arrayLengthNative( l_array ), "grape" ) );
+    ASSERT_FALSE( containsStringNative( l_array, arrayLengthNative( l_array ),
+                                        "grape" ) );
 
     // Empty array
     {
         const char* l_array[] = {};
 
-        ASSERT_FALSE(
-            containsString( l_array, arrayLengthNative( l_array ), "apple" ) );
+        ASSERT_FALSE( containsStringNative(
+            l_array, arrayLengthNative( l_array ), "apple" ) );
     }
 
     // NULL input
     {
-        ASSERT_FALSE(
-            containsString( NULL, arrayLengthNative( l_array ), "banana" ) );
-        ASSERT_FALSE(
-            containsString( l_array, arrayLengthNative( l_array ), NULL ) );
-        ASSERT_FALSE( containsString( NULL, 0, NULL ) );
+        ASSERT_FALSE( containsStringNative( NULL, arrayLengthNative( l_array ),
+                                            "banana" ) );
+        ASSERT_FALSE( containsStringNative(
+            l_array, arrayLengthNative( l_array ), NULL ) );
+        ASSERT_FALSE( containsStringNative( NULL, 0, NULL ) );
     }
 }
 
-TEST( contains ) {
+TEST( containsNative ) {
     const size_t l_array[] = { 1, 2, 3, 4, 5 };
 
     // Value exists in the array
     {
-        ASSERT_TRUE( contains( l_array, arrayLengthNative( l_array ), 2 ) );
-        ASSERT_TRUE( contains( l_array, arrayLengthNative( l_array ), 5 ) );
+        ASSERT_TRUE(
+            containsNative( l_array, arrayLengthNative( l_array ), 2 ) );
+        ASSERT_TRUE(
+            containsNative( l_array, arrayLengthNative( l_array ), 5 ) );
     }
 
     // Value does not exist in the array
-    ASSERT_FALSE( contains( l_array, arrayLengthNative( l_array ), 10 ) );
+    ASSERT_FALSE( containsNative( l_array, arrayLengthNative( l_array ), 10 ) );
 
     // Empty array
     {
         const size_t l_array[] = {};
 
-        ASSERT_FALSE( contains( l_array, arrayLengthNative( l_array ), 1 ) );
-    }
-
-    // NULL input
-    {
-        ASSERT_FALSE( contains( NULL, arrayLengthNative( l_array ), 2 ) );
-        ASSERT_FALSE( contains( l_array, arrayLengthNative( l_array ), 0 ) );
-        ASSERT_FALSE( contains( NULL, 0, 0 ) );
+        ASSERT_FALSE(
+            containsNative( l_array, arrayLengthNative( l_array ), 1 ) );
     }
 }
 
