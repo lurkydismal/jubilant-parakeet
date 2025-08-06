@@ -5,7 +5,6 @@ shopt -s nullglob
 
 export SCRIPT_DIRECTORY
 SCRIPT_DIRECTORY=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-
 export BUILD_DIRECTORY_NAME="out"
 export TESTS_DIRECTORY_NAME="tests"
 export BUILD_DIRECTORY="$SCRIPT_DIRECTORY/$BUILD_DIRECTORY_NAME"
@@ -249,6 +248,11 @@ clear
 
 source './config.sh' && {
 
+    command -v fd >/dev/null 2>&1 || {
+        echo "fd (fd-find) not found"
+        exit 1
+    }
+
     mkdir -p "$BUILD_DIRECTORY"
 
     # Remove all object files
@@ -258,7 +262,7 @@ source './config.sh' && {
             fd -I -e o -x rm {}
 
         else
-            if [[ -n "${staticParts[@]}" ]]; then
+            if [ ${#staticParts[@]} -ne 0 ]; then
                 printf -v staticPartsAsExcludeString -- "-E %s " "${staticParts[@]}"
 
             else
@@ -326,9 +330,6 @@ source './config.sh' && {
         COMPILER="$C_COMPILER"
     fi
 
-    export BUILD_FLAGS
-    export COMPILER
-
     if [ -z "${DISABLE_BUILD_CACHE+x}" ]; then
         COMPILER="ccache $COMPILER"
     fi
@@ -336,6 +337,14 @@ source './config.sh' && {
     if [ -n "${SCAN_BUILD+x}" ]; then
         COMPILER="scan-build $SCAN_BUILD_FLAGS $COMPILER"
     fi
+
+    export BUILD_FLAGS
+    export COMPILER
+
+    command -v $COMPILER >/dev/null 2>&1 || {
+        echo "$COMPILER not found"
+        exit 1
+    }
 
     if [ ${#BUILD_DEFINES[@]} -ne 0 ]; then
         printf -v definesAsString -- "-D %s " "${BUILD_DEFINES[@]}"
@@ -503,7 +512,7 @@ source './config.sh' && {
                 if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                     echo "Linking static $outputFile"
 
-                    $COMPILER -shared -nostdlib "$LINK_FLAGS" '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
+                    $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
                     export NEED_HOT_RELOAD
 
@@ -541,11 +550,11 @@ source './config.sh' && {
                 if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                     echo "Linking $outputFile"
 
-                    cd "$BUILD_DIRECTORY"
+                    cd "$BUILD_DIRECTORY" || exit
 
-                    $COMPILER -shared -nostdlib "$LINK_FLAGS" '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
+                    $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
-                    cd - >'/dev/null'
+                    cd - >'/dev/null' || exit
 
                     export NEED_HOT_RELOAD
 
@@ -592,13 +601,13 @@ source './config.sh' && {
 
                     echo "Linking $outputFile"
 
-                    cd "$BUILD_DIRECTORY"
+                    cd "$BUILD_DIRECTORY" || exit
 
-                    $COMPILER -shared "$LINK_FLAGS" '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
+                    $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
 
                     BUILD_STATUS=$?
 
-                    cd - >'/dev/null'
+                    cd - >'/dev/null' || exit
 
                     if [ $BUILD_STATUS -ne 0 ]; then
                         exit
@@ -619,7 +628,7 @@ source './config.sh' && {
     # Build main executable
     if [ "$BUILD_STATUS" -eq 0 ]; then
         # Build executable main package
-        if [ $BUILD_STATUS -eq 0 ]; then
+        if [ "$BUILD_STATUS" -eq 0 ]; then
             source "$executableMainPackage/config.sh" && {
                 OUTPUT_FILE='lib'"$executableMainPackage"'.a'
 
@@ -647,8 +656,8 @@ source './config.sh' && {
         fi
 
         # Not Tests
-        if [ $BUILD_TYPE -ne 3 ]; then
-            if [ $BUILD_STATUS -eq 0 ]; then
+        if [ "$BUILD_TYPE" -ne 3 ]; then
+            if [ "$BUILD_STATUS" -eq 0 ]; then
                 if [ ${#LIBRARIES_TO_LINK[@]} -ne 0 ]; then
                     printf -v librariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK[@]}"
                     echo -e "$LIBRARIES_COLOR""$librariesToLinkAsString""$RESET_COLOR"
@@ -656,14 +665,14 @@ source './config.sh' && {
 
                 if [ -z "${SCAN_BUILD+x}" ]; then
                     # Debug
-                    if [ $BUILD_TYPE -eq 0 ] && [ ! -z "${ENABLE_HOT_RELOAD+x}" ]; then
-                        cd "$BUILD_DIRECTORY"
+                    if [ "$BUILD_TYPE" -eq 0 ] && [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
+                        cd "$BUILD_DIRECTORY" || exit
 
                         $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
                         BUILD_STATUS=$?
 
-                        cd - >'/dev/null'
+                        cd - >'/dev/null' || exit
 
                     else
                         $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
@@ -672,10 +681,10 @@ source './config.sh' && {
                     fi
                 fi
 
-                if [ $BUILD_STATUS -eq 0 ]; then
+                if [ "$BUILD_STATUS" -eq 0 ]; then
                     echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
 
-                    if [ ! -z "${STRIP_EXECUTABLE+x}" ]; then
+                    if [ -n "${STRIP_EXECUTABLE+x}" ]; then
                         if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
                             printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
                             echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
@@ -691,9 +700,9 @@ source './config.sh' && {
     fi
 
     # Build tests
-    if [ $BUILD_STATUS -eq 0 ]; then
+    if [ "$BUILD_STATUS" -eq 0 ]; then
         # Tests
-        if [ $BUILD_TYPE -eq 3 ]; then
+        if [ "$BUILD_TYPE" -eq 3 ]; then
             if [ ${#BUILD_INCLUDES_TESTS[@]} -ne 0 ]; then
                 printf -v testIncludesAsString -- "-I $SCRIPT_DIRECTORY/%s " "${BUILD_INCLUDES_TESTS[@]}"
                 echo -e "$INCLUDES_COLOR""$testIncludesAsString""$RESET_COLOR"
@@ -738,7 +747,7 @@ source './config.sh' && {
                 fi
             done
 
-            if [ $BUILD_STATUS -ne 0 ]; then
+            if [ "$BUILD_STATUS" -ne 0 ]; then
                 exit
             fi
 
@@ -746,7 +755,7 @@ source './config.sh' && {
             processStatuses=()
 
             # Build tests main package
-            if [ $BUILD_STATUS -eq 0 ]; then
+            if [ "$BUILD_STATUS" -eq 0 ]; then
                 source "$testsMainPackage/config.sh" && {
                     OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
                         './build_general.sh' \
@@ -783,7 +792,7 @@ source './config.sh' && {
                 fi
 
                 if [ -z "${SCAN_BUILD+x}" ]; then
-                    $COMPILER "$LINK_FLAGS" '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' "$testsToBuildAsString" "$staticPartsAsString" "$partsToBuildAsString" '-Wl,--no-whole-archive' "$librariesToLinkAsString" "$externalLibrariesLinkFlagsAsString" "$testsLibrariesToLinkAsString" -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+                    $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
 
                     BUILD_STATUS=$?
                 fi
@@ -797,7 +806,7 @@ source './config.sh' && {
                             echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
                         fi
 
-                        objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" "$sectionsToStripAsString"
+                        objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
 
                         strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
                     fi
