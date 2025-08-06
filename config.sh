@@ -1,5 +1,5 @@
 #!/bin/bash
-declare -a partsToBuild=(
+export partsToBuild=(
     "gameStates"
     "runtime"
     "controls_t"
@@ -25,7 +25,7 @@ declare -a partsToBuild=(
     "log"
     "stdfunc"
 )
-declare -a testsToBuild=(
+export testsToBuild=(
     # "gameStates"
     # "runtime"
     "controls_t"
@@ -51,11 +51,11 @@ declare -a testsToBuild=(
     "log"
     "stdfunc"
 )
-declare -a staticParts=(
+export staticParts=(
     "inih"
     "plthook"
 )
-declare -a rootSharedObjectName="root"
+export rootSharedObjectName="root"
 
 export executableMainPackage='main'
 export testsMainPackage='test'
