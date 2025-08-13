@@ -61,9 +61,9 @@
     ( ( _milliseconds ) * ONE_MILLISECOND_IN_NANOSECONDS )
 #define BITS_TO_BYTES( _bits ) ( ( size_t )( ( _bits ) / 8 ) )
 // This macro turns a value into a string literal
-#define STRINGIFY_MACRO( _value ) #_value
-// This is a helper macro that handles the stringify
-#define MACRO_TO_STRING( _macro ) STRINGIFY_MACRO( _macro )
+#define STRINGIFY( _value ) #_value
+// This is a helper macro that handles the stringify of macros
+#define MACRO_TO_STRING( _macro ) STRINGIFY( _macro )
 
 // Utility functions ( no side-effects )
 #define max( _a, _b ) ( ( ( _a ) > ( _b ) ) ? ( _a ) : ( _b ) )
