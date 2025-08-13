@@ -2,26 +2,24 @@
 # Turn off everything, then re-enable only the checks you want:
 Checks: >
   clang-analyzer-*
-  ,-clang-diagnostic-#pragma-messages
   ,bugprone-*
-  ,-bugprone-assignment-in-if-condition
   ,-bugprone-easily-swappable-parameters
-  ,-bugprone-inc-dec-in-conditions
   ,-bugprone-multi-level-implicit-pointer-conversion
   ,-bugprone-narrowing-conversions
   ,-bugprone-reserved-identifier
   ,-bugprone-sizeof-expression
   ,-bugprone-suspicious-realloc-usage
+  ,-clang-diagnostic-#pragma-messages
   ,cppcoreguidelines-*
+  ,-cppcoreguidelines-avoid-do-while
   ,-cppcoreguidelines-avoid-goto
-  ,-cppcoreguidelines-avoid-magic-numbers
   ,-cppcoreguidelines-avoid-non-const-global-variables
   ,-cppcoreguidelines-macro-to-enum
   ,-cppcoreguidelines-narrowing-conversions
-  ,performance-*
   ,modernize-*
   ,-modernize-macro-to-enum
-  ,-readability-identifier-naming
+  ,performance-*
+  ,readability-identifier-naming
 
 # Never try to re-format your code:
 FormatStyle: none
@@ -62,10 +60,9 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.ParameterPrefix
     value: _
-
-  - key: readability-identifier-naming.PrivateMemberCase
+  - key: readability-identifier-naming.ParameterConstantCase
     value: camelBack
-  - key: readability-identifier-naming.PrivateMemberPrefix
+  - key: readability-identifier-naming.ParameterConstantPrefix
     value: _
 
   - key: readability-pointer-alignment.Alignment
@@ -80,10 +77,22 @@ CheckOptions:
   # Types:
   - key: readability-identifier-naming.ClassCase
     value: CamelCase
+
   - key: readability-identifier-naming.StructCase
     value: camelBack
+
   - key: readability-identifier-naming.EnumCase
     value: camelBack
+  - key: readability-identifier-naming.EnumConstantCase
+    value: camelBack
+  - key: readability-identifier-naming.EnumMemberPrefix
+    value: ''
+
+  - key: readability-identifier-naming.PrivateMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMemberPrefix
+    value: _
+
   - key: readability-identifier-naming.TypeAliasCase
     value: camelBack
   - key: readability-identifier-naming.TypeAliasSuffix
