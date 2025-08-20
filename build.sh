@@ -18,6 +18,7 @@ export HASH_FUNCTION="sha512sum"
 # 3 - Tests
 export BUILD_TYPE=${BUILD_TYPE:-0}
 
+# TODO: Add all available flags
 {
     function show_help {
         cat <<EOF
