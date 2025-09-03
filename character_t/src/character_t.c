@@ -611,7 +611,9 @@ EXPORT bool hotReload$load( void* restrict _state,
             watch_t* l_element = *_element;
 
             FOR_ARRAY( watchCallback_t*, l_element->watchCallbacks ) {
+#if 0
                 *_element = character_t$reload;
+#endif
             }
         }
     }

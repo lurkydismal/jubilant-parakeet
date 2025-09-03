@@ -26,7 +26,7 @@ Usage: $0 [OPTION...]
 TODO: Description
 
   -v     Enable verbose output
-  -h, -? Show this help message
+  -h     Show this help message
   -d     Build debug
   -r     Build release
   -p     Build profile
@@ -41,7 +41,7 @@ EOF
 
     while getopts "hdrpt" _option; do
         case $_option in
-        h | \?)
+        h)
             show_help
             exit 0
             ;;
