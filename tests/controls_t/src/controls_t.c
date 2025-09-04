@@ -41,16 +41,11 @@ TEST( controls_t$control_t$convert$fromScancode ) {
     l_controls.D.scancode = SDL_SCANCODE_SEMICOLON;
 
     const SDL_Scancode l_scancodes[] = {
-        SDL_SCANCODE_W,
-        SDL_SCANCODE_S,
-        SDL_SCANCODE_A,
-        SDL_SCANCODE_D,
-        SDL_SCANCODE_J,
-        SDL_SCANCODE_K,
-        SDL_SCANCODE_L,
-        SDL_SCANCODE_SEMICOLON,
-        SDL_SCANCODE_Z, // Not mapped
-        0               // Invalid scancode
+        SDL_SCANCODE_W,      SDL_SCANCODE_S,         SDL_SCANCODE_A,
+        SDL_SCANCODE_D,      SDL_SCANCODE_J,         SDL_SCANCODE_K,
+        SDL_SCANCODE_L,      SDL_SCANCODE_SEMICOLON,
+        SDL_SCANCODE_Z,      // Not mapped
+        SDL_SCANCODE_UNKNOWN // Invalid scancode
     };
 
     const control_t* l_expectedControl[] = {

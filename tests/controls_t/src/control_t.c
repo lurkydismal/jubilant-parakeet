@@ -145,7 +145,7 @@ TEST( control_t$scancode$convert$fromString ) {
         const SDL_Scancode l_scancode =
             control_t$scancode$convert$fromString( NULL );
 
-        ASSERT_EQ( "%u", l_scancode, 0 );
+        ASSERT_EQ( "%u", l_scancode, SDL_SCANCODE_UNKNOWN );
     }
 
     // Valid
@@ -163,7 +163,8 @@ TEST( control_t$scancode$convert$fromString ) {
 TEST( control_t$scancode$convert$toString ) {
     // Invalid - NULL input
     {
-        const char* l_scancode = control_t$scancode$convert$toString( 0 );
+        const char* l_scancode =
+            control_t$scancode$convert$toString( SDL_SCANCODE_UNKNOWN );
 
         ASSERT_STRING_EQ( l_scancode, CONTROL_AS_STRING_UNKNOWN );
     }
