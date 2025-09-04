@@ -203,6 +203,8 @@ array_to_string() {
 
 clear
 
+cd "$SCRIPT_DIRECTORY" || exit
+
 source './config.sh' && {
 
     command -v fd >/dev/null 2>&1 || {
@@ -825,3 +827,5 @@ source './config.sh' && {
     fi
 
 }
+
+cd - >'/dev/null' || exit
