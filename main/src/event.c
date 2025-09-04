@@ -19,6 +19,8 @@ static FORCE_INLINE bool onWindowResize(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -60,10 +62,14 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_scancode ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -85,6 +91,9 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
                                         l_input, l_totalFramesRendered );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Adding player input\n" );
+
                     goto EXIT;
                 }
             }
@@ -104,6 +113,8 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -123,6 +134,9 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
                                                 l_newHeight );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Handling window resize\n" );
+
                     goto EXIT;
                 }
 
@@ -134,6 +148,9 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
                     onKey( _applicationState, _event->key.scancode );
 
                 if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Handling key press\n" );
+
                     goto EXIT;
                 }
 
