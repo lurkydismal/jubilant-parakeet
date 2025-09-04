@@ -72,7 +72,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool load( background_t* _background,
+static FORCE_INLINE bool load( background_t* restrict _background,
                                SDL_Renderer* _renderer ) {
     bool l_returnValue = false;
 
@@ -108,7 +108,7 @@ static FORCE_INLINE bool load( background_t* _background,
 
             l_returnValue = object_t$state$add$fromGlob(
                 &( _background->object ), _renderer, l_boxesGlob,
-                l_animationGlob, false, true );
+                l_animationGlob, "", false, true );
 
             free( l_boxesGlob );
             free( l_animationGlob );
@@ -132,10 +132,11 @@ EXIT:
     return ( l_returnValue );
 }
 
-static FORCE_INLINE bool background_t$reload$element( void* _context,
-                                                      const char* _fileName,
-                                                      size_t _eventMask,
-                                                      uint32_t _cookie ) {
+static FORCE_INLINE bool background_t$reload$element(
+    void* restrict _context,
+    const char* restrict _fileName,
+    size_t _eventMask,
+    uint32_t _cookie ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_context ) ) {
@@ -222,8 +223,7 @@ static FORCE_INLINE bool background_t$reload$element( void* _context,
 
             SDL_Renderer* l_renderer = l_state->renderer;
 
-            l_returnValue =
-                object_t$state$remove( &( l_background->object ), l_state );
+            l_returnValue = object_t$states$remove( &( l_background->object ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -430,9 +430,9 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state,
-                       size_t* _stateSize,
-                       applicationState_t* _applicationState ) {
+bool hotReload$unload( void** restrict _state,
+                       size_t* restrict _stateSize,
+                       applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 
@@ -450,9 +450,9 @@ bool hotReload$unload( void** _state,
     return ( true );
 }
 
-bool hotReload$load( void* _state,
+bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
-                     applicationState_t* _applicationState ) {
+                     applicationState_t* restrict _applicationState ) {
     UNUSED( _state );
     UNUSED( _stateSize );
 
