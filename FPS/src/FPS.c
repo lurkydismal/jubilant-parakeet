@@ -23,7 +23,7 @@ static void* FPS$count( void* _data ) {
         g_currentFramesPerSecond =
             ( *g_totalFramesPassed - l_previousTotalFramesPerSecond );
 
-        log$transaction$query$format( ( logLevel_t )info, "FPS: %d\n",
+        log$transaction$query$format( ( logLevel_t )info, "FPS: %d",
                                       g_currentFramesPerSecond );
 
         l_previousTotalFramesPerSecond = *g_totalFramesPassed;
@@ -39,7 +39,7 @@ bool FPS$init( size_t* restrict _totalFramesPassed ) {
 
     if ( UNLIKELY( g_totalFramesPassed ) ) {
         log$transaction$query( ( logLevel_t )error,
-                               "Total frames passed already exists\n" );
+                               "Total frames passed already exists" );
 
         goto EXIT;
     }
@@ -57,7 +57,7 @@ bool FPS$init( size_t* restrict _totalFramesPassed ) {
                 ( logLevel_t )error,
                 "%d: Insufficient resources to create another thread, or a "
                 "system-imposed limit on the number of threads was "
-                "encountered\n",
+                "encountered",
                 EAGAIN );
 
             FPS$quit();
@@ -76,8 +76,7 @@ bool FPS$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        log$transaction$query( ( logLevel_t )error,
-                               "No total frames passed\n" );
+        log$transaction$query( ( logLevel_t )error, "No total frames passed" );
 
         goto EXIT;
     }
@@ -102,8 +101,7 @@ size_t FPS$get$current( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        log$transaction$query( ( logLevel_t )error,
-                               "No total frames passed\n" );
+        log$transaction$query( ( logLevel_t )error, "No total frames passed" );
 
         l_returnValue = SIZE_MAX;
 
@@ -122,8 +120,7 @@ size_t FPS$get$total( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        log$transaction$query( ( logLevel_t )error,
-                               "No total frames passed\n" );
+        log$transaction$query( ( logLevel_t )error, "No total frames passed" );
 
         l_returnValue = SIZE_MAX;
 

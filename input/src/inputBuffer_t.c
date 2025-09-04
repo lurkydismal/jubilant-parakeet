@@ -20,7 +20,7 @@ bool inputBuffer_t$destroy( inputBuffer_t* _inputBuffer ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -46,7 +46,7 @@ input_t inputBuffer_t$inputsSequence$getInput$last(
     input_t l_returnValue = 0;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -65,7 +65,7 @@ size_t inputBuffer_t$inputsSequence$getFrame$last(
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -85,13 +85,13 @@ bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_input ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -106,7 +106,7 @@ bool inputBuffer_t$insert( inputBuffer_t* _inputBuffer,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Frame is already in sequence\n" );
+                                       "Frame is already in sequence" );
 
                 goto EXIT;
             }
@@ -135,7 +135,7 @@ input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,
     input_t** l_returnValue = NULL;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -156,7 +156,7 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
     input_t** l_returnValue = NULL;
 
     if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -177,7 +177,7 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 
             if ( UNLIKELY( l_lastInputFrame >= _currentFrame ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Current frame is too old\n" );
+                                       "Current frame is too old" );
 
                 goto EXIT;
             }

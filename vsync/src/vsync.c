@@ -17,7 +17,7 @@ bool vsync$init( const vsync_t _vsync,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -36,7 +36,7 @@ bool vsync$init( const vsync_t _vsync,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Setting renderer vsync: '%s'\n",
+                                              "Setting renderer vsync: '%s'",
                                               SDL_GetError() );
 
                 goto EXIT;
