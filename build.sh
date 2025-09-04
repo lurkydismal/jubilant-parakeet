@@ -320,26 +320,22 @@ source './config.sh' && {
     fi
 
     # FIX: Improve
-    # Set BUILD_FLAGS and COMPILER
+    # Set COMPILER
     if [ -n "${CPP_PROJECT+x}" ]; then
-        BUILD_FLAGS="$BUILD_CPP_FLAGS"
         COMPILER="$CPP_COMPILER"
 
     else
-        BUILD_FLAGS="$BUILD_C_FLAGS"
         COMPILER="$C_COMPILER"
     fi
 
     if [ -z "${DISABLE_BUILD_CACHE+x}" ]; then
-        COMPILER="ccache $COMPILER"
+        C_COMPILER="ccache $C_COMPILER"
+        CPP_COMPILER="ccache $CPP_COMPILER"
     fi
 
     if [ -n "${SCAN_BUILD+x}" ]; then
         COMPILER="scan-build $SCAN_BUILD_FLAGS $COMPILER"
     fi
-
-    export BUILD_FLAGS
-    export COMPILER
 
     command -v $COMPILER >/dev/null 2>&1 || {
         not_found "$COMPILER"
@@ -368,7 +364,7 @@ source './config.sh' && {
         printf -v externalLibrariesAsString -- "%s " "${EXTERNAL_LIBRARIES_TO_LINK[@]}"
 
         echo -e '\n'"$EXTERNAL_LIBRARIES_COLOR""$externalLibrariesAsString""$RESET_COLOR"
-        externalLibrariesBuildCFlagsAsString="$(pkg-config --static --cflags "$externalLibrariesAsString")"' '
+        externalLibrariesBuildFlagsAsString="$(pkg-config --static --cflags "$externalLibrariesAsString")"' '
 
         SEARCH_STATUS=$?
 
@@ -376,7 +372,7 @@ source './config.sh' && {
             exit $SEARCH_STATUS
         fi
 
-        echo -e "$INCLUDES_COLOR""$externalLibrariesBuildCFlagsAsString""$RESET_COLOR"
+        echo -e "$INCLUDES_COLOR""$externalLibrariesBuildFlagsAsString""$RESET_COLOR"
         externalLibrariesLinkFlagsAsString="$(pkg-config --static --libs "$externalLibrariesAsString")"' '
 
         SEARCH_STATUS=$?
@@ -417,7 +413,8 @@ source './config.sh' && {
             OUTPUT_FILE="$OUTPUT_FILE" \
                 './build_module.sh' \
                 "$partToBuild" \
-                "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
+                "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                 "$definesAsString" \
                 "$includesAsString" &
 
@@ -462,7 +459,8 @@ source './config.sh' && {
                 OUTPUT_FILE="$OUTPUT_FILE" \
                     './build_module.sh' \
                     "$staticPart" \
-                    "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
+                    "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$definesAsString" \
                     "$includesAsString" &
 
@@ -599,7 +597,8 @@ source './config.sh' && {
                     OUTPUT_FILE="$OUTPUT_FILE" \
                         './build_module.sh' \
                         "$rootSharedObjectName" \
-                        "$BUILD_FLAGS" \
+                        "$BUILD_C_FLAGS" \
+                        "$BUILD_CPP_FLAGS" \
                         "$definesAsString" \
                         "$includesAsString"
 
@@ -641,7 +640,8 @@ source './config.sh' && {
                 OUTPUT_FILE="$OUTPUT_FILE" \
                     './build_module.sh' \
                     "$executableMainPackage" \
-                    "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
+                    "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$definesAsString" \
                     "$includesAsString"
 
@@ -726,7 +726,8 @@ source './config.sh' && {
                     OUTPUT_FILE="$OUTPUT_FILE" \
                         './build_module.sh' \
                         "$TESTS_DIRECTORY/$testToBuild" \
-                        "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                        "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
+                        "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
                         "$includesAsString""$testIncludesAsString" &
 
@@ -771,7 +772,8 @@ source './config.sh' && {
                     OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
                         './build_module.sh' \
                         "$testsMainPackage" \
-                        "$BUILD_FLAGS $externalLibrariesBuildCFlagsAsString" \
+                        "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
+                        "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
                         "$includesAsString""$testIncludesAsString"
 

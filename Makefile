@@ -68,11 +68,11 @@ DEFINCL = $(INCLUDE_PATH) $(DEFINES) $(OPTIONS)
 
 .c.o:
 	@echo "Compiling $<"
-	@$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
+	@$(C_COMPILER) -c $< $(BUILD_C_FLAGS) $(DEFINCL) -o $@
 
 .cpp.o:
 	@echo "Compiling $<"
-	@$(COMPILER) -c $< $(BUILD_FLAGS) $(DEFINCL) -o $@
+	@$(CPP_COMPILER) -c $< $(BUILD_CPP_FLAGS) $(DEFINCL) -o $@
 
 .rc.res:
 	@echo "Compiling resource $<"

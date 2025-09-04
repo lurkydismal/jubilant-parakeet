@@ -13,7 +13,9 @@ needBuild=0
     # TODO: Better name
     newest_file=$(fd -e c -e cpp -e h -e hpp . | xargs stat --format '%Y %n' | sort -n | tail -1 | cut -d' ' -f2-)
 
-    if [[ -f "$newest_file" && -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]] && [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; then
+    if [[ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]] ||
+        { [[ -f "$newest_file" ]] &&
+            [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; }; then
         needBuild=1
     fi
 
@@ -24,9 +26,10 @@ if ((needBuild)); then
     source "$SCRIPT_DIRECTORY/config.sh" &&
         make clean &&
         make \
-            "BUILD_FLAGS=$2" \
-            "DEFINES=$3" \
-            "INCLUDES=$4" \
+            "BUILD_C_FLAGS=$2" \
+            "BUILD_CPP_FLAGS=$3" \
+            "DEFINES=$4" \
+            "INCLUDES=$5" \
             "FILES_TO_INCLUDE=$INCLUDE_PATHS" \
             "FILES_TO_COMPILE=$COMPILE_PATHS" &&
         mv "$OUTPUT_FILE" "$BUILD_DIRECTORY" &&
