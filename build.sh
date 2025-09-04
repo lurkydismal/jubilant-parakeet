@@ -58,6 +58,7 @@ TODO: Description
   -i     Strip executable
   -c     Disable build cache
   -a     Rebuild static parts
+  -u     Rebuild parts
 
 Mandatory or optional arguments to long options are also mandatory or optional
 for any corresponding short options.
@@ -66,7 +67,7 @@ Report bugs to <lurkydismal@duck.com>.
 EOF
     }
 
-    while getopts "hdrptosbeica" _option; do
+    while getopts "hdrptosbeicau" _option; do
         case $_option in
         h)
             show_help
@@ -83,6 +84,7 @@ EOF
         i) STRIP_EXECUTABLE= ;;
         c) DISABLE_BUILD_CACHE= ;;
         a) REBUILD_STATIC_PARTS= ;;
+        u) export REBUILD_PARTS= ;;
         *) exit_failure ;;
         esac
     done

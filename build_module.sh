@@ -13,9 +13,10 @@ needBuild=0
     # TODO: Better name
     newest_file=$(fd -e c -e cpp -e h -e hpp . | xargs stat --format '%Y %n' | sort -n | tail -1 | cut -d' ' -f2-)
 
-    if [[ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]] ||
-        { [[ -f "$newest_file" ]] &&
-            [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; }; then
+    if [ -n "${REBUILD_PARTS+x}" ] ||
+        { [[ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]] ||
+            { [[ -f "$newest_file" ]] &&
+                [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; }; }; then
         needBuild=1
     fi
 
