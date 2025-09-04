@@ -1,6 +1,5 @@
 #!/bin/bash
 export partsToBuild=(
-    "gameStates"
     "runtime"
     "controls_t"
     "input"
@@ -26,7 +25,6 @@ export partsToBuild=(
     "stdfunc"
 )
 export testsToBuild=(
-    # "gameStates"
     # "runtime"
     "controls_t"
     "input"
