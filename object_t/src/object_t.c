@@ -200,13 +200,39 @@ static bool object_t$state$remove( object_t* restrict _object,
             goto EXIT;
         }
 
-        l_returnValue = pluckArray( &( _object->states ), _state );
+        {
+            const size_t l_stateIndex = findInArray( _object->states, _state );
+            char* l_name = _object->stateNames[ l_stateIndex ];
 
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Removing state from object" );
+            l_returnValue = ( l_stateIndex != SIZE_MAX );
 
-            goto EXIT;
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT_REMOVE;
+            }
+
+            l_returnValue =
+                pluckArrayByIndex( &( _object->states ), l_stateIndex );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT_REMOVE;
+            }
+
+            l_returnValue =
+                pluckArrayByIndex( &( _object->stateNames ), l_stateIndex );
+
+            if ( UNLIKELY( !l_returnValue ) ) {
+                goto EXIT_REMOVE;
+            }
+
+            free( l_name );
+
+        EXIT_REMOVE:
+            if ( UNLIKELY( !l_returnValue ) ) {
+                log$transaction$query( ( logLevel_t )error,
+                                       "Removing state from object" );
+
+                goto EXIT;
+            }
         }
 
         free( _state );
@@ -235,8 +261,7 @@ bool object_t$state$remove$byName( object_t* restrict _object,
     }
 
     {
-        const ssize_t l_index =
-            _findStringInArray( _object->stateNames, _name );
+        const ssize_t l_index = findStringInArray( _object->stateNames, _name );
 
         char* l_name = _object->stateNames[ l_index ];
         state_t* l_state = _object->states[ l_index ];
@@ -250,7 +275,7 @@ bool object_t$state$remove$byName( object_t* restrict _object,
             goto EXIT;
         }
 
-        l_returnValue = pluckArray( &( _object->stateNames ), l_name );
+        l_returnValue = pluckArrayByValue( &( _object->stateNames ), l_name );
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
@@ -316,8 +341,7 @@ bool object_t$state$change$byName( object_t* restrict _object,
     }
 
     {
-        const ssize_t l_index =
-            _findStringInArray( _object->stateNames, _name );
+        const ssize_t l_index = findStringInArray( _object->stateNames, _name );
 
         state_t* l_state = _object->states[ l_index ];
 
