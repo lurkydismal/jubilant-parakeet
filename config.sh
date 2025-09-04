@@ -19,6 +19,7 @@ declare -a partsToBuild=(
     "asset_t"
     "log"
     "stdfunc"
+    "cpp_compatibility"
 )
 declare -a testsToBuild=(
     "controls_t"
@@ -40,6 +41,7 @@ declare -a testsToBuild=(
     "asset_t"
     "log"
     "stdfunc"
+    # "cpp_compatibility"
 )
 declare -a staticParts=(
     "inih"
