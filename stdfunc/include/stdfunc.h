@@ -16,6 +16,8 @@
 #include <sys/types.h>
 #include <xxhash.h>
 
+#include "cpp_compatibility.h"
+
 // Function attributes
 #define FORCE_INLINE __attribute__( ( always_inline ) ) inline
 #define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
@@ -45,8 +47,12 @@
 #define MACRO_TO_STRING( _macro ) STRINGIFY_MACRO( _macro )
 
 // Utility functions ( no side-effects )
+#if !defined( CPP )
+
 #define max( _a, _b ) ( ( ( _a ) > ( _b ) ) ? ( _a ) : ( _b ) )
 #define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
+
+#endif
 
 // Utility functions ( side-effects )
 #if ( defined( DEBUG ) && !defined( TESTS ) )
@@ -248,11 +254,14 @@ static FORCE_INLINE char* duplicateString( const char* restrict _string ) {
         goto EXIT;
     }
 
-    const size_t l_stringLength = __builtin_strlen( _string );
+    {
+        const size_t l_stringLength = __builtin_strlen( _string );
 
-    l_returnValue = ( char* )malloc( ( l_stringLength + 1 ) * sizeof( char ) );
+        l_returnValue =
+            ( char* )malloc( ( l_stringLength + 1 ) * sizeof( char ) );
 
-    __builtin_memcpy( l_returnValue, _string, ( l_stringLength + 1 ) );
+        __builtin_memcpy( l_returnValue, _string, ( l_stringLength + 1 ) );
+    }
 
 EXIT:
     return ( l_returnValue );
@@ -315,11 +324,12 @@ char** splitStringIntoArray( const char* restrict _string,
 char** splitStringIntoArrayBySymbol( const char* restrict _string,
                                      const char _symbol );
 
-#define createArray( _elementType )                                 \
-    ( {                                                             \
-        arrayLength_t* l_array = malloc( sizeof( arrayLength_t ) ); \
-        *l_array = ( arrayLength_t )0;                              \
-        ( _elementType* )( l_array + 1 );                           \
+#define createArray( _elementType )                              \
+    ( {                                                          \
+        arrayLength_t* l_array =                                 \
+            ( arrayLength_t* )malloc( sizeof( arrayLength_t ) ); \
+        *l_array = ( arrayLength_t )0;                           \
+        ( _elementType* )( l_array + 1 );                        \
     } )
 
 #define preallocateArray( _array, _length )                                    \
@@ -489,9 +499,10 @@ EXIT:
     va_end( l_arguments );
 }
 
-#define iterateTopMostFields( _type, _callback, _context )                   \
-    do {                                                                     \
-        _type l_structSample = { 0 };                                        \
-        __builtin_dump_struct( &l_structSample, dumpCallback, ( _callback ), \
-                               ( _context ) );                               \
+#define iterateTopMostFields( _type, _callback, _context )    \
+    do {                                                      \
+        _type l_structSample;                                 \
+        __builtin_dump_struct( &l_structSample, dumpCallback, \
+                               ( void* )( _callback ),        \
+                               ( void* )( _context ) );       \
     } while ( 0 )

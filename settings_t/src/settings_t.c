@@ -243,27 +243,31 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
                             goto LOOP_CONTINUE;
                         }
 
-                        const char* l_key = arrayFirstElement( l_keyAndValue );
-                        const char* l_value = arrayLastElement( l_keyAndValue );
+                        {
+                            const char* l_key =
+                                arrayFirstElement( l_keyAndValue );
+                            const char* l_value =
+                                arrayLastElement( l_keyAndValue );
 
-                        bool l_result = false;
+                            bool l_result = false;
 
-                        FOR_ARRAY( settingsOption_t* const*,
-                                   l_settingsOptions ) {
-                            l_result = settingsOption_t$bind( *_element, l_key,
-                                                              l_value );
+                            FOR_ARRAY( settingsOption_t* const*,
+                                       l_settingsOptions ) {
+                                l_result = settingsOption_t$bind(
+                                    *_element, l_key, l_value );
 
-                            if ( l_result ) {
-                                break;
+                                if ( l_result ) {
+                                    break;
+                                }
                             }
-                        }
 
-                        if ( UNLIKELY( !l_result ) ) {
-                            log$transaction$query$format(
-                                ( logLevel_t )error,
-                                "Corrupted settings key: '%s'", l_key );
+                            if ( UNLIKELY( !l_result ) ) {
+                                log$transaction$query$format(
+                                    ( logLevel_t )error,
+                                    "Corrupted settings key: '%s'", l_key );
 
-                            goto LOOP_CONTINUE;
+                                goto LOOP_CONTINUE;
+                            }
                         }
 
                     LOOP_CONTINUE:

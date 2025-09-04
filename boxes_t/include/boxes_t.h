@@ -5,6 +5,7 @@
 
 #include "asset_t.h"
 #include "color_t.h"
+#include "cpp_compatibility.h"
 
 #define DEFAULT_BOXES    \
     { .keyFrames = NULL, \

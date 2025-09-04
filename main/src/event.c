@@ -6,6 +6,7 @@
 
 #include "applicationState_t.h"
 #include "controls_t.h"
+#include "cpp_compatibility.h"
 #include "inputBuffer_t.h"
 #include "log.h"
 #include "stdfunc.h"
@@ -88,7 +89,16 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
                 FOR_RANGE( int, 0, l_keysAmount ) {
                     // If pressed
                     if ( l_keysState[ _index ] ) {
+#if defined( CPP )
+
+                        SDL_Scancode l_scancode =
+                            static_cast< SDL_Scancode >( _index );
+
+#else
+
                         SDL_Scancode l_scancode = _index;
+
+#endif
 
                         const control_t* l_control =
                             controls_t$control_t$convert$fromScancode(
