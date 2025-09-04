@@ -8,7 +8,10 @@
 object_t object_t$create( void ) {
     object_t l_returnValue = DEFAULT_OBJECT;
 
-    l_returnValue.states = createArray( state_t* );
+    {
+        l_returnValue.stateNames = createArray( char* );
+        l_returnValue.states = createArray( state_t* );
+    }
 
     return ( l_returnValue );
 }
@@ -23,6 +26,7 @@ bool object_t$destroy( object_t* restrict _object ) {
     }
 
     {
+        FREE_ARRAY( _object->stateNames );
         FREE_ARRAY( _object->states );
 
         _object->states = NULL;
@@ -42,6 +46,7 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxesPath,
                                    char* const* restrict _animationPaths,
+                                   char* restrict _name,
                                    bool _isActionable,
                                    bool _canLoop ) {
     bool l_returnValue = false;
@@ -91,6 +96,7 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
         }
 
         insertIntoArray( &( _object->states ), clone( &l_state ) );
+        insertIntoArray( &( _object->stateNames ), duplicateString( _name ) );
 
         l_returnValue = true;
     }
@@ -103,6 +109,7 @@ bool object_t$state$add$fromGlob( object_t* restrict _object,
                                   SDL_Renderer* _renderer,
                                   const char* restrict _boxesGlob,
                                   const char* restrict _animationGlob,
+                                  char* restrict _name,
                                   bool _isActionable,
                                   bool _canLoop ) {
     bool l_returnValue = false;
@@ -151,6 +158,7 @@ bool object_t$state$add$fromGlob( object_t* restrict _object,
         }
 
         insertIntoArray( &( _object->states ), clone( &l_state ) );
+        insertIntoArray( &( _object->stateNames ), duplicateString( _name ) );
 
         l_returnValue = true;
     }
@@ -159,8 +167,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool object_t$state$remove( object_t* restrict _object,
-                            state_t* restrict _state ) {
+static bool object_t$state$remove( object_t* restrict _object,
+                                   state_t* restrict _state ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
@@ -196,12 +204,62 @@ bool object_t$state$remove( object_t* restrict _object,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing state from array" );
+                                   "Removing state from object" );
 
             goto EXIT;
         }
 
         free( _state );
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$state$remove$byName( object_t* restrict _object,
+                                   char* restrict _name ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_name ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const ssize_t l_index =
+            _findStringInArray( _object->stateNames, _name );
+
+        char* l_name = _object->stateNames[ l_index ];
+        state_t* l_state = _object->states[ l_index ];
+
+        l_returnValue = object_t$state$remove( _object, l_state );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Removing state from object" );
+
+            goto EXIT;
+        }
+
+        l_returnValue = pluckArray( &( _object->stateNames ), l_name );
+
+        if ( UNLIKELY( !l_returnValue ) ) {
+            log$transaction$query( ( logLevel_t )error,
+                                   "Removing state name from object" );
+
+            goto EXIT;
+        }
+
+        free( l_name );
 
         l_returnValue = true;
     }
@@ -231,6 +289,37 @@ bool object_t$states$remove( object_t* restrict _object ) {
                 goto EXIT;
             }
         }
+
+        l_returnValue = true;
+    }
+
+EXIT:
+    return ( l_returnValue );
+}
+
+bool object_t$state$change$byName( object_t* restrict _object,
+                                   char* restrict _name ) {
+    bool l_returnValue = false;
+
+    if ( UNLIKELY( !_object ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    if ( UNLIKELY( !_name ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+
+        goto EXIT;
+    }
+
+    {
+        const ssize_t l_index =
+            _findStringInArray( _object->stateNames, _name );
+
+        state_t* l_state = _object->states[ l_index ];
+
+        _object->currentState = l_state;
 
         l_returnValue = true;
     }
@@ -339,7 +428,8 @@ bool object_t$render$rotated( const object_t* restrict _object,
             .x = ( _object->worldX - _cameraRectangle->x ),
             .y = ( _object->worldY - _cameraRectangle->y ),
             .w = 0,
-            .h = 0 };
+            .h = 0,
+        };
 
         l_returnValue =
             state_t$render$rotated( _object->currentState, _angle, _flipMode,
@@ -380,7 +470,8 @@ bool object_t$render( const object_t* restrict _object,
             .x = ( _object->worldX - _cameraRectangle->x ),
             .y = ( _object->worldY - _cameraRectangle->y ),
             .w = 0,
-            .h = 0 };
+            .h = 0,
+        };
 
         l_returnValue = state_t$render( _object->currentState,
                                         &l_targetRectangle, _doDrawBoxes );

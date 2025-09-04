@@ -5,17 +5,21 @@
 
 #include "state_t.h"
 
-#define DEFAULT_OBJECT      \
-    { .states = NULL,       \
-      .currentState = NULL, \
-      .worldX = 0,          \
-      .worldY = 0,          \
-      .worldXMin = 0,       \
-      .worldYMin = 0,       \
-      .worldXMax = 0,       \
-      .worldYMax = 0 }
+#define DEFAULT_OBJECT        \
+    {                         \
+        .stateNames = NULL,   \
+        .states = NULL,       \
+        .currentState = NULL, \
+        .worldX = 0,          \
+        .worldY = 0,          \
+        .worldXMin = 0,       \
+        .worldYMin = 0,       \
+        .worldXMax = 0,       \
+        .worldYMax = 0,       \
+    }
 
 typedef struct {
+    char** stateNames;
     state_t** states;
     state_t* currentState;
     float worldX;
@@ -38,17 +42,21 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,
                                    char* restrict _boxesPath,
                                    char* const* restrict _animationPaths,
+                                   char* restrict _name,
                                    bool _isActionable,
                                    bool _canLoop );
 bool object_t$state$add$fromGlob( object_t* restrict _object,
                                   SDL_Renderer* _renderer,
                                   const char* restrict _boxesGlob,
                                   const char* restrict _animationGlob,
+                                  char* restrict _name,
                                   bool _isActionable,
                                   bool _canLoop );
-bool object_t$state$remove( object_t* restrict _object,
-                            state_t* restrict _state );
+bool object_t$state$remove$byName( object_t* restrict _object,
+                                   char* restrict _name );
 bool object_t$states$remove( object_t* restrict _object );
+bool object_t$state$change$byName( object_t* restrict _object,
+                                   char* restrict _name );
 
 bool object_t$move( object_t* restrict _object,
                     const float _x,

@@ -42,27 +42,29 @@
     "heavy_attack = %s\n"      \
     "shield = %s\n"            \
     "background_index = %zu\n" \
-    "HUD_index = %zu\n"
+    "HUD_index = %zu\n"        \
+    "character_index = %zu\n"
 
-#define SETTINGS_FORMAT_ARGUMENTS( _settings )               \
-    ( _settings ).window.width, ( _settings ).window.height, \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.up.scancode ),            \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.down.scancode ),          \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.left.scancode ),          \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.right.scancode ),         \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.A.scancode ),             \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.B.scancode ),             \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.C.scancode ),             \
-        control_t$scancode$convert$toStaticString(           \
-            ( _settings ).controls.D.scancode ),             \
-        ( _settings ).backgroundIndex, ( _settings ).HUDIndex
+#define SETTINGS_FORMAT_ARGUMENTS( _settings )                 \
+    ( _settings ).window.width, ( _settings ).window.height,   \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.up.scancode ),              \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.down.scancode ),            \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.left.scancode ),            \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.right.scancode ),           \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.A.scancode ),               \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.B.scancode ),               \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.C.scancode ),               \
+        control_t$scancode$convert$toStaticString(             \
+            ( _settings ).controls.D.scancode ),               \
+        ( _settings ).backgroundIndex, ( _settings ).HUDIndex, \
+        ( _settings ).characterIndex
 
 const char* argp_program_version;
 const char* argp_program_bug_address;
@@ -110,6 +112,30 @@ static error_t parserForOption( int _key,
             break;
         }
 
+            // Background
+        case 'b': {
+            const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
+
+            if ( UNLIKELY(
+                     l_backgroundIndex >=
+                     arrayLength( l_applicationState->config.backgrounds ) ) ) {
+                log$transaction$query$format( ( logLevel_t )error,
+                                              "Background index: %s", _value );
+
+                argp_error( _state, "Background index '%s' is out of range",
+                            _value );
+
+                break;
+            }
+
+            l_applicationState->settings.backgroundIndex = l_backgroundIndex;
+
+            l_applicationState->background =
+                l_applicationState->config.backgrounds[ l_backgroundIndex ];
+
+            break;
+        }
+
             // HUD
         case 'h': {
             const size_t l_HUDIndex = strtoul( _value, NULL, 10 );
@@ -132,26 +158,26 @@ static error_t parserForOption( int _key,
             break;
         }
 
-            // Background
-        case 'b': {
-            const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
+            // Character
+        case 'c': {
+            const size_t l_characterIndex = strtoul( _value, NULL, 10 );
 
             if ( UNLIKELY(
-                     l_backgroundIndex >=
-                     arrayLength( l_applicationState->config.backgrounds ) ) ) {
+                     l_characterIndex >=
+                     arrayLength( l_applicationState->config.characters ) ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Background index: %s", _value );
+                                              "Character index: %s", _value );
 
-                argp_error( _state, "Background index '%s' is out of range",
+                argp_error( _state, "Character index '%s' is out of range",
                             _value );
 
                 break;
             }
 
-            l_applicationState->settings.backgroundIndex = l_backgroundIndex;
+            l_applicationState->settings.characterIndex = l_characterIndex;
 
-            l_applicationState->background =
-                l_applicationState->config.backgrounds[ l_backgroundIndex ];
+            l_applicationState->character =
+                l_applicationState->config.characters[ l_characterIndex ];
 
             break;
         }
@@ -192,6 +218,7 @@ static error_t parserForOption( int _key,
 
             HANDLE_CONFIG_FIELD( background );
             HANDLE_CONFIG_FIELD( HUD );
+            HANDLE_CONFIG_FIELD( character );
 
 #undef HANDLE_CONFIG_FIELD
 
@@ -303,6 +330,7 @@ static error_t parserForOption( int _key,
 
             PICK_RANDOM_IF_NULL( background );
             PICK_RANDOM_IF_NULL( HUD );
+            PICK_RANDOM_IF_NULL( character );
 
 #undef PICK_RANDOM_IF_NULL
 
@@ -365,9 +393,9 @@ static FORCE_INLINE bool parseArguments(
             struct argp_option l_options[] = {
                 { "verbose", 'v', 0, 0, "Produce verbose output", 0 },
                 { "quiet", 'q', 0, 0, "Do not produce any output", 0 },
-                { "HUD", 'h', "INDEX", 0, "Select HUD by index", 0 },
                 { "background", 'b', "INDEX", 0, "Select background by index",
                   0 },
+                { "HUD", 'h', "INDEX", 0, "Select HUD by index", 0 },
                 { "character", 'c', "INDEX", 0, "Select character by index",
                   0 },
                 { "moon", 'm', "MOON", 0, "Select moon by moon", 0 },
