@@ -98,9 +98,9 @@ EOF
     done
 }
 
-export BUILD_C_FLAGS="-flto=jobserver -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat -Wno-incompatible-pointer-types-discards-qualifiers"
+export BUILD_C_FLAGS="-std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat -Wno-incompatible-pointer-types-discards-qualifiers"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
-export BUILD_C_FLAGS_RELEASE="-fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
+export BUILD_C_FLAGS_RELEASE="-flto=jobserver -fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
 
@@ -142,9 +142,9 @@ export BUILD_DEFINES_HOT_RELOAD=(
 export BUILD_INCLUDES=()
 export BUILD_INCLUDES_TESTS=()
 
-export LINK_FLAGS="-flto -fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
+export LINK_FLAGS="-fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
 export LINK_FLAGS_DEBUG="-rdynamic -Wl,-rpath,\$ORIGIN"
-export LINK_FLAGS_RELEASE="-s"
+export LINK_FLAGS_RELEASE="-flto -s"
 export LINK_FLAGS_PROFILE=""
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
 export LINK_FLAGS_HOT_RELOAD=""
@@ -456,7 +456,7 @@ source './config.sh' && {
 
                 if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
                     if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-                        echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping static '$staticPart'\t— '$OUTPUT_FILE' already exists.""$RESET_COLOR"
+                        printf "%bSkipping static '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" "$SKIPPING_PART_IN_BUILD_COLOR" "$staticPart'" "$OUTPUT_FILE" "$RESET_COLOR"
 
                         continue
                     fi

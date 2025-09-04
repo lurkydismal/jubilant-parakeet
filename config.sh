@@ -80,3 +80,5 @@ EXTERNAL_LIBRARIES_TO_LINK+=(
     "sdl3-image"
     "libcjson"
 )
+
+export MODULE_NAME_FIELD_WIDTH=14

@@ -20,7 +20,7 @@ needBuild=0
         needBuild=1
 
     else
-        echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping module '$TARGET_DIRECTORY'\t— '$OUTPUT_FILE' already exists.""$RESET_COLOR"
+        printf "%bSkipping module '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" "$SKIPPING_PART_IN_BUILD_COLOR" "$TARGET_DIRECTORY'" "$OUTPUT_FILE" "$RESET_COLOR"
     fi
 
     cd - >'/dev/null' || exit
