@@ -18,7 +18,7 @@ bool boxes_t$destroy( boxes_t* restrict _boxes ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -41,31 +41,31 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_targetRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_startIndex ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_endIndex ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( _startIndex > _endIndex ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -76,7 +76,7 @@ bool boxes_t$load$one( boxes_t* restrict _boxes,
         log$transaction$query$format(
             ( logLevel_t )debug,
             "Box properties: X = %f, Y = %f, Width = %f"
-            ", Heigth = %f, Start = %zu, End = %zu\n",
+            ", Heigth = %f, Start = %zu, End = %zu",
             _targetRectangle->x, _targetRectangle->y, _targetRectangle->w,
             _targetRectangle->h, _startIndex, _endIndex );
 
@@ -129,13 +129,13 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_string ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -144,7 +144,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 #if defined( LOG_BOXES )
 
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Boxes loading string: '%s'\n", _string );
+                                      "Boxes loading string: '%s'", _string );
 
 #endif
 
@@ -166,7 +166,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 
             if ( !l_returnValue ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Empty input after comment trim\n" );
+                                       "Empty input after comment trim" );
 
                 goto EXIT;
             }
@@ -185,7 +185,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Expected 5 box properties, got %zu\n",
+                    ( logLevel_t )error, "Expected 5 box properties, got %zu",
                     arrayLength( l_boxProperties ) );
 
                 goto EXIT_LOADING;
@@ -209,7 +209,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
-                        "Invalid index format, expected Start-End got '%s'\n",
+                        "Invalid index format, expected Start-End got '%s'",
                         l_boxProperties[ 4 ] );
 
                     goto EXIT_LOADING2;
@@ -217,8 +217,10 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
 
                 const size_t l_startIndex = strtoul(
                     arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                const size_t l_endIndex = strtoul(
-                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
+                const size_t l_endIndex =
+                    ( strtoul( arrayLastElement( l_startAndEndIndexAsString ),
+                               NULL, 10 ) +
+                      1 );
 
                 l_returnValue = boxes_t$load$one( _boxes, &l_targetRectangle,
                                                   l_startIndex, l_endIndex );
@@ -233,7 +235,7 @@ bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
             FREE_ARRAY( l_boxProperties );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Loading box\n" );
+                log$transaction$query( ( logLevel_t )error, "Loading box" );
 
                 goto EXIT;
             }
@@ -251,13 +253,13 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -266,7 +268,7 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 #if defined( LOG_BOXES )
 
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Boxes loading asset: Size = %zu\n",
+                                      "Boxes loading asset: Size = %zu",
                                       _asset->size );
 
 #endif
@@ -281,7 +283,7 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 #if defined( LOG_BOXES )
 
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Boxes loading asset: Data = '%s'\n",
+                                      "Boxes loading asset: Data = '%s'",
                                       l_dataWithNull );
 
 #endif
@@ -295,7 +297,7 @@ bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Loading box from string: '%s'\n",
+                                              "Loading box from string: '%s'",
                                               *_element );
 
                 goto EXIT_LOADING;
@@ -319,13 +321,13 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_paths ) || UNLIKELY( !arrayLength( _paths ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -335,7 +337,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
 #if defined( LOG_BOXES )
 
             log$transaction$query$format( ( logLevel_t )debug,
-                                          "Loading file: '%s' as boxes_t\n",
+                                          "Loading file: '%s' as boxes_t",
                                           *_element );
 
 #endif
@@ -346,7 +348,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading asset from path\n" );
+                                       "Loading asset from path" );
 
                 goto EXIT;
             }
@@ -355,7 +357,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading boxes from asset\n" );
+                                       "Loading boxes from asset" );
 
                 goto EXIT;
             }
@@ -363,8 +365,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
             l_returnValue = asset_t$unload( &l_asset );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Unloading asset\n" );
+                log$transaction$query( ( logLevel_t )error, "Unloading asset" );
 
                 goto EXIT;
             }
@@ -373,7 +374,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying asset\n" );
+                                       "Destroying asset" );
 
                 goto EXIT;
             }
@@ -405,7 +406,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
                         color_t$convert$toStaticString( &l_color );
 
                     log$transaction$query$format( ( logLevel_t )debug,
-                                                  "Box color: '%s'\n",
+                                                  "Box color: '%s'",
                                                   l_colorAsString );
                 }
 
@@ -416,7 +417,7 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
 #if defined( LOG_BOXES )
 
         log$transaction$query$format(
-            ( logLevel_t )debug, "Loaded %zu boxes and %zu frames\n",
+            ( logLevel_t )debug, "Loaded %zu boxes and %zu frames",
             arrayLength( _boxes->keyFrames ), arrayLength( _boxes->frames ) );
 
 #endif
@@ -433,13 +434,13 @@ bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -453,9 +454,8 @@ bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
         FREE_ARRAY( l_paths );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query$format( ( logLevel_t )error,
-                                          "Failed loading from glob: '%s'\n",
-                                          _glob );
+            log$transaction$query$format(
+                ( logLevel_t )error, "Failed loading from glob: '%s'", _glob );
 
             goto EXIT;
         }
@@ -471,7 +471,7 @@ bool boxes_t$unload( boxes_t* restrict _boxes ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -502,7 +502,7 @@ bool boxes_t$step( boxes_t* restrict _boxes, bool _canLoop ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -511,7 +511,7 @@ bool boxes_t$step( boxes_t* restrict _boxes, bool _canLoop ) {
         if ( _boxes->frames ) {
             if ( arrayLength( _boxes->frames ) > 1 ) {
                 if ( _boxes->currentFrame != arrayLength( _boxes->frames ) ) {
-                    _boxes->currentFrame++;
+                    // _boxes->currentFrame++;
 
                 } else {
                     if ( _canLoop ) {
@@ -535,19 +535,19 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_targetRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -561,7 +561,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
-                                          "Getting renderer draw color: '%s'\n",
+                                          "Getting renderer draw color: '%s'",
                                           SDL_GetError() );
 
             goto EXIT;
@@ -573,7 +573,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
-                                          "Setting renderer draw color: '%s'\n",
+                                          "Setting renderer draw color: '%s'",
                                           SDL_GetError() );
 
             goto EXIT;
@@ -584,7 +584,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Invalid boxex current frame\n" );
+                                   "Invalid boxex current frame" );
 
             goto EXIT;
         }
@@ -606,7 +606,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query$format(
-                        ( logLevel_t )error, "Render filled rectangle: '%s'\n",
+                        ( logLevel_t )error, "Render filled rectangle: '%s'",
                         SDL_GetError() );
 
                     goto EXIT;
@@ -617,7 +617,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query$format( ( logLevel_t )error,
-                                                  "Render rectangle: '%s'\n",
+                                                  "Render rectangle: '%s'",
                                                   SDL_GetError() );
 
                     goto EXIT;
@@ -631,7 +631,7 @@ bool boxes_t$render( const boxes_t* restrict _boxes,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
-                                          "Setting renderer draw color: '%s'\n",
+                                          "Setting renderer draw color: '%s'",
                                           SDL_GetError() );
 
             goto EXIT;

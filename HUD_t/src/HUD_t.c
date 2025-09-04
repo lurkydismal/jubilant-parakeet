@@ -25,7 +25,7 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -44,7 +44,7 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying object\n" );
+                                       "Destroying object" );
 
                 goto EXIT;
             }
@@ -56,7 +56,7 @@ bool HUD_t$destroy( HUD_t* _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying object\n" );
+                                       "Destroying object" );
 
                 goto EXIT;
             }
@@ -75,26 +75,26 @@ static FORCE_INLINE bool HUD_t$element$load$one(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_element ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_HUD ) || UNLIKELY( !_HUD->name ) ||
          UNLIKELY( !_HUD->folder ) || UNLIKELY( !_HUD->extension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_subFolder ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -112,8 +112,7 @@ static FORCE_INLINE bool HUD_t$element$load$one(
             {
                 l_boxesGlbb = duplicateString( _HUD->folder );
 
-                concatBeforeAndAfterString( &l_boxesGlbb, "/", ".boxes" );
-                concatBeforeAndAfterString( &l_boxesGlbb, l_folder, NULL );
+                concatBeforeAndAfterString( &l_boxesGlbb, l_folder, ".boxes" );
             }
 
             char* l_animationGlob = NULL;
@@ -125,7 +124,6 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
                 concatBeforeAndAfterString( &l_animationGlob, _HUD->folder,
                                             _HUD->extension );
-                concatBeforeAndAfterString( &l_animationGlob, "/", NULL );
                 concatBeforeAndAfterString( &l_animationGlob, l_folder, NULL );
             }
 
@@ -140,14 +138,29 @@ static FORCE_INLINE bool HUD_t$element$load$one(
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Adding object state from glob\n" );
+                                       "Adding object state from glob" );
 
                 goto EXIT;
             }
         }
 
-        // Background always have only single state
+        // Default to the first state
         _element->currentState = arrayFirstElement( _element->states );
+
+        // World coordinates is the same as camera coordinates for HUD element
+        // Define world/ camera coordinates
+        {
+            const SDL_FRect* l_boxesKeyFramesFirstElement =
+                arrayFirstElement( _element->currentState->boxes.keyFrames );
+
+            _element->worldX = l_boxesKeyFramesFirstElement->x;
+            _element->worldXMin = l_boxesKeyFramesFirstElement->x;
+            _element->worldXMax = l_boxesKeyFramesFirstElement->x;
+
+            _element->worldY = l_boxesKeyFramesFirstElement->y;
+            _element->worldYMin = l_boxesKeyFramesFirstElement->y;
+            _element->worldYMax = l_boxesKeyFramesFirstElement->y;
+        }
 
         l_returnValue = true;
     }
@@ -164,25 +177,25 @@ bool HUD_t$load( HUD_t* restrict _HUD,
 
     if ( UNLIKELY( !_HUD ) || UNLIKELY( !_HUD->name ) ||
          UNLIKELY( !_HUD->folder ) || UNLIKELY( !_HUD->extension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_amount ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        log$transaction$query$format( ( logLevel_t )info, "Loading HUD: '%s'\n",
+        log$transaction$query$format( ( logLevel_t )info, "Loading HUD: '%s'",
                                       _HUD->name );
 
 #define TRY_LOAD_OR_EXIT( _field )                                            \
@@ -193,7 +206,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
                                                     _renderer, #_field "/" ); \
             if ( UNLIKELY( !l_returnValue ) ) {                               \
                 log$transaction$query( ( logLevel_t )error,                   \
-                                       "Loading HUD " #_field "\n" );         \
+                                       "Loading HUD " #_field );              \
                 goto EXIT;                                                    \
             }                                                                 \
             insertIntoArray( &( _HUD->_field ), clone( &l_element ) );        \
@@ -205,6 +218,7 @@ bool HUD_t$load( HUD_t* restrict _HUD,
 
 #undef TRY_LOAD_OR_EXIT
 
+#if 0
         // Timer
         {
             l_returnValue = HUD_t$element$load$one( &( _HUD->timer ), _HUD,
@@ -212,21 +226,23 @@ bool HUD_t$load( HUD_t* restrict _HUD,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading HUD timer\n" );
+                                       "Loading HUD timer" );
 
                 goto EXIT;
             }
         }
+#endif
 
         // Timer background
-#if 0
+#if 1
         {
             l_returnValue =
                 HUD_t$element$load$one( &( _HUD->timerBackground ), _HUD,
                                         _renderer, "timerBackground/" );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-        log$transaction$query( ( logLevel_t )error, "Loading HUD timer background\n" );
+                log$transaction$query( ( logLevel_t )error,
+                                       "Loading HUD timer background" );
 
                 goto EXIT;
             }
@@ -244,35 +260,34 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-#define REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _objects )        \
-    do {                                                             \
-        if ( UNLIKELY( !( _objects ) ) ) {                           \
-            l_returnValue = false;                                   \
-            log$transaction$query( ( logLevel_t )error,              \
-                                   "Invalid argument\n" );           \
-            goto EXIT;                                               \
-        }                                                            \
-        FOR_ARRAY( object_t* const*, ( _objects ) ) {                \
-            l_returnValue = object_t$states$remove( *_element );     \
-            if ( UNLIKELY( !l_returnValue ) ) {                      \
-                log$transaction$query( ( logLevel_t )error,          \
-                                       "Removing object states\n" ); \
-                goto EXIT;                                           \
-            }                                                        \
-            l_returnValue = object_t$destroy( *_element );           \
-            if ( UNLIKELY( !l_returnValue ) ) {                      \
-                log$transaction$query( ( logLevel_t )error,          \
-                                       "Destroying object\n" );      \
-                goto EXIT;                                           \
-            }                                                        \
-            FREE_ARRAY_ELEMENTS( _objects );                         \
-        }                                                            \
+#define REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _objects )                 \
+    do {                                                                      \
+        if ( UNLIKELY( !( _objects ) ) ) {                                    \
+            l_returnValue = false;                                            \
+            log$transaction$query( ( logLevel_t )error, "Invalid argument" ); \
+            goto EXIT;                                                        \
+        }                                                                     \
+        FOR_ARRAY( object_t* const*, ( _objects ) ) {                         \
+            l_returnValue = object_t$states$remove( *_element );              \
+            if ( UNLIKELY( !l_returnValue ) ) {                               \
+                log$transaction$query( ( logLevel_t )error,                   \
+                                       "Removing object states" );            \
+                goto EXIT;                                                    \
+            }                                                                 \
+            l_returnValue = object_t$destroy( *_element );                    \
+            if ( UNLIKELY( !l_returnValue ) ) {                               \
+                log$transaction$query( ( logLevel_t )error,                   \
+                                       "Destroying object" );                 \
+                goto EXIT;                                                    \
+            }                                                                 \
+            FREE_ARRAY_ELEMENTS( _objects );                                  \
+        }                                                                     \
     } while ( 0 )
 
         REMOVE_STATES_IN_OBJECTS_AND_FREE_OR_EXIT( _HUD->logos );
@@ -290,7 +305,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing object states\n" );
+                                       "Removing object states" );
 
                 goto EXIT;
             }
@@ -303,7 +318,7 @@ bool HUD_t$unload( HUD_t* restrict _HUD ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing object states\n" );
+                                       "Removing object states" );
 
                 goto EXIT;
             }
@@ -321,56 +336,61 @@ bool HUD_t$step( HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-#define STEP_OBJECTS_OR_EXIT( _objects )                      \
+#define STEP_FIELD_OBJECTS_OR_EXIT( _field )                  \
     do {                                                      \
-        FOR_ARRAY( object_t* const*, ( _objects ) ) {         \
+        FOR_ARRAY( object_t* const*, _HUD->__field ) {        \
             l_returnValue = object_t$step( *_element, 0, 0 ); \
             if ( UNLIKELY( !l_returnValue ) ) {               \
                 log$transaction$query( ( logLevel_t )error,   \
-                                       "Stepping object\n" ); \
+                                       "Stepping " #_field ); \
                 goto EXIT;                                    \
             }                                                 \
         }                                                     \
     } while ( 0 )
 
-        STEP_OBJECTS_OR_EXIT( _HUD->logos );
-        STEP_OBJECTS_OR_EXIT( _HUD->hpGauges );
-        STEP_OBJECTS_OR_EXIT( _HUD->hpBars );
-        STEP_OBJECTS_OR_EXIT( _HUD->names );
-        STEP_OBJECTS_OR_EXIT( _HUD->meterGauges );
-        STEP_OBJECTS_OR_EXIT( _HUD->meterBars );
+#if 0
+        STEP_FIELD_OBJECTS_OR_EXIT( logos );
+        STEP_FIELD_OBJECTS_OR_EXIT( hpGauges );
+        STEP_FIELD_OBJECTS_OR_EXIT( hpBars );
+        STEP_FIELD_OBJECTS_OR_EXIT( names );
+        STEP_FIELD_OBJECTS_OR_EXIT( meterGauges );
+        STEP_FIELD_OBJECTS_OR_EXIT( meterBars );
+#endif
 
-#undef STEP_OBJECTS_OR_EXIT
+#undef STEP_FIELD_OBJECTS_OR_EXIT
 
+#if 0
         // Timer
         {
             l_returnValue = object_t$step( &( _HUD->timer ), 0, 0 );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Stepping object\n" );
+                log$transaction$query( ( logLevel_t )error, "Stepping timer" );
 
                 goto EXIT;
             }
         }
+#endif
 
+#if 1
         // Timer background
         {
             l_returnValue = object_t$step( &( _HUD->timerBackground ), 0, 0 );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Stepping object\n" );
+                                       "Stepping timer background" );
 
                 goto EXIT;
             }
         }
+#endif
 
         l_returnValue = true;
     }
@@ -384,7 +404,7 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_HUD ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -393,53 +413,58 @@ bool HUD_t$render( const HUD_t* restrict _HUD ) {
         const SDL_FRect l_cameraRectangle = { .x = 0, .y = 0, .w = 0, .h = 0 };
         const bool l_doDrawBoxes = false;
 
-#define RENDER_OBJECTS_OR_EXIT( _objects )                                  \
+#define RENDER_FIELD_OBJECTS_OR_EXIT( _field )                              \
     do {                                                                    \
-        FOR_ARRAY( object_t* const*, ( _objects ) ) {                       \
+        FOR_ARRAY( object_t* const*, ( _HUD->_field ) ) {                   \
             l_returnValue = object_t$render( *_element, &l_cameraRectangle, \
                                              l_doDrawBoxes );               \
             if ( UNLIKELY( !l_returnValue ) ) {                             \
                 log$transaction$query( ( logLevel_t )error,                 \
-                                       "Rendering object\n" );              \
+                                       "Rendering " #_field );              \
                 goto EXIT;                                                  \
             }                                                               \
         }                                                                   \
     } while ( 0 )
 
-        RENDER_OBJECTS_OR_EXIT( _HUD->logos );
-        RENDER_OBJECTS_OR_EXIT( _HUD->hpGauges );
-        RENDER_OBJECTS_OR_EXIT( _HUD->hpBars );
-        RENDER_OBJECTS_OR_EXIT( _HUD->names );
-        RENDER_OBJECTS_OR_EXIT( _HUD->meterGauges );
-        RENDER_OBJECTS_OR_EXIT( _HUD->meterBars );
+#if 0
+        RENDER_FIELD_OBJECTS_OR_EXIT( logos );
+        RENDER_FIELD_OBJECTS_OR_EXIT( hpGauges );
+        RENDER_FIELD_OBJECTS_OR_EXIT( hpBars );
+        RENDER_FIELD_OBJECTS_OR_EXIT( names );
+        RENDER_FIELD_OBJECTS_OR_EXIT( meterGauges );
+        RENDER_FIELD_OBJECTS_OR_EXIT( meterBars );
+#endif
 
-#undef RENDER_OBJECTS_OR_EXIT
+#undef RENDER_FIELD_OBJECTS_OR_EXIT
 
+#if 0
         // Timer
         {
             l_returnValue = object_t$render(
                 &( _HUD->timer ), &l_cameraRectangle, l_doDrawBoxes );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Rendering object\n" );
+                log$transaction$query( ( logLevel_t )error, "Rendering timer" );
 
                 goto EXIT;
             }
         }
+#endif
 
+#if 1
         // Timer background
         {
             l_returnValue = object_t$render(
-                &( _HUD->timer ), &l_cameraRectangle, l_doDrawBoxes );
+                &( _HUD->timerBackground ), &l_cameraRectangle, l_doDrawBoxes );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Rendering object\n" );
+                                       "Rendering timer background" );
 
                 goto EXIT;
             }
         }
+#endif
 
         l_returnValue = true;
     }
