@@ -69,6 +69,10 @@
 
 typedef enum { debug, info, warn, error, unknownLogLevel } logLevel_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static FORCE_INLINE const char* log$level$convert$toStaticString(
     const logLevel_t _logLevel ) {
     switch ( _logLevel ) {
@@ -137,3 +141,7 @@ bool _log$transaction$query$format( const logLevel_t _logLevel,
                              3  // First format argument index
                              ) ) );
 bool log$transaction$commit( void );
+
+#ifdef __cplusplus
+}
+#endif

@@ -27,7 +27,8 @@ typedef struct {
     SDL_FRect rectangle;
 } camera_t;
 
-camera_t camera_t$create( void );
-bool camera_t$destroy( camera_t* restrict _camera );
+EXPORT camera_t camera_t$create( void );
+EXPORT bool camera_t$destroy( camera_t* restrict _camera );
 
-bool camera_t$update( camera_t* restrict _camera, const player_t* _player );
+EXPORT bool camera_t$update( camera_t* restrict _camera,
+                             const player_t* _player );

@@ -4,9 +4,6 @@
 **/.*~
 **/.*.swp
 
-# glad
-glad
-
 # Profiling
 **/*.gc*
 **/*.info
@@ -18,8 +15,5 @@ glad
 **/**out**
 **/*vgcore*
 **/*.data
-***/compile_commands.json
+**/compile_commands.json
 **/.cache
-
-# In-progress
-Style_Guide.md
