@@ -8,12 +8,14 @@
 
 #define DEFAULT_WINDOW_NAME "Gamuingu"
 
-#define DEFAULT_WINDOW  \
-    { .name = NULL,     \
-      .width = 640,     \
-      .height = 480,    \
-      .desiredFPS = 60, \
-      .vsync = DEFAULT_VSYNC }
+#define DEFAULT_WINDOW          \
+    {                           \
+        .name = NULL,           \
+        .width = 640,           \
+        .height = 480,          \
+        .desiredFPS = 60,       \
+        .vsync = DEFAULT_VSYNC, \
+    }
 
 typedef struct {
     char* name;

@@ -21,7 +21,10 @@ static size_t* g_totalFramesPassed = NULL;
 static void* FPS$count( void* _data ) {
     ( void )( sizeof( _data ) );
 
-    const struct timespec l_sleepTime = { .tv_sec = 1, .tv_nsec = 0 };
+    const struct timespec l_sleepTime = {
+        .tv_sec = 1,
+        .tv_nsec = 0,
+    };
 
     size_t l_previousTotalFramesPerSecond = 0;
 
@@ -143,9 +146,9 @@ EXIT:
 
 #if defined( HOT_RELOAD )
 
-bool hotReload$unload( void** _state,
-                       size_t* _stateSize,
-                       applicationState_t* _applicationState ) {
+bool hotReload$unload( void** restrict _state,
+                       size_t* restrict _stateSize,
+                       applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     *_stateSize = ( sizeof( g_totalFramesPassed ) );
@@ -175,9 +178,9 @@ bool hotReload$unload( void** _state,
     return ( true );
 }
 
-bool hotReload$load( void* _state,
+bool hotReload$load( void* restrict _state,
                      size_t _stateSize,
-                     applicationState_t* _applicationState ) {
+                     applicationState_t* restrict _applicationState ) {
     UNUSED( _applicationState );
 
     bool l_returnValue = false;
