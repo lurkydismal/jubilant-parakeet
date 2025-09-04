@@ -6,6 +6,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "asset_t.h"
 #include "log.h"
 
 #define COMPILATION_TIME_AS_SEED                                      \
@@ -45,6 +46,8 @@ size_t concatBeforeAndAfterString( char* restrict* restrict _string,
 
     {
         if ( UNLIKELY( !_string ) || UNLIKELY( !*_string ) ) {
+            log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
             goto EXIT;
         }
 
@@ -103,6 +106,8 @@ char* sanitizeString( const char* restrict _string ) {
     char* l_returnValue = NULL;
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -142,10 +147,14 @@ char** splitStringIntoArray( const char* restrict _string,
     char** l_returnValue = createArray( char* );
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_delimiter ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -171,6 +180,8 @@ char** splitStringIntoArrayBySymbol( const char* restrict _string,
     char** l_returnValue = createArray( char* );
 
     if ( UNLIKELY( !_string ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -221,14 +232,20 @@ ssize_t findStringInArray( const char** restrict _array,
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_array ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_arrayLength ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_value ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -262,14 +279,20 @@ ssize_t findInArray( const size_t* restrict _array,
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_array ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_arrayLength ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
     if ( UNLIKELY( !_value ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -349,11 +372,14 @@ EXIT:
     return ( l_returnValue );
 }
 
+// TODO: Remove asset_t
 char** getPathsByGlob( const char* restrict _glob,
                        const char* restrict _directory ) {
     char** l_returnValue = NULL;
 
     if ( UNLIKELY( !_glob ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 
@@ -368,6 +394,9 @@ char** getPathsByGlob( const char* restrict _glob,
                 char* l_glob = duplicateString( _glob );
 
                 concatBeforeAndAfterString( &l_glob, _directory, NULL );
+
+                concatBeforeAndAfterString(
+                    &l_glob, asset_t$loader$assetsDirectory$get(), NULL );
 
                 int l_result = glob(
                     l_glob,

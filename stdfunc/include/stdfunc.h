@@ -48,6 +48,17 @@
 #define max( _a, _b ) ( ( ( _a ) > ( _b ) ) ? ( _a ) : ( _b ) )
 #define min( _a, _b ) ( ( ( _a ) < ( _b ) ) ? ( _a ) : ( _b ) )
 
+// Utility functions ( side-effects )
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
+#define trap __builtin_trap
+
+#else
+
+#define trap ( ( void )0 );
+
+#endif
+
 // Non-native and native array utility functions
 #define arrayLengthPointer( _array ) \
     ( ( arrayLength_t* )( ( char* )( _array ) - sizeof( arrayLength_t ) ) )
@@ -200,10 +211,14 @@ static FORCE_INLINE size_t generateHash( const uint8_t* restrict _data,
     size_t l_returnValue = 0;
 
     if ( !_data ) {
+        trap();
+
         goto EXIT;
     }
 
     if ( !_dataSize ) {
+        trap();
+
         goto EXIT;
     }
 
@@ -228,6 +243,8 @@ static FORCE_INLINE char* duplicateString( const char* restrict _string ) {
     char* l_returnValue = NULL;
 
     if ( UNLIKELY( !_string ) ) {
+        trap();
+
         goto EXIT;
     }
 
@@ -246,6 +263,8 @@ static FORCE_INLINE ssize_t findSymbolInString( const char* restrict _string,
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_string ) ) {
+        trap();
+
         goto EXIT;
     }
 
@@ -268,6 +287,8 @@ findLastSymbolInString( const char* restrict _string, const char _symbol ) {
     ssize_t l_returnValue = -1;
 
     if ( UNLIKELY( !_string ) ) {
+        trap();
+
         goto EXIT;
     }
 
