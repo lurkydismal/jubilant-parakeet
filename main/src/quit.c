@@ -54,7 +54,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -66,7 +66,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
             if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Application exited with %s: '%s'\n",
+                    ( logLevel_t )error, "Application exited with %s: '%s'",
                     result_t$convert$toStaticString( _result ),
                     l_SDLErrorMessage );
             }
@@ -75,7 +75,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         // FPS
         {
             if ( UNLIKELY( !FPS$quit() ) ) {
-                log$transaction$query( ( logLevel_t )error, "Quitting FPS\n" );
+                log$transaction$query( ( logLevel_t )error, "Quitting FPS" );
 
                 goto EXIT;
             }
@@ -84,8 +84,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         // Vsync
         {
             if ( UNLIKELY( !vsync$quit() ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Quitting Vsync\n" );
+                log$transaction$query( ( logLevel_t )error, "Quitting Vsync" );
 
                 goto EXIT;
             }
@@ -96,7 +95,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             if ( UNLIKELY( !settings_t$unload(
                      &( _applicationState->settings ) ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Unloading settings\n" );
+                                       "Unloading settings" );
 
                 goto EXIT;
             }
@@ -106,7 +105,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         {
             if ( UNLIKELY( !asset_t$loader$quit() ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Quitting asset loader\n" );
+                                       "Quitting asset loader" );
 
                 goto EXIT;
             }
@@ -125,7 +124,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
             if ( UNLIKELY(
                      !applicationState_t$destroy( _applicationState ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying application state\n" );
+                                       "Destroying application state" );
             }
 
             free( _applicationState );
@@ -138,7 +137,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
 
             if ( l_SDLErrorMessage[ 0 ] != '\0' ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Application shutdown with %s: '%s'\n",
+                    ( logLevel_t )error, "Application shutdown with %s: '%s'",
                     result_t$convert$toStaticString( _result ),
                     l_SDLErrorMessage );
             }
@@ -148,7 +147,7 @@ static FORCE_INLINE bool quit( applicationState_t* restrict _applicationState,
         {
             if ( UNLIKELY( !log$quit() ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Quitting logging system\n" );
+                                       "Quitting logging system" );
 
                 goto EXIT;
             }

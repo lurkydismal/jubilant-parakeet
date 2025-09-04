@@ -75,7 +75,7 @@ static error_t parserForOption( int _key,
 
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Setting log level to %s\n",
+                    ( logLevel_t )error, "Setting log level to %s",
                     log$level$convert$toString( l_logLevel ) );
 
                 l_returnValue = EPERM;
@@ -91,7 +91,7 @@ static error_t parserForOption( int _key,
 
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Setting log level to %s\n",
+                    ( logLevel_t )error, "Setting log level to %s",
                     log$level$convert$toString( l_logLevel ) );
 
                 l_returnValue = EPERM;
@@ -111,8 +111,8 @@ static error_t parserForOption( int _key,
             if ( UNLIKELY(
                      l_backgroundIndex >=
                      arrayLength( l_applicationState->config.backgrounds ) ) ) {
-                log$transaction$query$format(
-                    ( logLevel_t )error, "Background index: %s\n", _value );
+                log$transaction$query$format( ( logLevel_t )error,
+                                              "Background index: %s", _value );
 
                 argp_error( _state, "Background index '%s' is out of range",
                             _value );
@@ -160,9 +160,8 @@ static error_t parserForOption( int _key,
 
                     if ( l_length != ( l_settingsAsAsset.size - 1 ) ) {
                         log$transaction$query$format(
-                            ( logLevel_t )error,
-                            "Generating settings %zu %zu\n", l_length,
-                            l_settingsAsAsset.size );
+                            ( logLevel_t )error, "Generating settings %zu %zu",
+                            l_length, l_settingsAsAsset.size );
 
                         argp_error( _state, "Failed to generate settings" );
                     }
@@ -182,16 +181,16 @@ static error_t parserForOption( int _key,
                 );
 
                 if ( UNLIKELY( !l_result ) ) {
-                    log$transaction$query$format(
-                        ( logLevel_t )error, "Saving settings file: '%s'\n",
-                        l_filePath );
+                    log$transaction$query$format( ( logLevel_t )error,
+                                                  "Saving settings file: '%s'",
+                                                  l_filePath );
 
                     argp_error( _state, "Failed to save settings file: '%s'",
                                 l_filePath );
                 }
 
                 log$transaction$query$format( ( logLevel_t )info,
-                                              "Saved settings file: '%s'\n",
+                                              "Saved settings file: '%s'",
                                               l_filePath );
 
                 log$transaction$commit();
@@ -217,7 +216,7 @@ static error_t parserForOption( int _key,
                         l_index = ( randomNumber() % l_##_field##sAmount ); \
                         log$transaction$query$format(                       \
                             ( logLevel_t )info,                             \
-                            "Selecting random " #_field ": [ %zu ]\n",      \
+                            "Selecting random " #_field ": [ %zu ]",        \
                             l_index );                                      \
                     }                                                       \
                     l_applicationState->_field =                            \
@@ -252,13 +251,13 @@ static FORCE_INLINE bool parseArguments(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_argumentVector ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -327,13 +326,13 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_argumentVector ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -344,7 +343,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             if ( UNLIKELY( !log$init( LOG_FILE_NAME_DEFAULT,
                                       LOG_FILE_EXTENSION_DEFAULT ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Initializing logging system\n" );
+                                       "Initializing logging system" );
 
                 goto EXIT;
             }
@@ -363,7 +362,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
             if ( UNLIKELY( !log$level$set( l_logLevel ) ) ) {
                 log$transaction$query$format(
-                    ( logLevel_t )error, "Setting log level to %s\n",
+                    ( logLevel_t )error, "Setting log level to %s",
                     log$level$convert$toString( l_logLevel ) );
 
                 goto EXIT;
@@ -376,7 +375,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
         {
             if ( UNLIKELY( !asset_t$loader$init( ASSETS_DIRECTORY ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Initializing asset loader\n" );
+                                       "Initializing asset loader" );
 
                 goto EXIT;
             }
@@ -392,10 +391,10 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                          &( _applicationState->settings ), SETTINGS_FILE_NAME,
                          SETTINGS_FILE_EXTENSION ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading settings\n" );
+                                           "Loading settings" );
 
                     log$transaction$query( ( logLevel_t )info,
-                                           "Loading default settings\n" );
+                                           "Loading default settings" );
 
                     log$transaction$commit();
 
@@ -407,7 +406,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             {
                 log$transaction$query$format(
                     ( logLevel_t )info,
-                    "Window name: '%s', Version: '%s', Identifier: '%s'\n",
+                    "Window name: '%s', Version: '%s', Identifier: '%s'",
                     _applicationState->settings.window.name,
                     _applicationState->settings.version,
                     _applicationState->settings.identifier );
@@ -418,9 +417,9 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                          _applicationState->settings.window.name,
                          _applicationState->settings.version,
                          _applicationState->settings.identifier ) ) ) {
-                    log$transaction$query$format(
-                        ( logLevel_t )error, "Setting render scale: '%s'\n",
-                        SDL_GetError() );
+                    log$transaction$query$format( ( logLevel_t )error,
+                                                  "Setting render scale: '%s'",
+                                                  SDL_GetError() );
 
                     goto EXIT;
                 }
@@ -436,7 +435,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                          &( _applicationState->config ), CONFIG_FILE_NAME,
                          CONFIG_FILE_EXTENSION ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading config\n" );
+                                           "Loading config" );
 
                     goto EXIT;
                 }
@@ -449,7 +448,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                                                _argumentCount,
                                                _argumentVector ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Parsing arguments\n" );
+                                           "Parsing arguments" );
 
                     goto EXIT;
                 }
@@ -471,7 +470,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                          &( _applicationState->renderer ) ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
-                        "Window or Renderer creation: '%s'\n", SDL_GetError() );
+                        "Window or Renderer creation: '%s'", SDL_GetError() );
 
                     goto EXIT;
                 }
@@ -485,7 +484,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                          SDL_SCALEMODE_PIXELART ) ) ) {
                     log$transaction$query$format(
                         ( logLevel_t )error,
-                        "Setting render pixel scale mode: '%s'\n",
+                        "Setting render pixel scale mode: '%s'",
                         SDL_GetError() );
 
                     if ( UNLIKELY( !SDL_SetDefaultTextureScaleMode(
@@ -493,7 +492,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                              SDL_SCALEMODE_NEAREST ) ) ) {
                         log$transaction$query$format(
                             ( logLevel_t )error,
-                            "Setting render nearest scale mode: '%s'\n",
+                            "Setting render nearest scale mode: '%s'",
                             SDL_GetError() );
 
                         goto EXIT;
@@ -512,9 +511,9 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
 
                 if ( !SDL_SetRenderScale( _applicationState->renderer, l_scaleX,
                                           l_scaleY ) ) {
-                    log$transaction$query$format(
-                        ( logLevel_t )error, "Setting render scale: '%s'\n",
-                        SDL_GetError() );
+                    log$transaction$query$format( ( logLevel_t )error,
+                                                  "Setting render scale: '%s'",
+                                                  SDL_GetError() );
 
                     goto EXIT;
                 }
@@ -525,7 +524,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                 if ( UNLIKELY(
                          !applicationState_t$load( _applicationState ) ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading application state\n" );
+                                           "Loading application state" );
 
                     goto EXIT;
                 }
@@ -539,7 +538,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
                                   _applicationState->settings.window.desiredFPS,
                                   _applicationState->renderer ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Initializing Vsync\n" );
+                                       "Initializing Vsync" );
 
                 goto EXIT;
             }
@@ -550,7 +549,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
             if ( UNLIKELY( !FPS$init(
                      &( _applicationState->totalFramesRendered ) ) ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Initializing FPS\n" );
+                                       "Initializing FPS" );
 
                 goto EXIT;
             }
@@ -560,7 +559,7 @@ static FORCE_INLINE bool init( applicationState_t* restrict _applicationState,
         {
             if ( !!( SDL_HasGamepad() ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Initializing Gamepad\n" );
+                                       "Initializing Gamepad" );
 
                 goto EXIT;
             }

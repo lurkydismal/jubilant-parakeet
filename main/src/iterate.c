@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include "FPS.h"
+#include "HUD_t.h"
 #include "applicationState_t.h"
 #include "log.h"
 #include "player_t.h"
@@ -15,7 +16,7 @@ static FORCE_INLINE bool iterate(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -54,7 +55,7 @@ static FORCE_INLINE bool iterate(
         l_returnValue = vsync$begin();
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Vsync begin\n" );
+            log$transaction$query( ( logLevel_t )error, "Vsync begin" );
 
             goto EXIT;
         }
@@ -74,7 +75,19 @@ static FORCE_INLINE bool iterate(
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Rendering background\n" );
+                                           "Rendering background" );
+
+                    goto EXIT;
+                }
+            }
+
+            // HUD
+            {
+                l_returnValue = HUD_t$render( _applicationState->HUD );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Rendering HUD" );
 
                     goto EXIT;
                 }
@@ -104,7 +117,19 @@ static FORCE_INLINE bool iterate(
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Stepping background\n" );
+                                           "Stepping background" );
+
+                    goto EXIT;
+                }
+            }
+
+            // HUD
+            {
+                l_returnValue = HUD_t$step( _applicationState->HUD );
+
+                if ( UNLIKELY( !l_returnValue ) ) {
+                    log$transaction$query( ( logLevel_t )error,
+                                           "Stepping HUD" );
 
                     goto EXIT;
                 }
@@ -114,7 +139,7 @@ static FORCE_INLINE bool iterate(
         l_returnValue = vsync$end();
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Vsync end\n" );
+            log$transaction$query( ( logLevel_t )error, "Vsync end" );
 
             goto EXIT;
         }
@@ -147,8 +172,7 @@ static FORCE_INLINE bool iterate(
 
             l_result[ l_len ] = '\0';
 
-            log$transaction$query$format( ( logLevel_t )debug, "%s\n",
-                                          l_result );
+            log$transaction$query$format( ( logLevel_t )debug, "%s", l_result );
         }
 
         FREE_ARRAY( l_inputs );

@@ -19,7 +19,7 @@ static FORCE_INLINE bool onWindowResize(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -41,7 +41,7 @@ static FORCE_INLINE bool onWindowResize(
                 l_returnValue = false;
 
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Setting render scale: '%s'\n",
+                                              "Setting render scale: '%s'",
                                               SDL_GetError() );
 
                 goto EXIT;
@@ -62,13 +62,13 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_scancode ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -109,7 +109,7 @@ static FORCE_INLINE bool onKey( applicationState_t* restrict _applicationState,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Adding player input\n" );
+                                           "Adding player input" );
 
                     goto EXIT;
                 }
@@ -130,7 +130,7 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -152,7 +152,7 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Handling window resize\n" );
+                                           "Handling window resize" );
 
                     goto EXIT;
                 }
@@ -166,7 +166,7 @@ static FORCE_INLINE bool event( applicationState_t* _applicationState,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Handling key press\n" );
+                                           "Handling key press" );
 
                     goto EXIT;
                 }

@@ -22,7 +22,7 @@ bool applicationState_t$destroy(
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -31,8 +31,7 @@ bool applicationState_t$destroy(
         l_returnValue = settings_t$destroy( &( _applicationState->settings ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Destroying settings\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying settings" );
 
             goto EXIT;
         }
@@ -40,7 +39,7 @@ bool applicationState_t$destroy(
         l_returnValue = config_t$destroy( &( _applicationState->config ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying config\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying config" );
 
             goto EXIT;
         }
@@ -53,7 +52,7 @@ bool applicationState_t$destroy(
         l_returnValue = camera_t$destroy( &( _applicationState->camera ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying camera\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying camera" );
 
             goto EXIT;
         }
@@ -61,7 +60,7 @@ bool applicationState_t$destroy(
         l_returnValue = player_t$destroy( &( _applicationState->localPlayer ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying player\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying player" );
 
             goto EXIT;
         }
@@ -81,7 +80,7 @@ bool applicationState_t$load( applicationState_t* _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -94,7 +93,7 @@ bool applicationState_t$load( applicationState_t* _applicationState ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading background\n" );
+                                       "Loading background" );
 
                 goto EXIT;
             }
@@ -107,7 +106,7 @@ bool applicationState_t$load( applicationState_t* _applicationState ) {
                 ( arrayLength( _applicationState->remotePlayers ) + 1 ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Loading HUD\n" );
+                log$transaction$query( ( logLevel_t )error, "Loading HUD" );
 
                 goto EXIT;
             }
@@ -124,7 +123,7 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_applicationState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -135,7 +134,7 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
         l_returnValue = _field##_t$unload( _applicationState->_field ); \
         if ( UNLIKELY( !l_returnValue ) ) {                             \
             log$transaction$query( ( logLevel_t )error,                 \
-                                   "Unloading " #_field "\n" );         \
+                                   "Unloading " #_field "" );           \
             goto EXIT;                                                  \
         }                                                               \
     } while ( 0 )
@@ -150,7 +149,7 @@ bool applicationState_t$unload( applicationState_t* _applicationState ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying player\n" );
+                                       "Destroying player" );
 
                 goto EXIT;
             }
