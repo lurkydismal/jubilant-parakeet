@@ -13,8 +13,10 @@ Checks: >
   ,cppcoreguidelines-*
   ,-cppcoreguidelines-avoid-do-while
   ,-cppcoreguidelines-avoid-goto
+  ,-cppcoreguidelines-avoid-magic-numbers
   ,-cppcoreguidelines-avoid-non-const-global-variables
   ,-cppcoreguidelines-macro-to-enum
+  ,-cppcoreguidelines-macro-usage
   ,-cppcoreguidelines-narrowing-conversions
   ,modernize-*
   ,-modernize-macro-to-enum
