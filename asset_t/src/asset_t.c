@@ -14,13 +14,13 @@ bool asset_t$loader$init( const char* restrict _assetsDirectory ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Alraedy initialized\n" );
+        log$transaction$query( ( logLevel_t )error, "Alraedy initialized" );
 
         goto EXIT;
     }
@@ -50,7 +50,7 @@ bool asset_t$loader$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Not initialized\n" );
+        log$transaction$query( ( logLevel_t )error, "Not initialized" );
 
         goto EXIT;
     }
@@ -77,7 +77,7 @@ bool asset_t$destroy( asset_t* restrict _asset ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -98,19 +98,19 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_path ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -132,7 +132,7 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
-                                          "Opening asset: '%s'\n", _path );
+                                          "Opening asset: '%s'", _path );
 
             goto FILE_EXIT;
         }
@@ -145,7 +145,7 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Getting asset size\n" );
+                                       "Getting asset size" );
 
                 goto FILE_EXIT;
             }
@@ -161,7 +161,7 @@ bool asset_t$load$fromPath( asset_t* restrict _asset,
             l_returnValue = ( l_readenCount == l_fileSize );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error, "Reading asset\n" );
+                log$transaction$query( ( logLevel_t )error, "Reading asset" );
 
                 asset_t$unload( _asset );
 
@@ -190,19 +190,19 @@ bool asset_t$load$fromGlob( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -218,7 +218,7 @@ bool asset_t$load$fromGlob( asset_t* restrict _asset,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Loading asset from path: '%s'\n",
+                                              "Loading asset from path: '%s'",
                                               l_paths[ 0 ] );
 
                 goto EXIT;
@@ -237,19 +237,19 @@ bool asset_t$array$load$fromGlob( asset_t*** restrict _assetArray,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_assetArray ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -264,7 +264,7 @@ bool asset_t$array$load$fromGlob( asset_t*** restrict _assetArray,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Loading asset from path: '%s'\n",
+                                              "Loading asset from path: '%s'",
                                               *_element );
 
                 asset_t$destroy( &l_asset );
@@ -291,19 +291,19 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_path ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -313,7 +313,7 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format(
-                ( logLevel_t )error, "Loading asset from path: '%s'\n", _path );
+                ( logLevel_t )error, "Loading asset from path: '%s'", _path );
 
             goto EXIT;
         }
@@ -321,7 +321,7 @@ bool asset_t$load$compressed( asset_t* restrict _asset,
         l_returnValue = asset_t$compress( _asset );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Compressing asset\n" );
+            log$transaction$query( ( logLevel_t )error, "Compressing asset" );
 
             goto EXIT;
         }
@@ -338,19 +338,19 @@ bool asset_t$load$fromGlob$compressed( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -360,7 +360,7 @@ bool asset_t$load$fromGlob$compressed( asset_t* restrict _asset,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format(
-                ( logLevel_t )error, "Loading asset from glob: '%s'\n", _glob );
+                ( logLevel_t )error, "Loading asset from glob: '%s'", _glob );
 
             goto EXIT;
         }
@@ -368,7 +368,7 @@ bool asset_t$load$fromGlob$compressed( asset_t* restrict _asset,
         l_returnValue = asset_t$compress( _asset );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Compressing asset\n" );
+            log$transaction$query( ( logLevel_t )error, "Compressing asset" );
 
             goto EXIT;
         }
@@ -385,19 +385,19 @@ bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _assetArray,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_assetArray ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -406,9 +406,9 @@ bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _assetArray,
         l_returnValue = asset_t$array$load$fromGlob( _assetArray, _glob );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query$format(
-                ( logLevel_t )error, "Loading asset array from glob: '%s'\n",
-                _glob );
+            log$transaction$query$format( ( logLevel_t )error,
+                                          "Loading asset array from glob: '%s'",
+                                          _glob );
 
             goto EXIT;
         }
@@ -418,7 +418,7 @@ bool asset_t$array$load$fromGlob$compressed( asset_t*** restrict _assetArray,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Compressing asset\n" );
+                                       "Compressing asset" );
 
                 goto EXIT;
             }
@@ -435,7 +435,7 @@ bool asset_t$unload( asset_t* restrict _asset ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -458,13 +458,13 @@ bool asset_t$compress( asset_t* restrict _asset ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -481,7 +481,7 @@ bool asset_t$compress( asset_t* restrict _asset ) {
                                            &l_compressedLength ) == SNAPPY_OK );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Compressing asset\n" );
+            log$transaction$query( ( logLevel_t )error, "Compressing asset" );
 
             free( l_data );
 
@@ -507,7 +507,7 @@ bool asset_t$uncompress( asset_t* restrict _asset ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -519,7 +519,7 @@ bool asset_t$uncompress( asset_t* restrict _asset ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Validating compressed asset\n" );
+                                   "Validating compressed asset" );
 
             goto EXIT;
         }
@@ -532,7 +532,7 @@ bool asset_t$uncompress( asset_t* restrict _asset ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Getting uncompressed asset length\n" );
+                                   "Getting uncompressed asset length" );
 
             goto EXIT;
         }
@@ -546,8 +546,7 @@ bool asset_t$uncompress( asset_t* restrict _asset ) {
                                  &l_uncompressedLength ) != SNAPPY_OK );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Uncompressing asset\n" );
+            log$transaction$query( ( logLevel_t )error, "Uncompressing asset" );
 
             free( l_data );
 
@@ -575,19 +574,19 @@ bool asset_t$save$sync$toPath( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_path ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -623,7 +622,7 @@ bool asset_t$save$sync$toPath( asset_t* restrict _asset,
 
             if ( !l_returnValue ) {
                 log$transaction$query$format( ( logLevel_t )error,
-                                              "Opening file for saving: '%s'\n",
+                                              "Opening file for saving: '%s'",
                                               _path );
 
                 goto EXIT;
@@ -635,8 +634,7 @@ bool asset_t$save$sync$toPath( asset_t* restrict _asset,
             l_returnValue = ( l_writtenCount == ( ssize_t )( _asset->size ) );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Writing to file\n" );
+                log$transaction$query( ( logLevel_t )error, "Writing to file" );
 
                 goto EXIT_SAVE;
             }
@@ -659,19 +657,19 @@ bool asset_t$save$async$toPath( asset_t* restrict _asset,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_path ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -682,7 +680,7 @@ bool asset_t$save$async$toPath( asset_t* restrict _asset,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Saving asset to path\n" );
+                                   "Saving asset to path" );
 
             goto EXIT;
         }
@@ -696,7 +694,7 @@ EXIT:
 
 const char* asset_t$loader$assetsDirectory$get( void ) {
     if ( UNLIKELY( !g_assetsDirectory ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         return ( "" );
     }
