@@ -9,10 +9,12 @@
 
 #define MAX_DURATION_LENGTH ( lengthOfNumber( SIZE_MAX ) )
 
-#define MAKE_INPUT( _direction, _button )                                \
-    { .data = ( ( uint8_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
-                             ( ( _button ) & INPUT_BUTTON_MASK ) ) ),    \
-      .duration = 0 }
+#define MAKE_INPUT( _direction, _button )                                  \
+    {                                                                      \
+        .data = ( ( uint8_t )( ( ( _direction ) & INPUT_DIRECTION_MASK ) | \
+                               ( ( _button ) & INPUT_BUTTON_MASK ) ) ),    \
+        .duration = 0,                                                     \
+    }
 
 #define GET_DIRECTION( _input ) \
     ( ( direction_t )( ( _input )->data & INPUT_DIRECTION_MASK ) )
@@ -20,7 +22,11 @@
     ( ( button_t )( ( _input )->data & INPUT_BUTTON_MASK ) )
 #define GET_DURATION( _input ) ( ( _input )->duration )
 
-#define DEFAULT_INPUT { .data = 0, .duration = 0 }
+#define DEFAULT_INPUT  \
+    {                  \
+        .data = 0,     \
+        .duration = 0, \
+    }
 
 typedef struct {
     uint8_t data;

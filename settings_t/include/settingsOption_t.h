@@ -18,8 +18,12 @@
         vsync_t: ( settingsOptionType_t )( vsync ),          \
         default: ( settingsOptionType_t )( unknownSettingsOptionType ) )
 
-#define DEFAULT_SETTINGS_OPTION \
-    { .key = NULL, .storage = NULL, .type = unknownSettingsOptionType }
+#define DEFAULT_SETTINGS_OPTION            \
+    {                                      \
+        .key = NULL,                       \
+        .storage = NULL,                   \
+        .type = unknownSettingsOptionType, \
+    }
 
 #define settingsOption_t$map( _settingsOption, _key, _storage ) \
     _settingsOption_t$map(                                      \

@@ -51,6 +51,7 @@ bool settings_t$destroy( settings_t* restrict _settings ) {
 
         _settings->backgroundIndex = SIZE_MAX;
         _settings->HUDIndex = SIZE_MAX;
+        _settings->characterIndex = SIZE_MAX;
 
         free( _settings->version );
         _settings->version = NULL;
@@ -230,6 +231,10 @@ bool settings_t$load$fromAsset( settings_t* restrict _settings,
 
                         INSERT_SETTINGS_OPTION( &l_settingsOptions, "HUD_index",
                                                 &( _settings->HUDIndex ) );
+
+                        INSERT_SETTINGS_OPTION(
+                            &l_settingsOptions, "character_index",
+                            &( _settings->characterIndex ) );
                     }
 
 #undef INSERT_SETTINGS_OPTION
