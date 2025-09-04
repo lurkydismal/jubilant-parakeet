@@ -78,7 +78,6 @@ EXTERNAL_LIBRARIES_TO_LINK+=(
     "snappy"
     "sdl3"
     "sdl3-image"
-    "libcjson"
 )
 
 export MODULE_NAME_FIELD_WIDTH=14
