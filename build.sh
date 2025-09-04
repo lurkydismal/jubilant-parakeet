@@ -82,6 +82,8 @@ export declare BUILD_INCLUDES=(
     "background_t/include"
     "HUD_t/include"
     "character_t/include"
+    "font_t/include"
+    "texture_t/include"
     "asset_t/include"
     "watch_t/include"
     "log/include"

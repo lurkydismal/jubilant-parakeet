@@ -174,10 +174,10 @@ static FORCE_INLINE bool background_t$reload( void* restrict _context,
         bool l_isBoxes = false;
 
         {
-            const ssize_t l_fileExtensionStartIndex =
+            const size_t l_fileExtensionStartIndex =
                 findLastSymbolInString( _fileName, '.' );
 
-            l_returnValue = ( l_fileExtensionStartIndex != -1 );
+            l_returnValue = ( l_fileExtensionStartIndex != SIZE_MAX );
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )warn,
@@ -356,7 +356,7 @@ bool background_t$unload( background_t* restrict _background ) {
 
                 free( l_watch );
 
-                pluckArray( &( _background->watches ), l_watch );
+                pluckArrayByValue( &( _background->watches ), l_watch );
             }
         }
 #endif

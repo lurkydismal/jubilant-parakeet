@@ -397,10 +397,10 @@ bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
             {
                 char* l_colorAsString = *_element;
 
-                const ssize_t l_colorAsStringStartIndex =
+                const size_t l_colorAsStringStartIndex =
                     findSymbolInString( l_colorAsString, '_' );
 
-                if ( l_colorAsStringStartIndex == -1 ) {
+                if ( l_colorAsStringStartIndex == SIZE_MAX ) {
                     goto EXIT_COLOR_TRIM_FILE_NAME;
                 }
 

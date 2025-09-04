@@ -356,11 +356,11 @@ static bool hotReloadSo( const char* restrict _soPath ) {
                                         HOT_RELOAD_LOAD_FUNCTION_SIGNATURE );
 
                                 if ( l_loadCallback ) {
-                                    const ssize_t l_nameIndex =
-                                        _findStringInArray( l_stateNames,
-                                                            l_soPath );
+                                    const size_t l_nameIndex =
+                                        findStringInArray( l_stateNames,
+                                                           l_soPath );
 
-                                    if ( LIKELY( l_nameIndex != -1 ) ) {
+                                    if ( LIKELY( l_nameIndex != SIZE_MAX ) ) {
                                         struct state* l_state =
                                             l_states[ l_nameIndex ];
 
@@ -508,17 +508,6 @@ int main( int _argumentCount, char** _argumentVector ) {
     if ( UNLIKELY( !l_returnValue ) ) {
         goto EXIT;
     }
-
-    // TODO
-    asset_t l_asset = asset_t$create();
-    l_asset.data = ( uint8_t* )malloc( 1 );
-    l_asset.data[ 0 ] = 'T';
-    l_asset.size = 1;
-
-    asset_t$save$async$toPath( &l_asset, "Test.txt", true );
-
-    asset_t$unload( &l_asset );
-    asset_t$destroy( &l_asset );
 
     {
 #if defined( HOT_RELOAD )
