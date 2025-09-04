@@ -187,12 +187,15 @@ export BUILT_EXECUTABLE_COLOR="$GREEN_LIGHT_COLOR"
 export SECTIONS_TO_STRIP_COLOR="$RED_LIGHT_COLOR"
 
 # Build helper functions
+# TODO: Better name
 not_found() {
-    local what="$1"
+    local what=$1
 
-    echo "$what"' not found'
+    command -v $what >/dev/null 2>&1 || {
+        echo "$what"' not found'
 
-    exit_failure
+        exit_failure
+    }
 }
 
 # TODO: Better name
@@ -217,9 +220,7 @@ cd "$SCRIPT_DIRECTORY" || exit
 
 source './config.sh' && {
 
-    command -v fd >/dev/null 2>&1 || {
-        not_found 'fd (fd-find)'
-    }
+    not_found 'fd'
 
     mkdir -p "$BUILD_DIRECTORY"
 
@@ -329,14 +330,8 @@ source './config.sh' && {
         BUILD_DEFINES+=("${BUILD_DEFINES_HOT_RELOAD[@]}")
     fi
 
-    # FIX: Improve
     # Set COMPILER
-    if [ -n "${CPP_PROJECT+x}" ]; then
-        COMPILER="$CPP_COMPILER"
-
-    else
-        COMPILER="$C_COMPILER"
-    fi
+    COMPILER="$C_COMPILER"
 
     if [ -z "${DISABLE_BUILD_CACHE+x}" ]; then
         C_COMPILER="ccache $C_COMPILER"
@@ -344,12 +339,13 @@ source './config.sh' && {
     fi
 
     if [ -n "${SCAN_BUILD+x}" ]; then
-        COMPILER="scan-build $SCAN_BUILD_FLAGS $COMPILER"
+        C_COMPILER="scan-build $SCAN_BUILD_FLAGS $C_COMPILER"
+        CPP_COMPILER="scan-build $SCAN_BUILD_FLAGS $CPP_COMPILER"
     fi
 
-    command -v $COMPILER >/dev/null 2>&1 || {
-        not_found "$COMPILER"
-    }
+    not_found $C_COMPILER
+    not_found $CPP_COMPILER
+    not_found $COMPILER
 
     if [ ${#BUILD_DEFINES[@]} -ne 0 ]; then
         printf -v definesAsString -- "-D %s " "${BUILD_DEFINES[@]}"
