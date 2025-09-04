@@ -22,7 +22,7 @@ bool animation_t$destroy( animation_t* restrict _animation ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -35,7 +35,7 @@ bool animation_t$destroy( animation_t* restrict _animation ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Destroying target boxes\n" );
+                                   "Destroying target boxes" );
 
             goto EXIT;
         }
@@ -56,25 +56,25 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_asset ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_targetRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -85,7 +85,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
             // Properties will be printed in boxes_t$load$one
             log$transaction$query$format( ( logLevel_t )debug,
-                                          "Animation properties: Size = %zu\n",
+                                          "Animation properties: Size = %zu",
                                           _asset->size );
 
 #endif
@@ -99,7 +99,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading animation from asset\n" );
+                                           "Loading animation from asset" );
 
                     goto EXIT;
                 }
@@ -111,7 +111,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Creating texture from asset\n" );
+                                           "Creating texture from asset" );
 
                     goto EXIT;
                 }
@@ -132,7 +132,7 @@ bool animation_t$load$fromAsset( animation_t* restrict _animation,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Loading target boxes\n" );
+                                   "Loading target boxes" );
 
             goto EXIT;
         }
@@ -151,19 +151,19 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_paths ) || UNLIKELY( !arrayLength( _paths ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -175,7 +175,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 #if defined( LOG_ANIMATION )
 
             log$transaction$query$format( ( logLevel_t )debug,
-                                          "Loading file: '%s' as animation_t\n",
+                                          "Loading file: '%s' as animation_t",
                                           *_element );
 
 #endif
@@ -190,7 +190,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Invalid animation file name format\n" );
+                                       "Invalid animation file name format" );
 
                 goto LOOP_CONTINUE;
             }
@@ -230,8 +230,10 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 l_startIndex = strtoul(
                     arrayFirstElement( l_startAndEndIndexAsString ), NULL, 10 );
-                l_endIndex = strtoul(
-                    arrayLastElement( l_startAndEndIndexAsString ), NULL, 10 );
+                l_endIndex =
+                    ( strtoul( arrayLastElement( l_startAndEndIndexAsString ),
+                               NULL, 10 ) +
+                      1 );
 
                 FREE_ARRAY_ELEMENTS( l_startAndEndIndexAsString );
                 FREE_ARRAY( l_startAndEndIndexAsString );
@@ -244,7 +246,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading asset from path\n" );
+                                           "Loading asset from path" );
 
                     goto LOOP_CONTINUE;
                 }
@@ -255,7 +257,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Loading animation from asset\n" );
+                                           "Loading animation from asset" );
 
                     goto LOOP_CONTINUE;
                 }
@@ -264,7 +266,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Unloading asset\n" );
+                                           "Unloading asset" );
 
                     goto LOOP_CONTINUE;
                 }
@@ -273,7 +275,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Destroying asset\n" );
+                                           "Destroying asset" );
 
                     goto LOOP_CONTINUE;
                 }
@@ -285,7 +287,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading animation from file\n" );
+                                       "Loading animation from file" );
 
                 goto EXIT;
             }
@@ -294,7 +296,7 @@ bool animation_t$load$fromPaths( animation_t* restrict _animation,
 #if defined( LOG_ANIMATION )
 
         log$transaction$query$format( ( logLevel_t )debug,
-                                      "Loaded %zu files and %zu frames\n",
+                                      "Loaded %zu files and %zu frames",
                                       arrayLength( _animation->keyFrames ),
                                       arrayLength( _animation->frames ) );
 
@@ -313,19 +315,19 @@ bool animation_t$load$fromGlob( animation_t* restrict _animation,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_glob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -341,7 +343,7 @@ bool animation_t$load$fromGlob( animation_t* restrict _animation,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Loading animation from glob\n" );
+                                   "Loading animation from glob" );
 
             goto EXIT;
         }
@@ -357,7 +359,7 @@ bool animation_t$unload( animation_t* restrict _animation ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -371,7 +373,7 @@ bool animation_t$unload( animation_t* restrict _animation ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Unloading target boxes\n" );
+                                   "Unloading target boxes" );
 
             goto EXIT;
         }
@@ -395,7 +397,7 @@ bool animation_t$step( animation_t* restrict _animation, bool _canLoop ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -405,7 +407,7 @@ bool animation_t$step( animation_t* restrict _animation, bool _canLoop ) {
             if ( arrayLength( _animation->frames ) > 1 ) {
                 if ( _animation->currentFrame !=
                      arrayLength( _animation->frames ) ) {
-                    _animation->currentFrame++;
+                    // _animation->currentFrame++;
 
                 } else {
                     if ( _canLoop ) {
@@ -418,7 +420,7 @@ bool animation_t$step( animation_t* restrict _animation, bool _canLoop ) {
 
                 if ( UNLIKELY( !l_returnValue ) ) {
                     log$transaction$query( ( logLevel_t )error,
-                                           "Stepping target boxes\n" );
+                                           "Stepping target boxes" );
 
                     goto EXIT;
                 }
@@ -438,19 +440,19 @@ bool animation_t$render( const animation_t* restrict _animation,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_animation ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_targetRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -463,7 +465,7 @@ bool animation_t$render( const animation_t* restrict _animation,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target box current frame\n" );
+                                   "Invalid target box current frame" );
 
             goto EXIT;
         }
@@ -484,7 +486,7 @@ bool animation_t$render( const animation_t* restrict _animation,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Invalid animation current frame\n" );
+                                   "Invalid animation current frame" );
 
             goto EXIT;
         }
@@ -497,7 +499,7 @@ bool animation_t$render( const animation_t* restrict _animation,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query$format( ( logLevel_t )error,
-                                          "Rendering texture: '%s'\n",
+                                          "Rendering texture: '%s'",
                                           SDL_GetError() );
 
             goto EXIT;

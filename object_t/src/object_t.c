@@ -17,7 +17,7 @@ bool object_t$destroy( object_t* restrict _object ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -28,7 +28,7 @@ bool object_t$destroy( object_t* restrict _object ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Destroying state\n" );
+                                       "Destroying state" );
 
                 goto EXIT;
             }
@@ -64,26 +64,26 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesPath ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationPaths ) ||
          UNLIKELY( !arrayLength( _animationPaths ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -100,7 +100,7 @@ bool object_t$state$add$fromPaths( object_t* restrict _object,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Loading state from paths\n" );
+                                   "Loading state from paths" );
 
             state_t$destroy( &l_state );
 
@@ -125,25 +125,25 @@ bool object_t$state$add$fromGlob( object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesGlob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationGlob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -160,7 +160,7 @@ bool object_t$state$add$fromGlob( object_t* restrict _object,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Loading state from glob\n" );
+                                   "Loading state from glob" );
 
             state_t$destroy( &l_state );
 
@@ -181,13 +181,13 @@ bool object_t$state$remove( object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -196,7 +196,7 @@ bool object_t$state$remove( object_t* restrict _object,
         l_returnValue = state_t$unload( _state );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Unloading state\n" );
+            log$transaction$query( ( logLevel_t )error, "Unloading state" );
 
             goto EXIT;
         }
@@ -204,7 +204,7 @@ bool object_t$state$remove( object_t* restrict _object,
         l_returnValue = state_t$destroy( _state );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying state\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying state" );
 
             goto EXIT;
         }
@@ -213,7 +213,7 @@ bool object_t$state$remove( object_t* restrict _object,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing state from array\n" );
+                                   "Removing state from array" );
 
             goto EXIT;
         }
@@ -231,7 +231,7 @@ bool object_t$states$remove( object_t* restrict _object ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -242,7 +242,7 @@ bool object_t$states$remove( object_t* restrict _object ) {
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Removing state from object\n" );
+                                       "Removing state from object" );
 
                 goto EXIT;
             }
@@ -261,7 +261,7 @@ bool object_t$move( object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -296,13 +296,13 @@ bool object_t$step( object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_object->currentState ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -311,7 +311,7 @@ bool object_t$step( object_t* restrict _object,
         l_returnValue = state_t$step( _object->currentState );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping state\n" );
+            log$transaction$query( ( logLevel_t )error, "Stepping state" );
 
             goto EXIT;
         }
@@ -319,7 +319,7 @@ bool object_t$step( object_t* restrict _object,
         l_returnValue = object_t$move( _object, _velocityX, _velocityY );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping state\n" );
+            log$transaction$query( ( logLevel_t )error, "Stepping state" );
 
             goto EXIT;
         }
@@ -337,13 +337,13 @@ bool object_t$render( const object_t* restrict _object,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_cameraRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -359,7 +359,7 @@ bool object_t$render( const object_t* restrict _object,
                                         &l_targetRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Rendering state\n" );
+            log$transaction$query( ( logLevel_t )error, "Rendering state" );
 
             goto EXIT;
         }
