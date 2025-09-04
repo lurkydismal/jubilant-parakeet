@@ -17,6 +17,8 @@ bool vsync$init( const vsync_t _vsync,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_renderer ) ) {
+        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+
         goto EXIT;
     }
 

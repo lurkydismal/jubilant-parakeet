@@ -38,7 +38,8 @@ bool FPS$init( size_t* restrict _totalFramesPassed ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( g_totalFramesPassed ) ) {
-        l_returnValue = false;
+        log$transaction$query( ( logLevel_t )error,
+                               "Total frames passed already exists\n" );
 
         goto EXIT;
     }
@@ -75,7 +76,8 @@ bool FPS$quit( void ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
-        l_returnValue = false;
+        log$transaction$query( ( logLevel_t )error,
+                               "No total frames passed\n" );
 
         goto EXIT;
     }
@@ -100,6 +102,9 @@ size_t FPS$get$current( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
+        log$transaction$query( ( logLevel_t )error,
+                               "No total frames passed\n" );
+
         l_returnValue = SIZE_MAX;
 
         goto EXIT;
@@ -117,6 +122,9 @@ size_t FPS$get$total( void ) {
     size_t l_returnValue = 0;
 
     if ( UNLIKELY( !g_totalFramesPassed ) ) {
+        log$transaction$query( ( logLevel_t )error,
+                               "No total frames passed\n" );
+
         l_returnValue = SIZE_MAX;
 
         goto EXIT;
