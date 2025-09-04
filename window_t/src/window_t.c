@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include "log.h"
-#include "stdfunc.h"
 
 window_t window_t$create( void ) {
     window_t l_returnValue = DEFAULT_WINDOW;

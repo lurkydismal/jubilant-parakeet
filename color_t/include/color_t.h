@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "cpp_compatibility.h"
 #include "log.h"
 #include "stdfunc.h"
 

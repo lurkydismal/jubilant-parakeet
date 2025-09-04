@@ -131,7 +131,7 @@ bool control_t$destroy( control_t* _control ) {
     }
 
     {
-        _control->scancode = 0;
+        _control->scancode = SDL_SCANCODE_UNKNOWN;
         _control->input = 0;
 
         l_returnValue = true;
@@ -143,7 +143,7 @@ EXIT:
 
 SDL_Scancode control_t$scancode$convert$fromString( const char* _string ) {
     // Unknown
-    SDL_Scancode l_returnValue = 0;
+    SDL_Scancode l_returnValue = SDL_SCANCODE_UNKNOWN;
 
     if ( UNLIKELY( !_string ) || UNLIKELY( !__builtin_strlen( _string ) ) ) {
         log$transaction$query( ( logLevel_t )error, "Invalid argument" );

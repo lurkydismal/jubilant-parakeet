@@ -3,6 +3,7 @@
 #include <SDL3/SDL_rect.h>
 #include <stdbool.h>
 
+#include "cpp_compatibility.h"
 #include "player_t.h"
 #include "stdfloat16.h"
 

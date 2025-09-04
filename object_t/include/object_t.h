@@ -3,6 +3,7 @@
 #include <SDL3/SDL_render.h>
 #include <stdbool.h>
 
+#include "cpp_compatibility.h"
 #include "state_t.h"
 
 #define DEFAULT_OBJECT      \
