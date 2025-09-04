@@ -40,12 +40,16 @@ export BUILD_TYPE="${BUILD_TYPE:-${BUILD_TYPES[$BUILD_TYPE_NAME]}}"
 
 # Handle command line arguments
 {
+    function show_version {
+        echo "${0##*/} 0.0"
+    }
+
     function show_help {
         cat <<EOF
 Usage: $0 [OPTION...]
 TODO: Description
 
-  -v     Enable verbose output
+  -v     Print version
   -h     Show this help message
   -d     Build debug
   -r     Build release
@@ -67,8 +71,12 @@ Report bugs to <lurkydismal@duck.com>.
 EOF
     }
 
-    while getopts "hdrptosbeicau" _option; do
+    while getopts "vhdrptosbeicau" _option; do
         case $_option in
+        v)
+            show_version
+            exit_success
+            ;;
         h)
             show_help
             exit_success
