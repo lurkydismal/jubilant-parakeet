@@ -59,3 +59,26 @@ export rootSharedObjectName="root"
 
 export executableMainPackage='main'
 export testsMainPackage='test'
+
+BUILD_DEFINES+=(
+    "INI_ALLOW_INLINE_COMMENTS=1"
+    "INI_STOP_ON_FIRST_ERROR=1"
+    "INI_CALL_HANDLER_ON_NEW_SECTION=1"
+)
+
+BUILD_INCLUDES+=(
+    "runtime/applicationState_t/include"
+)
+
+LIBRARIES_TO_LINK+=(
+    "mimalloc"
+    "elf"
+    "unwind"
+)
+
+EXTERNAL_LIBRARIES_TO_LINK+=(
+    "snappy"
+    "sdl3"
+    "sdl3-image"
+    "libcjson"
+)
