@@ -16,7 +16,7 @@ bool state_t$destroy( state_t* restrict _state ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -26,7 +26,7 @@ bool state_t$destroy( state_t* restrict _state ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Destroying animation\n" );
+                                   "Destroying animation" );
 
             goto EXIT;
         }
@@ -34,7 +34,7 @@ bool state_t$destroy( state_t* restrict _state ) {
         l_returnValue = boxes_t$destroy( &( _state->boxes ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying boxes\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying boxes" );
 
             goto EXIT;
         }
@@ -54,20 +54,20 @@ bool state_t$load$fromPaths( state_t* restrict _state,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesPath ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationPath ) ||
          UNLIKELY( !arrayLength( _animationPath ) ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -80,7 +80,7 @@ bool state_t$load$fromPaths( state_t* restrict _state,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading animation from paths\n" );
+                                       "Loading animation from paths" );
 
                 goto EXIT;
             }
@@ -99,7 +99,7 @@ bool state_t$load$fromPaths( state_t* restrict _state,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading boxes from paths\n" );
+                                       "Loading boxes from paths" );
 
                 goto EXIT;
             }
@@ -118,19 +118,19 @@ bool state_t$load$fromGlob( state_t* restrict _state,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_boxesGlob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_animationGlob ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -143,7 +143,7 @@ bool state_t$load$fromGlob( state_t* restrict _state,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading animation from glob\n" );
+                                       "Loading animation from glob" );
 
                 goto EXIT;
             }
@@ -156,7 +156,7 @@ bool state_t$load$fromGlob( state_t* restrict _state,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Loading boxes from glob\n" );
+                                       "Loading boxes from glob" );
 
                 goto EXIT;
             }
@@ -173,7 +173,7 @@ bool state_t$unload( state_t* restrict _state ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -182,8 +182,7 @@ bool state_t$unload( state_t* restrict _state ) {
         l_returnValue = animation_t$unload( &( _state->animation ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Unloading animation\n" );
+            log$transaction$query( ( logLevel_t )error, "Unloading animation" );
 
             goto EXIT;
         }
@@ -191,7 +190,7 @@ bool state_t$unload( state_t* restrict _state ) {
         l_returnValue = boxes_t$unload( &( _state->boxes ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Unloading boxes\n" );
+            log$transaction$query( ( logLevel_t )error, "Unloading boxes" );
 
             goto EXIT;
         }
@@ -207,7 +206,7 @@ bool state_t$step( state_t* restrict _state ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -217,8 +216,7 @@ bool state_t$step( state_t* restrict _state ) {
             animation_t$step( &( _state->animation ), _state->canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Stepping animation\n" );
+            log$transaction$query( ( logLevel_t )error, "Stepping animation" );
 
             goto EXIT;
         }
@@ -226,7 +224,7 @@ bool state_t$step( state_t* restrict _state ) {
         l_returnValue = boxes_t$step( &( _state->boxes ), _state->canLoop );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping boxes\n" );
+            log$transaction$query( ( logLevel_t )error, "Stepping boxes" );
 
             goto EXIT;
         }
@@ -244,13 +242,13 @@ bool state_t$render( const state_t* restrict _state,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_state ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_cameraRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -263,7 +261,7 @@ bool state_t$render( const state_t* restrict _state,
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Invalid target boxes current frame\n" );
+                                   "Invalid target boxes current frame" );
 
             goto EXIT;
         }
@@ -282,8 +280,7 @@ bool state_t$render( const state_t* restrict _state,
             &( _state->animation ), _state->renderer, &l_targetRectangle );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Rendering animation\n" );
+            log$transaction$query( ( logLevel_t )error, "Rendering animation" );
 
             goto EXIT;
         }
@@ -294,8 +291,7 @@ bool state_t$render( const state_t* restrict _state,
                                 &l_targetRectangle, true );
 
             if ( UNLIKELY( !l_returnValue ) ) {
-                log$transaction$query( ( logLevel_t )error,
-                                       "Rendering boxes\n" );
+                log$transaction$query( ( logLevel_t )error, "Rendering boxes" );
 
                 goto EXIT;
             }

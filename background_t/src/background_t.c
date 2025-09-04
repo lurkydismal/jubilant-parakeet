@@ -17,7 +17,7 @@ bool background_t$destroy( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -26,7 +26,7 @@ bool background_t$destroy( background_t* restrict _background ) {
         l_returnValue = object_t$destroy( &( _background->object ) );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying object\n" );
+            log$transaction$query( ( logLevel_t )error, "Destroying object" );
 
             goto EXIT;
         }
@@ -49,21 +49,20 @@ bool background_t$load( background_t* restrict _background,
     if ( UNLIKELY( !_background ) || UNLIKELY( !_background->name ) ||
          UNLIKELY( !_background->folder ) ||
          UNLIKELY( !_background->extension ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_renderer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     {
-        log$transaction$query$format( ( logLevel_t )info,
-                                      "Loading background: '%s'\n",
-                                      _background->name );
+        log$transaction$query$format(
+            ( logLevel_t )info, "Loading background: '%s'", _background->name );
 
         {
             const char* l_folder = _background->folder;
@@ -101,7 +100,7 @@ bool background_t$load( background_t* restrict _background,
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
-                                       "Adding object state from glob\n" );
+                                       "Adding object state from glob" );
 
                 goto EXIT;
             }
@@ -122,7 +121,7 @@ bool background_t$unload( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -132,7 +131,7 @@ bool background_t$unload( background_t* restrict _background ) {
 
         if ( UNLIKELY( !l_returnValue ) ) {
             log$transaction$query( ( logLevel_t )error,
-                                   "Removing object state\n" );
+                                   "Removing object state" );
 
             goto EXIT;
         }
@@ -157,7 +156,7 @@ bool background_t$step( background_t* restrict _background ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -166,7 +165,7 @@ bool background_t$step( background_t* restrict _background ) {
         l_returnValue = object_t$step( &( _background->object ), 0, 0 );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Stepping object\n" );
+            log$transaction$query( ( logLevel_t )error, "Stepping object" );
 
             goto EXIT;
         }
@@ -184,13 +183,13 @@ bool background_t$render( const background_t* restrict _background,
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_background ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
 
     if ( UNLIKELY( !_cameraRectangle ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument\n" );
+        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
 
         goto EXIT;
     }
@@ -200,7 +199,8 @@ bool background_t$render( const background_t* restrict _background,
                                          _cameraRectangle, _doDrawBoxes );
 
         if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Rendering object\n" );
+            log$transaction$query( ( logLevel_t )error,
+                                   "Rendering background" );
 
             goto EXIT;
         }
