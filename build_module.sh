@@ -18,6 +18,9 @@ needBuild=0
             { [[ -f "$newest_file" ]] &&
                 [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; }; }; then
         needBuild=1
+
+    else
+        echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping module '$TARGET_DIRECTORY'\t— '$OUTPUT_FILE' already exists.""$RESET_COLOR"
     fi
 
     cd - >'/dev/null' || exit

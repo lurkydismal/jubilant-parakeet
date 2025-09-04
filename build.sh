@@ -456,7 +456,7 @@ source './config.sh' && {
 
                 if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
                     if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-                        echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping static '$staticPart' — '$OUTPUT_FILE' already exists.""$RESET_COLOR"
+                        echo -e "$SKIPPING_PART_IN_BUILD_COLOR""Skipping static '$staticPart'\t— '$OUTPUT_FILE' already exists.""$RESET_COLOR"
 
                         continue
                     fi
