@@ -46,7 +46,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update && \
-        sudo apt-get install -y fd-find libsnappy-dev libxxhash-dev libmimalloc-dev libelf-dev libomp-dev \
+        sudo apt-get install -y fd-find libsnappy-dev libxxhash-dev libmimalloc-dev libelf-dev libomp-dev libmsgsl-dev \
           cmake ninja-build build-essential \
           libx11-dev libxext-dev libxrandr-dev libxss-dev libxcursor-dev \
           libxi-dev libxinerama-dev && \
