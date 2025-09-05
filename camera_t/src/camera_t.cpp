@@ -3,13 +3,13 @@
 #include "log.h"
 #include "stdfunc.h"
 
-camera_t camera_t$create( void ) {
+auto camera_t$create( void ) -> camera_t {
     camera_t l_returnValue = DEFAULT_CAMERA;
 
     return ( l_returnValue );
 }
 
-bool camera_t$destroy( camera_t* restrict _camera ) {
+auto camera_t$destroy( camera_t* restrict _camera ) -> bool {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {
@@ -27,7 +27,8 @@ EXIT:
 }
 
 // TODO: Implement
-bool camera_t$update( camera_t* restrict _camera, const player_t* _player ) {
+auto camera_t$update( camera_t* restrict _camera, const player_t* _player )
+    -> bool {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_camera ) ) {

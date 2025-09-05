@@ -1,6 +1,5 @@
 Improve font_t
 Improve GLTF_t
-Decide on HUD, background, character
-Implement Adding players to HUD
-Implement players initialization
 Change pthread() to fork() in asset_t async save
+
+Move to available C++ 26

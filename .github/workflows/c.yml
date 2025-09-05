@@ -96,13 +96,13 @@ jobs:
       run: ccache -s
 
     - name: Build debug
-      run: TERM=xterm ./build.sh
+      run: TERM=xterm ./build.sh -dua
 
     - name: Build debug with hot reload
-      run: TERM=xterm ENABLE_HOT_RELOAD= ./build.sh
+      run: TERM=xterm ./build.sh -deua
 
     - name: Build tests
-      run: TERM=xterm BUILD_TYPE=3 ./build.sh
+      run: TERM=xterm ./build.sh -tua
 
     - name: Run tests
       run: TERM=xterm ./out/main.out_test

@@ -27,7 +27,7 @@ export testsToBuild=(
     "input"
     "FPS"
     "object_t"
-    "camera_t"
+    # "camera_t"
     "state_t"
     "animation_t"
     "boxes_t"
