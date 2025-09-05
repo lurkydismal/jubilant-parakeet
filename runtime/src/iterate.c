@@ -5,10 +5,7 @@
 #include <SDL3/SDL_video.h>
 
 #include "FPS.h"
-#include "HUD_t.h"
-#include "character_t.h"
 #include "log.h"
-#include "player_t.h"
 #include "stdfunc.h"
 
 bool iterate( applicationState_t* restrict _applicationState ) {
@@ -44,7 +41,9 @@ bool iterate( applicationState_t* restrict _applicationState ) {
         }                                                                  \
     } while ( 0 )
 
+#if 0
             TRY_CHECK_WATCH_OR_EXIT( background );
+#endif
             // TRY_CHECK_WATCH_OR_EXIT( HUD );
             // TRY_CHECK_WATCH_OR_EXIT( character );
 
@@ -53,8 +52,10 @@ bool iterate( applicationState_t* restrict _applicationState ) {
 #endif
 
         if ( !_applicationState->isPaused ) {
+#if 0
             camera_t$update( &( _applicationState->camera ),
                              &( _applicationState->localPlayer ) );
+#endif
         }
 
         // Render
@@ -63,6 +64,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
 
             // Background
             {
+#if 0
                 l_returnValue = background_t$render(
                     _applicationState->background,
                     &( _applicationState->camera.rectangle ), false );
@@ -73,6 +75,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
 
                     goto EXIT;
                 }
+#endif
             }
 
 #if 0
@@ -99,6 +102,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
             {
                 // Background
                 {
+#if 0
                     l_returnValue =
                         background_t$step( _applicationState->background );
 
@@ -108,6 +112,7 @@ bool iterate( applicationState_t* restrict _applicationState ) {
 
                         goto EXIT;
                     }
+#endif
                 }
 
 #if 0

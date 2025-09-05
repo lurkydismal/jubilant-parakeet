@@ -8,9 +8,6 @@ config_t config_t$create() {
     config_t l_returnValue = DEFAULT_CONFIG;
 
     {
-        l_returnValue.backgrounds = createArray( background_t* );
-        l_returnValue.HUDs = createArray( HUD_t* );
-        l_returnValue.characters = createArray( character_t* );
     }
 
     return ( l_returnValue );
@@ -26,10 +23,6 @@ bool config_t$destroy( config_t* restrict _config ) {
     }
 
     {
-        FREE_ARRAY( _config->backgrounds );
-        FREE_ARRAY( _config->HUDs );
-        FREE_ARRAY( _config->characters );
-
         l_returnValue = true;
     }
 
@@ -141,9 +134,11 @@ static int lineHandler( void* _config,
         }                                                              \
     } while ( 0 )
 
+#if 0
                 INIT_AND_INSERT_IF_MATCHED( background );
                 INIT_AND_INSERT_IF_MATCHED( HUD );
                 INIT_AND_INSERT_IF_MATCHED( character );
+#endif
 
 #undef INIT_AND_INSERT_IF_MATCHED
             }
@@ -244,9 +239,11 @@ bool config_t$load$fromString( config_t* restrict _config,
         }                                                     \
     } while ( 0 )
 
+#if 0
         CHECK_EXIST_OR_EXIT( backgrounds );
         CHECK_EXIST_OR_EXIT( HUDs );
         CHECK_EXIST_OR_EXIT( characters );
+#endif
 
 #undef CHECK_EXIST_OR_EXIT
 
@@ -429,9 +426,11 @@ bool config_t$unload( config_t* restrict _config ) {
         FREE_ARRAY_ELEMENTS( _config->_field##s );              \
     } while ( 0 )
 
+#if 0
         UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( background );
         UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( HUD );
         UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT( character );
+#endif
 
 #undef UNLOAD_AND_DESTROY_AND_FREE_OR_EXIT
 

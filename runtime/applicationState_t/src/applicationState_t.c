@@ -11,7 +11,9 @@ applicationState_t applicationState_t$create( void ) {
         l_returnValue.config = config_t$create();
         l_returnValue.camera = camera_t$create();
         // l_returnValue.localPlayer = player_t$create();
+#if 0
         l_returnValue.remotePlayers = createArray( player_t* );
+#endif
     }
 
     return ( l_returnValue );
@@ -61,8 +63,10 @@ bool applicationState_t$destroy(
         }
 #endif
 
+#if 0
         FREE_ARRAY( _applicationState->remotePlayers );
         _applicationState->remotePlayers = NULL;
+#endif
 
         l_returnValue = true;
     }
@@ -115,7 +119,9 @@ bool applicationState_t$load( applicationState_t* restrict _applicationState ) {
         }                                                                     \
     } while ( 0 )
 
+#if 0
         TRY_LOAD_OR_EXIT( background );
+#endif
         // TRY_LOAD_OR_EXIT( HUD );
         // TRY_LOAD_OR_EXIT( character );
 

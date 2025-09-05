@@ -116,6 +116,7 @@ static error_t parserForOption( int _key,
         case 'b': {
             const size_t l_backgroundIndex = strtoul( _value, NULL, 10 );
 
+#if 0
             if ( UNLIKELY(
                      l_backgroundIndex >=
                      arrayLength( l_applicationState->config.backgrounds ) ) ) {
@@ -132,12 +133,14 @@ static error_t parserForOption( int _key,
 
             l_applicationState->background =
                 l_applicationState->config.backgrounds[ l_backgroundIndex ];
+#endif
 
             break;
         }
 
             // HUD
         case 'h': {
+#if 0
             const size_t l_HUDIndex = strtoul( _value, NULL, 10 );
 
             if ( UNLIKELY( l_HUDIndex >=
@@ -154,12 +157,14 @@ static error_t parserForOption( int _key,
 
             l_applicationState->HUD =
                 l_applicationState->config.HUDs[ l_HUDIndex ];
+#endif
 
             break;
         }
 
             // Character
         case 'c': {
+#if 0
             const size_t l_characterIndex = strtoul( _value, NULL, 10 );
 
             if ( UNLIKELY(
@@ -178,6 +183,7 @@ static error_t parserForOption( int _key,
 
             l_applicationState->character =
                 l_applicationState->config.characters[ l_characterIndex ];
+#endif
 
             break;
         }
@@ -216,9 +222,11 @@ static error_t parserForOption( int _key,
         }                                                               \
     } while ( 0 )
 
+#if 0
             HANDLE_CONFIG_FIELD( background );
             HANDLE_CONFIG_FIELD( HUD );
             HANDLE_CONFIG_FIELD( character );
+#endif
 
 #undef HANDLE_CONFIG_FIELD
 
@@ -328,9 +336,11 @@ static error_t parserForOption( int _key,
         }                                                                   \
     } while ( 0 )
 
+#if 0
             PICK_RANDOM_IF_NULL( background );
             PICK_RANDOM_IF_NULL( HUD );
             PICK_RANDOM_IF_NULL( character );
+#endif
 
 #undef PICK_RANDOM_IF_NULL
 

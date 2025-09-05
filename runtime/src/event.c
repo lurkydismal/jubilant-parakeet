@@ -97,9 +97,11 @@ static FORCE_INLINE bool handleKeyboardState(
                 }
             }
 
-            l_returnValue =
+            l_returnValue = true;
+#if 0
                 player_t$input$add( &( _applicationState->localPlayer ),
                                     &l_input, l_totalFramesRendered );
+#endif
 
             if ( UNLIKELY( !l_returnValue ) ) {
                 log$transaction$query( ( logLevel_t )error,
@@ -110,7 +112,7 @@ static FORCE_INLINE bool handleKeyboardState(
 
             {
                 // TODO: Fix
-#if 1
+#if 0
                 input_t** l_inputs = player_t$inputsSequences$get$withLimit(
                     &( _applicationState->localPlayer ),
                     _applicationState->totalFramesRendered + 1, 8 );

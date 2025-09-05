@@ -3,8 +3,9 @@
 #include <SDL3/SDL_rect.h>
 #include <stdbool.h>
 
-#include "player_t.h"
 #include "stdfloat16.h"
+
+typedef struct player player_t;
 
 #define DEFAULT_CAMERA  \
     {                   \

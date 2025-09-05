@@ -2,8 +2,9 @@
 
 #include <SDL3/SDL_rect.h>
 
-#include "player_t.h"
 #include "stdfloat16.h"
+
+using player_t = struct player;
 
 namespace camera {
 
