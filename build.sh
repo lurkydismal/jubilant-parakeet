@@ -331,7 +331,8 @@ source './config.sh' && {
     fi
 
     # Set COMPILER
-    COMPILER="$C_COMPILER"
+    # FIX: Do not hard code COMPILER and detect it
+    COMPILER="$CPP_COMPILER"
 
     if [ -z "${DISABLE_BUILD_CACHE+x}" ]; then
         C_COMPILER="ccache $C_COMPILER"

@@ -1,11 +1,5 @@
 #pragma once
 
-#define XXH_CPU_LITTLE_ENDIAN 1
-#define XXH_INLINE_ALL
-#define XXH_NO_STDLIB
-#define XXH_NO_STREAM
-#define XXH_STATIC_LINKING_ONLY
-
 #include <execinfo.h>
 #include <libgen.h>
 #include <limits.h>
