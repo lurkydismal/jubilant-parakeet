@@ -1,69 +1,71 @@
 #pragma once
 
+#include <ctll.hpp>
+#include <ctre.hpp>
 #include <xxhash.h>
 
+#include <algorithm>
 #include <cstdarg>
 #include <filesystem>
 #include <gsl/pointers>
 #include <iostream>
-#include <memory>
-#include <optional>
 #include <print>
+#include <random>
+#include <ranges>
+#include <regex>
 #include <source_location>
+#include <stacktrace>
 #include <string_view>
+#include <thread>
+#include <type_traits>
 
 namespace stdfunc {
 
 // Function attributes
-#define FORCE_INLINE __attribute__( ( always_inline ) ) inline
-#define NO_OPTIMIZE __attribute__( ( optimize( "0" ) ) )
-#define DEPRECATED( ... ) \
-    __attribute__( ( deprecated __VA_OPT__( ( __VA_ARGS__ ) ) ) )
-#define NO_RETURN __attribute__( ( noreturn ) )
-#define CONST __attribute__( ( const ) )
-#define PURE __attribute__( ( pure ) )
-#define HOT __attribute__( ( hot ) )
-#define COLD __attribute__( ( cold ) )
-#define SENTINEL __attribute__( ( sentinel ) )
+#define FORCE_INLINE [[gnu::always_inline]] inline
+#define NO_OPTIMIZE [[gnu::optimize( "0" )]]
+#define CONST [[gnu::const]]
+#define PURE [[gnu::pure]]
+#define HOT [[gnu::hot]]
+#define COLD [[gnu::cold]]
+#define SENTINEL [[gnu::sentinel]]
 
 // Struct attributes
-#define PACKED __attribute__( ( packed ) )
-
-// Branch prediction hints
-#define LIKELY( _expression ) __builtin_expect( !!( _expression ), 1 )
-#define UNLIKELY( _expression ) __builtin_expect( !!( _expression ), 0 )
+#define PACKED [[gnu::packed]]
 
 // Constants
-#define COMMENT_SYMBOL ( '#' )
-#define DECIMAL_RADIX 10
-#define ONE_SECOND_IN_MILLISECONDS ( ( size_t )( 1000 ) )
-#define ONE_MILLISECOND_IN_NANOSECONDS ( ( size_t )( 1000000 ) )
-#define ASCII_COLOR_CYAN_LIGHT "\e[1;36m"
-#define ASCII_COLOR_GREEN "\e[1;32m"
-#define ASCII_COLOR_PURPLE_LIGHT "\e[1;35m"
-#define ASCII_COLOR_RED "\e[1;31m"
-#define ASCII_COLOR_YELLOW "\e[1;33m"
-#define ASCII_COLOR_RESET_FOREGROUND "\e[39m"
-#define ASCII_COLOR_RESET_BACKGROUND "\e[49m"
-#define ASCII_COLOR_RESET "\e[0m"
+inline constexpr char g_commentSymbol = '#';
+inline constexpr size_t g_decimalRadix = 10;
+inline constexpr size_t g_oneSecondInMilliseconds = 1000;
+inline constexpr size_t g_oneMillisecondInNanoseconds = 1000000;
+inline constexpr std::string_view g_asciiColorCyanLight = "\x1b[1;36m";
+inline constexpr std::string_view g_asciiColorGreen = "\x1b[1;32m";
+inline constexpr std::string_view g_asciiColorPurpleLight = "\x1b[1;35m";
+inline constexpr std::string_view g_asciiColorRed = "\x1b[1;31m";
+inline constexpr std::string_view g_asciiColorYellow = "\x1b[1;33m";
+inline constexpr std::string_view g_asciiColorResetForeground = "\x1b[39m";
+inline constexpr std::string_view g_asciiColorResetBackground = "\x1b[49m";
+inline constexpr std::string_view g_asciiColorReset = "\x1b[0m";
+
+// Concepts
+template < typename T >
+concept is_container = std::ranges::range< T >;
+
+template < typename T >
+concept is_struct = ( std::is_class_v< T > && !std::is_union_v< T > );
+
+template < typename Lambda, typename ReturnType, typename... Arguments >
+concept is_lambda = requires( Lambda _lambda, Arguments&&... _arguments ) {
+    {
+        _lambda( std::forward< Arguments >( _arguments )... )
+    } -> std::convertible_to< ReturnType >;
+};
 
 // Utility macros ( no side-effects )
-#define SECONDS_TO_MILLISECONDS( _seconds ) \
-    ( ( _seconds ) * ONE_SECOND_IN_MILLISECONDS )
-#define MILLISECONDS_TO_NANOSECONDS( _milliseconds ) \
-    ( ( _milliseconds ) * ONE_MILLISECOND_IN_NANOSECONDS )
-#define BITS_TO_BYTES( _bits ) ( ( size_t )( ( _bits ) / 8 ) )
-
-// This macro turns a value into a string literal
 #define STRINGIFY( _value ) #_value
-
-// This is a helper macro that handles the stringify of macros
 #define MACRO_TO_STRING( _macro ) STRINGIFY( _macro )
 
-// Utility functions ( no side-effects )
-
-// Utility functions ( side-effects )
-#define ASSUME( _expression ) __builtin_assume( _expression )
+// Debug utility functions ( side-effects )
 
 #if ( defined( DEBUG ) && !defined( TESTS ) )
 
@@ -73,192 +75,284 @@ namespace stdfunc {
 
 #endif
 
-#define TRAP_COLOR_LEVEL ASCII_COLOR_RED
-#define TRAP_COLOR_FILE_NAME ASCII_COLOR_PURPLE_LIGHT
-#define TRAP_COLOR_LINE_NUMBER ASCII_COLOR_PURPLE_LIGHT
-#define TRAP_COLOR_FUNCTION_NAME ASCII_COLOR_PURPLE_LIGHT
+static constexpr std::string_view g_trapColorLevel = g_asciiColorRed;
+static constexpr std::string_view g_trapColorThreadId = g_asciiColorPurpleLight;
+static constexpr std::string_view g_trapColorFileName = g_asciiColorPurpleLight;
+static constexpr std::string_view g_trapColorLineNumber =
+    g_asciiColorPurpleLight;
+static constexpr std::string_view g_trapColorFunctionName =
+    g_asciiColorPurpleLight;
 
 #define BACKTRACE_LIMIT ( 5 )
 
 template < typename... Arguments >
-[[noreturn]] inline void _trap( std::format_string< Arguments... > _format,
-                                const std::source_location _sourceLocation,
-                                Arguments&&... _arguments ) {
-    std::print(
-        std::cerr,
-        TRAP_COLOR_LEVEL
-        "[TRAP] " ASCII_COLOR_RESET_FOREGROUND "Thread " TRAP_COLOR_THREAD_ID
-        "{}" ASCII_COLOR_RESET_FOREGROUND ": File '" TRAP_COLOR_FILE_NAME
-        "{}" ASCII_COLOR_RESET_FOREGROUND "': line " TRAP_COLOR_LINE_NUMBER
-        "{}" ASCII_COLOR_RESET_FOREGROUND
-        " in function '" TRAP_COLOR_FUNCTION_NAME
-        "{}" ASCII_COLOR_RESET_FOREGROUND "' | Message: ",
-        123, _sourceLocation.file_name(), _sourceLocation.line(),
-        _sourceLocation.function_name() );
+[[noreturn]] void _trap( std::format_string< Arguments... > _format,
+                         const std::source_location _sourceLocation,
+                         Arguments&&... _arguments ) {
+    std::print( std::cerr,
+                "{}[TRAP] {}Thread {}{}{}: File '{}{}{}': line {}{}{} "
+                "in function '{}{}{}' | Message: ",
+                g_trapColorLevel, g_asciiColorResetForeground,
+                g_trapColorThreadId, std::this_thread::get_id(),
+                g_asciiColorResetForeground, g_trapColorFileName,
+                _sourceLocation.file_name(), g_asciiColorResetForeground,
+                g_trapColorLineNumber, _sourceLocation.line(),
+                g_asciiColorResetForeground, g_trapColorFunctionName,
+                _sourceLocation.function_name(), g_asciiColorResetForeground );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
-    // TODO: Print backtrace
+    std::println( "{}", std::stacktrace::current( 2, BACKTRACE_LIMIT ) );
 
     __builtin_trap();
 }
 
-// Function file:line | message
 template < typename... Arguments >
-inline void trap( std::format_string< Arguments... > _format,
-                  Arguments&&... _arguments ) {
-    _error( _format, std::source_location::current(),
-            std::forward< Arguments >( _arguments )... );
+[[noreturn]] void trap( std::format_string< Arguments... > _format,
+                        Arguments&&... _arguments ) {
+    _trap( _format, std::source_location::current(),
+           std::forward< Arguments >( _arguments )... );
 }
 
-#if 0
-#define trap( ... )                                                      \
-    do {                                                                 \
-        write( STDERR_FILENO, DEBUG_INFORMATION1,                        \
-               __builtin_strlen( DEBUG_INFORMATION1 ) );                 \
-        write( STDERR_FILENO, __func__, __builtin_strlen( __func__ ) );  \
-        write( STDERR_FILENO, DEBUG_INFORMATION2,                        \
-               __builtin_strlen( DEBUG_INFORMATION2 ) );                 \
-        __VA_OPT__( write( STDERR_FILENO, DEBUG_INFORMATION3,            \
-                           __builtin_strlen( DEBUG_INFORMATION3 ) );     \
-                    const char l_message[] = __VA_ARGS__;                \
-                    write( STDERR_FILENO, l_message,                     \
-                           __builtin_strlen( l_message ) ); );           \
-        write( STDERR_FILENO, "\n", 1 );                                 \
-        void* l_backtraceBuffer[ BACKTRACE_LIMIT ];                      \
-        const size_t l_backtraceAmount =                                 \
-            backtrace( l_backtraceBuffer, BACKTRACE_LIMIT );             \
-        char** l_backtraceResolved =                                     \
-            backtrace_symbols( l_backtraceBuffer, l_backtraceAmount );   \
-        FOR_RANGE( size_t, 0, l_backtraceAmount ) {                      \
-            char* l_backtrace = l_backtraceResolved[ _index ];           \
-            char* l_fileNameEnd = __builtin_strchr( l_backtrace, '(' );  \
-            *l_fileNameEnd = '\0';                                       \
-            char* l_fileName = ( __builtin_strrchr( l_backtrace, '/' ) + \
-                                 ( 1 * sizeof( char ) ) );               \
-            write( STDERR_FILENO, l_fileName,                            \
-                   __builtin_strlen( l_fileName ) );                     \
-            *l_fileNameEnd = '(';                                        \
-            write( STDERR_FILENO, l_fileNameEnd,                         \
-                   __builtin_strlen( l_fileNameEnd ) );                  \
-            write( STDERR_FILENO, ASCII_COLOR_RESET,                     \
-                   __builtin_strlen( ASCII_COLOR_RESET ) );              \
-            write( STDERR_FILENO, "\n", 1 );                             \
-        }                                                                \
-        free( l_backtraceResolved );                                     \
-        __builtin_trap();                                                \
-    } while ( 0 )
-#endif
-
-#define assert( _expression, ... ) \
-    do {                           \
-        if ( !( _expression ) ) {  \
-            trap( __VA_ARGS__ );   \
-        }                          \
-    } while ( 0 )
+template < typename... Arguments >
+constexpr void assert( bool _result,
+                       std::format_string< Arguments... > _format,
+                       Arguments&&... _arguments ) {
+    if ( !( _result ) ) {
+        _trap( _format, std::source_location::current(),
+               std::forward< Arguments >( _arguments )... );
+    }
+}
 
 #else
 
-#define trap( ... ) ( ( void )0 )
-#define assert( _expression, ... ) ( ( void )0 )
+template < typename... Arguments >
+[[noreturn]] void trap( std::format_string< Arguments... > _format,
+                        Arguments&&... _arguments ) {}
+
+template < typename... Arguments >
+constexpr void assert( bool _result,
+                       std::format_string< Arguments... > _format,
+                       Arguments&&... _arguments ) {}
 
 #endif
 
-// Container utility functions
-#define randomValueFromContainer( _array ) \
-    ( ( _array )[ randomNumber() % std::size( _array ) ] )
-
 // Utility functions ( no side-effects )
-
 template < typename T >
-inline constexpr auto lengthOfNumber( T _number ) -> bool {
-    return ( ( ( ( _number ) < 10ULL ) )                     ? ( 1 )
-             : ( ( ( _number ) < 100ULL ) )                  ? ( 2 )
-             : ( ( ( _number ) < 1000ULL ) )                 ? ( 3 )
-             : ( ( ( _number ) < 10000ULL ) )                ? ( 4 )
-             : ( ( ( _number ) < 100000ULL ) )               ? ( 5 )
-             : ( ( ( _number ) < 1000000ULL ) )              ? ( 6 )
-             : ( ( ( _number ) < 10000000ULL ) )             ? ( 7 )
-             : ( ( ( _number ) < 100000000ULL ) )            ? ( 8 )
-             : ( ( ( _number ) < 1000000000ULL ) )           ? ( 9 )
-             : ( ( ( _number ) < 10000000000ULL ) )          ? ( 10 )
-             : ( ( ( _number ) < 100000000000ULL ) )         ? ( 11 )
-             : ( ( ( _number ) < 1000000000000ULL ) )        ? ( 12 )
-             : ( ( ( _number ) < 10000000000000ULL ) )       ? ( 13 )
-             : ( ( ( _number ) < 100000000000000ULL ) )      ? ( 14 )
-             : ( ( ( _number ) < 1000000000000000ULL ) )     ? ( 15 )
-             : ( ( ( _number ) < 10000000000000000ULL ) )    ? ( 16 )
-             : ( ( ( _number ) < 100000000000000000ULL ) )   ? ( 17 )
-             : ( ( ( _number ) < 1000000000000000000ULL ) )  ? ( 18 )
-             : ( ( ( _number ) < 10000000000000000000ULL ) ) ? ( 19 )
-                                                             : ( 20 ) );
+    requires std::is_arithmetic_v< T >
+constexpr auto bitsToBytes( T _bits ) -> T {
+    return ( ( _bits + 7 ) / 8 );
 }
 
-#define RANDOM_NUMBER_MAX SIZE_MAX
+template < typename T >
+    requires std::is_arithmetic_v< T >
+constexpr auto lengthOfNumber( T _number ) -> size_t {
+    return ( ( _number < 10ULL )                     ? ( 1 )
+             : ( _number < 100ULL )                  ? ( 2 )
+             : ( _number < 1000ULL )                 ? ( 3 )
+             : ( _number < 10000ULL )                ? ( 4 )
+             : ( _number < 100000ULL )               ? ( 5 )
+             : ( _number < 1000000ULL )              ? ( 6 )
+             : ( _number < 10000000ULL )             ? ( 7 )
+             : ( _number < 100000000ULL )            ? ( 8 )
+             : ( _number < 1000000000ULL )           ? ( 9 )
+             : ( _number < 10000000000ULL )          ? ( 10 )
+             : ( _number < 100000000000ULL )         ? ( 11 )
+             : ( _number < 1000000000000ULL )        ? ( 12 )
+             : ( _number < 10000000000000ULL )       ? ( 13 )
+             : ( _number < 100000000000000ULL )      ? ( 14 )
+             : ( _number < 1000000000000000ULL )     ? ( 15 )
+             : ( _number < 10000000000000000ULL )    ? ( 16 )
+             : ( _number < 100000000000000000ULL )   ? ( 17 )
+             : ( _number < 1000000000000000000ULL )  ? ( 18 )
+             : ( _number < 10000000000000000000ULL ) ? ( 19 )
+                                                     : ( 20 ) );
+}
 
-void randomNumber$seed$set( const size_t _seed );
-auto randomNumber$seed$get() -> size_t;
-auto randomNumber() -> size_t;
+static inline constexpr auto isSpace( char _symbol ) -> bool {
+    return ( ( _symbol == ' ' ) || ( _symbol == '\f' ) || ( _symbol == '\n' ) ||
+             ( _symbol == '\r' ) || ( _symbol == '\t' ) ||
+             ( _symbol == '\v' ) );
+}
 
-static inline auto generateHash( std::span< std::byte > _data ) -> size_t {
-    size_t l_returnValue =
-        XXH32( _data.data(), _data.size(), randomNumber$seed$get() );
+namespace {
+
+template < typename ViewRange >
+    requires std::ranges::input_range< ViewRange >
+constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
+    return ( std::forward< ViewRange >( _viewRange ) |
+             std::views::drop_while( isSpace ) |
+             std::views::take_while( []( char _symbol ) {
+                 return ( _symbol != g_commentSymbol );
+             } ) |
+             std::views::reverse | std::views::drop_while( isSpace ) |
+             std::views::reverse );
+}
+
+} // namespace
+
+// Runtime view
+static inline auto sanitizeString( std::string_view _string ) {
+    return ( _sanitizeString( _string ) );
+}
+
+// Compile-time view
+template < std::size_t N >
+    requires( N > 0 )
+consteval auto sanitizeString( const ctll::fixed_string< N >& _string ) {
+    return ( _sanitizeString( _string ) );
+}
+
+// Utility functions ( side-effects )
+using engine_t = std::
+    conditional_t< ( sizeof( size_t ) > 4 ), std::mt19937_64, std::mt19937 >;
+
+extern thread_local engine_t g_engine;
+
+template < typename T >
+    requires std::is_arithmetic_v< T >
+auto randomNumber( T _min, T _max ) -> T {
+    if constexpr ( std::is_integral_v< T > ) {
+        return (
+            ( std::uniform_int_distribution< T >( _min, _max ) )( g_engine ) );
+
+    } else if constexpr ( std::is_floating_point_v< T > ) {
+        return (
+            ( std::uniform_real_distribution< T >( _min, _max ) )( g_engine ) );
+    }
+}
+
+template < typename T >
+    requires std::is_arithmetic_v< T >
+auto randomNumber() -> T {
+    using numericLimit_t = std::numeric_limits< T >;
+
+    const auto l_max = numericLimit_t::max();
+
+    if constexpr ( std::is_integral_v< T > ) {
+        return ( ( std::uniform_int_distribution< T >( numericLimit_t::min(),
+                                                       l_max ) )( g_engine ) );
+
+    } else if constexpr ( std::is_floating_point_v< T > ) {
+        return ( ( std::uniform_real_distribution< T >(
+            numericLimit_t::lowest(), l_max ) )( g_engine ) );
+    }
+}
+
+template < typename Container >
+    requires is_container< Container >
+auto randomValueFromContainer( const Container& _container ) ->
+    typename Container::value_type& {
+    assert( !_container.empty() );
+
+    return (
+        _container.at( randomNumber< size_t >( 0, _container.size() - 1 ) ) );
+}
+
+template < typename Container >
+    requires is_container< Container >
+auto randomViewFromContainer( const Container& _container ) {
+    assert( !_container.empty() );
+
+    return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
+                 return ( randomValueFromContainer( _container ) );
+             } ) );
+}
+
+template < typename Container, typename T = typename Container::value_type >
+    requires is_container< Container > && std::is_arithmetic_v< T >
+void randomFillArray( Container& _container, T _min, T _max ) {
+    std::ranges::generate(
+        _container, [ & ] { return ( randomNumber< T >( _min, _max ) ); } );
+}
+
+static inline auto generateHash( std::span< std::byte > _data,
+                                 size_t _seed = 0x9e3779b1 ) -> size_t {
+    size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
 
     return ( l_returnValue );
 }
 
-template < typename T >
-inline auto clone( T& _element ) {
-    return ( std::make_unique< T >( _element ) );
-}
-
-void sanitizeString( std::string& _string );
-
 // Utility OS specific functions ( no side-effects )
 static inline auto getApplicationDirectoryAbsolutePath()
-    -> std::optional< std::string > {
-    std::optional< std::string > l_returnValue = std::nullopt;
+    -> std::optional< std::filesystem::path > {
+    std::optional< std::filesystem::path > l_returnValue = std::nullopt;
 
     do {
-        std::string l_executablePath;
+        std::array< char, PATH_MAX > l_executablePath{};
 
         // Get executable path
         {
             const ssize_t l_executablePathLength = readlink(
                 "/proc/self/exe", l_executablePath.data(), ( PATH_MAX - 1 ) );
 
-            if ( UNLIKELY( l_executablePathLength == -1 ) ) {
+            if ( l_executablePathLength == -1 ) [[unlikely]] {
                 break;
             }
         }
 
-        l_returnValue = std::filesystem::path( l_executablePath )
-                            .remove_filename()
-                            .string();
+        l_returnValue =
+            std::filesystem::path( std::string_view( l_executablePath ) )
+                .remove_filename();
     } while ( false );
 
     return ( l_returnValue );
 }
 
-static inline constexpr auto getPathDirectory( std::string_view _path )
-    -> std::string {
-#if 0
-    return ( std::string( dirname( std::string( _path ).data() ) ) );
-#endif
-    return ( std::filesystem::path( _path ).parent_path().string() );
+namespace {
+
+template < typename Matcher >
+    requires is_lambda< Matcher, bool, const std::string& >
+auto _getPathsByRegexp( std::string_view _directory, Matcher&& _matcher )
+    -> std::vector< std::filesystem::path > {
+    std::vector< std::filesystem::path > l_returnValue;
+
+    for ( const auto& _entry :
+          std::filesystem::directory_iterator( _directory ) ) {
+        if ( !_entry.is_regular_file() ) {
+            continue;
+        }
+
+        const std::string l_filename = _entry.path().filename().string();
+
+        if ( std::forward< Matcher >( _matcher )( l_filename ) ) {
+            l_returnValue.emplace_back( _entry.path() );
+        }
+    }
+
+    return ( l_returnValue );
 }
 
-static inline constexpr auto comparePathsDirectories( std::string_view _path1,
-                                                      std::string_view _path2 )
-    -> bool {
-    return ( getPathDirectory( _path1 ) == getPathDirectory( _path2 ) );
+} // namespace
+
+// Runtime regexp
+static inline auto getPathsByRegexp( std::string& _regexp,
+                                     std::string_view _directory )
+    -> std::vector< std::filesystem::path > {
+    std::regex l_matcher( _regexp );
+
+    return (
+        _getPathsByRegexp( _directory, [ & ]( const std::string& _fileName ) {
+            return ( std::regex_match( _fileName, l_matcher ) );
+        } ) );
 }
 
-auto getPathsByGlob( std::string_view _glob,
-                     std::string_view _directory,
-                     const bool _needSort ) -> std::vector< std::string >;
+// Compile-time regexp
+template < size_t N >
+    requires( N > 0 )
+auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
+                       std::string_view _directory )
+    -> std::vector< std::filesystem::path > {
+    auto l_matcher = ctre::match< _regexp >;
+
+    return (
+        _getPathsByRegexp( _directory, [ & ]( const std::string& _fileName ) {
+            return ( l_matcher( _fileName ) );
+        } ) );
+}
 
 // Utility Compiler specific functions ( no side-effects )
 // format - "%s%s %s = %p'
+SENTINEL
 static inline void dumpCallback( void* _callback,
                                  void* _context,
                                  const char* _format,
@@ -267,7 +361,7 @@ static inline void dumpCallback( void* _callback,
                              3, // Format index
                              4  // First format argument index
                              ) ) ) {
-    static size_t l_depth = 0;
+    thread_local static size_t l_depth = 0;
 
     va_list l_arguments;
 
@@ -299,7 +393,7 @@ static inline void dumpCallback( void* _callback,
 
             bool l_result = l_callback( l_fieldName, _context );
 
-            if ( UNLIKELY( !l_result ) ) {
+            if ( !l_result ) [[unlikely]] {
                 break;
             }
         }
@@ -313,6 +407,7 @@ static inline void dumpCallback( void* _callback,
 }
 
 template < typename T >
+    requires is_struct< T >
 auto iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
                                       gsl::not_null< void* > _context ) {
     T l_structSample;
