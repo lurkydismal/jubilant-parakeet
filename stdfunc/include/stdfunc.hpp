@@ -55,11 +55,10 @@ template < typename T >
 concept is_struct = ( std::is_class_v< T > && !std::is_union_v< T > );
 
 template < typename Lambda, typename ReturnType, typename... Arguments >
-concept is_lambda = requires( Lambda _lambda, Arguments&&... _arguments ) {
-    {
-        _lambda( std::forward< Arguments >( _arguments )... )
-    } -> std::convertible_to< ReturnType >;
-};
+concept is_lambda =
+    ( std::invocable< Lambda, Arguments... > &&
+      std::convertible_to< std::invoke_result_t< Lambda, Arguments... >,
+                           ReturnType > );
 
 // Utility macros ( no side-effects )
 #define STRINGIFY( _value ) #_value
@@ -75,15 +74,17 @@ concept is_lambda = requires( Lambda _lambda, Arguments&&... _arguments ) {
 
 #endif
 
-static constexpr std::string_view g_trapColorLevel = g_asciiColorRed;
-static constexpr std::string_view g_trapColorThreadId = g_asciiColorPurpleLight;
-static constexpr std::string_view g_trapColorFileName = g_asciiColorPurpleLight;
-static constexpr std::string_view g_trapColorLineNumber =
-    g_asciiColorPurpleLight;
-static constexpr std::string_view g_trapColorFunctionName =
-    g_asciiColorPurpleLight;
+namespace {
 
-#define BACKTRACE_LIMIT ( 5 )
+constexpr std::string_view g_trapColorLevel = g_asciiColorRed;
+constexpr std::string_view g_trapColorThreadId = g_asciiColorPurpleLight;
+constexpr std::string_view g_trapColorFileName = g_asciiColorPurpleLight;
+constexpr std::string_view g_trapColorLineNumber = g_asciiColorPurpleLight;
+constexpr std::string_view g_trapColorFunctionName = g_asciiColorPurpleLight;
+
+constexpr size_t g_backtraceLimit = 5;
+
+} // namespace
 
 template < typename... Arguments >
 [[noreturn]] void _trap( std::format_string< Arguments... > _format,
@@ -101,7 +102,7 @@ template < typename... Arguments >
                 _sourceLocation.function_name(), g_asciiColorResetForeground );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
-    std::println( "{}", std::stacktrace::current( 2, BACKTRACE_LIMIT ) );
+    std::println( "{}", std::stacktrace::current( 2, g_backtraceLimit ) );
 
     __builtin_trap();
 }
@@ -202,28 +203,32 @@ consteval auto sanitizeString( const ctll::fixed_string< N >& _string ) {
     return ( _sanitizeString( _string ) );
 }
 
+namespace random {
+
+namespace {
+
 // Utility functions ( side-effects )
 using engine_t = std::
     conditional_t< ( sizeof( size_t ) > 4 ), std::mt19937_64, std::mt19937 >;
 
 extern thread_local engine_t g_engine;
 
+} // namespace
+
 template < typename T >
     requires std::is_arithmetic_v< T >
-auto randomNumber( T _min, T _max ) -> T {
-    if constexpr ( std::is_integral_v< T > ) {
-        return (
-            ( std::uniform_int_distribution< T >( _min, _max ) )( g_engine ) );
+auto number( T _min, T _max ) -> T {
+    using distribution_t =
+        std::conditional_t< std::is_integral_v< T >,
+                            std::uniform_int_distribution< T >,
+                            std::uniform_real_distribution< T > >;
 
-    } else if constexpr ( std::is_floating_point_v< T > ) {
-        return (
-            ( std::uniform_real_distribution< T >( _min, _max ) )( g_engine ) );
-    }
+    return ( ( distribution_t( _min, _max ) )( g_engine ) );
 }
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-auto randomNumber() -> T {
+auto number() -> T {
     using numericLimit_t = std::numeric_limits< T >;
 
     const auto l_max = numericLimit_t::max();
@@ -240,8 +245,7 @@ auto randomNumber() -> T {
 
 template < typename Container >
     requires is_container< Container >
-auto randomValueFromContainer( const Container& _container ) ->
-    typename Container::value_type& {
+auto value( const Container& _container ) -> typename Container::value_type& {
     assert( !_container.empty() );
 
     return (
@@ -250,7 +254,7 @@ auto randomValueFromContainer( const Container& _container ) ->
 
 template < typename Container >
     requires is_container< Container >
-auto randomViewFromContainer( const Container& _container ) {
+auto view( const Container& _container ) {
     assert( !_container.empty() );
 
     return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
@@ -260,10 +264,12 @@ auto randomViewFromContainer( const Container& _container ) {
 
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_arithmetic_v< T >
-void randomFillArray( Container& _container, T _min, T _max ) {
+void fill( Container& _container, T _min, T _max ) {
     std::ranges::generate(
         _container, [ & ] { return ( randomNumber< T >( _min, _max ) ); } );
 }
+
+} // namespace random
 
 static inline auto generateHash( std::span< std::byte > _data,
                                  size_t _seed = 0x9e3779b1 ) -> size_t {
@@ -271,6 +277,8 @@ static inline auto generateHash( std::span< std::byte > _data,
 
     return ( l_returnValue );
 }
+
+namespace filesystem {
 
 // Utility OS specific functions ( no side-effects )
 static inline auto getApplicationDirectoryAbsolutePath()
@@ -350,6 +358,10 @@ auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
         } ) );
 }
 
+} // namespace filesystem
+
+namespace meta {
+
 // Utility Compiler specific functions ( no side-effects )
 // format - "%s%s %s = %p'
 SENTINEL
@@ -414,5 +426,7 @@ auto iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
 
     __builtin_dump_struct( &l_structSample, dumpCallback, _callback, _context );
 }
+
+} // namespace meta
 
 } // namespace stdfunc
