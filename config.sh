@@ -2,7 +2,7 @@
 # TODO: texture_t
 export partsToBuild=(
     "runtime"
-    "controls_t"
+    "control"
     "input"
     "FPS"
     "object_t"
@@ -23,7 +23,7 @@ export partsToBuild=(
 )
 export testsToBuild=(
     # "runtime"
-    "controls_t"
+    "control"
     "input"
     "FPS"
     "object_t"

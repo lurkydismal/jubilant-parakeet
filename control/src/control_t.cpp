@@ -1,7 +1,7 @@
 #include "control_t.h"
 
 #include "log.h"
-#include "stdfunc.h"
+#include "stdfunc.hpp"
 
 static const SDL_Scancode g_keyboardLayoutScancodes[] = {
     SDL_SCANCODE_ESCAPE,

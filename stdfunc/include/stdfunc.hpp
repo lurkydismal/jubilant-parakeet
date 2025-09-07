@@ -172,6 +172,7 @@ constexpr auto lengthOfNumber( T _number ) -> size_t {
                                                      : ( 20 ) );
 }
 
+// TODO: Decide on inline
 static inline constexpr auto isSpace( char _symbol ) -> bool {
     return ( ( _symbol == ' ' ) || ( _symbol == '\f' ) || ( _symbol == '\n' ) ||
              ( _symbol == '\r' ) || ( _symbol == '\t' ) ||
