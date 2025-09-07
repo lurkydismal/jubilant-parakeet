@@ -36,16 +36,19 @@ namespace stdfunc {
 // Constants
 inline constexpr char g_commentSymbol = '#';
 inline constexpr size_t g_decimalRadix = 10;
-inline constexpr size_t g_oneSecondInMilliseconds = 1000;
-inline constexpr size_t g_oneMillisecondInNanoseconds = 1000000;
-inline constexpr std::string_view g_asciiColorCyanLight = "\x1b[1;36m";
-inline constexpr std::string_view g_asciiColorGreen = "\x1b[1;32m";
-inline constexpr std::string_view g_asciiColorPurpleLight = "\x1b[1;35m";
-inline constexpr std::string_view g_asciiColorRed = "\x1b[1;31m";
-inline constexpr std::string_view g_asciiColorYellow = "\x1b[1;33m";
-inline constexpr std::string_view g_asciiColorResetForeground = "\x1b[39m";
-inline constexpr std::string_view g_asciiColorResetBackground = "\x1b[49m";
-inline constexpr std::string_view g_asciiColorReset = "\x1b[0m";
+
+namespace color {
+
+inline constexpr std::string_view g_cyanLight = "\x1b[1;36m";
+inline constexpr std::string_view g_green = "\x1b[1;32m";
+inline constexpr std::string_view g_purpleLight = "\x1b[1;35m";
+inline constexpr std::string_view g_red = "\x1b[1;31m";
+inline constexpr std::string_view g_yellow = "\x1b[1;33m";
+inline constexpr std::string_view g_resetForeground = "\x1b[39m";
+inline constexpr std::string_view g_resetBackground = "\x1b[49m";
+inline constexpr std::string_view g_reset = "\x1b[0m";
+
+} // namespace color
 
 // Concepts
 template < typename T >
@@ -76,11 +79,11 @@ concept is_lambda =
 
 namespace {
 
-constexpr std::string_view g_trapColorLevel = g_asciiColorRed;
-constexpr std::string_view g_trapColorThreadId = g_asciiColorPurpleLight;
-constexpr std::string_view g_trapColorFileName = g_asciiColorPurpleLight;
-constexpr std::string_view g_trapColorLineNumber = g_asciiColorPurpleLight;
-constexpr std::string_view g_trapColorFunctionName = g_asciiColorPurpleLight;
+constexpr std::string_view g_trapColorLevel = color::g_red;
+constexpr std::string_view g_trapColorThreadId = color::g_purpleLight;
+constexpr std::string_view g_trapColorFileName = color::g_purpleLight;
+constexpr std::string_view g_trapColorLineNumber = color::g_purpleLight;
+constexpr std::string_view g_trapColorFunctionName = color::g_purpleLight;
 
 constexpr size_t g_backtraceLimit = 5;
 
@@ -93,13 +96,13 @@ template < typename... Arguments >
     std::print( std::cerr,
                 "{}[TRAP] {}Thread {}{}{}: File '{}{}{}': line {}{}{} "
                 "in function '{}{}{}' | Message: ",
-                g_trapColorLevel, g_asciiColorResetForeground,
-                g_trapColorThreadId, std::this_thread::get_id(),
-                g_asciiColorResetForeground, g_trapColorFileName,
-                _sourceLocation.file_name(), g_asciiColorResetForeground,
-                g_trapColorLineNumber, _sourceLocation.line(),
-                g_asciiColorResetForeground, g_trapColorFunctionName,
-                _sourceLocation.function_name(), g_asciiColorResetForeground );
+                g_trapColorLevel, color::g_resetForeground, g_trapColorThreadId,
+                std::this_thread::get_id(), color::g_resetForeground,
+                g_trapColorFileName, _sourceLocation.file_name(),
+                color::g_resetForeground, g_trapColorLineNumber,
+                _sourceLocation.line(), color::g_resetForeground,
+                g_trapColorFunctionName, _sourceLocation.function_name(),
+                color::g_resetForeground );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
     std::println( "{}", std::stacktrace::current( 2, g_backtraceLimit ) );
@@ -191,12 +194,10 @@ constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
 
 } // namespace
 
-// Runtime view
 static inline auto sanitizeString( std::string_view _string ) {
     return ( _sanitizeString( _string ) );
 }
 
-// Compile-time view
 template < std::size_t N >
     requires( N > 0 )
 consteval auto sanitizeString( const ctll::fixed_string< N >& _string ) {
