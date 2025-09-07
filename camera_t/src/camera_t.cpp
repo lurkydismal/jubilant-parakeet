@@ -1,7 +1,5 @@
 #include "camera_t.hpp"
 
-#include "log.h"
-
 namespace camera {
 
 // TODO: Implement
