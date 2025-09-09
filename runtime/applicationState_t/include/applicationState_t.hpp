@@ -4,8 +4,7 @@
 #include <SDL3/SDL_video.h>
 #include <stdbool.h>
 
-#include "camera_t.h"
-#include "config_t.h"
+#include "camera.hpp"
 #include "settings_t.h"
 
 #define DEFAULT_APPLICATION_STATE     \
@@ -13,7 +12,6 @@
         .window = NULL,               \
         .renderer = NULL,             \
         .settings = DEFAULT_SETTINGS, \
-        .config = DEFAULT_CONFIG,     \
         .camera = DEFAULT_CAMERA,     \
         .logicalWidth = 1280,         \
         .logicalHeight = 720,         \
@@ -26,7 +24,6 @@ typedef struct {
     SDL_Window* window;
     SDL_Renderer* renderer;
     settings_t settings;
-    config_t config;
 #if 0
     background_t* background;
     HUD_t* HUD;

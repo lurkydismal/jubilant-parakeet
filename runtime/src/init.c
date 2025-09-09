@@ -8,7 +8,6 @@
 
 #include "FPS.h"
 #include "asset_t.h"
-#include "config_t.h"
 #include "log.h"
 #include "settings_t.h"
 #include "stdfunc.h"
@@ -545,6 +544,7 @@ bool init( applicationState_t* restrict _applicationState,
                 // UI
                 // TODO: Implement
                 // Characters
+#if 0
                 if ( UNLIKELY( !config_t$load$fromPath(
                          &( _applicationState->config ), CONFIG_FILE_NAME,
                          CONFIG_FILE_EXTENSION ) ) ) {
@@ -553,6 +553,7 @@ bool init( applicationState_t* restrict _applicationState,
 
                     goto EXIT;
                 }
+#endif
             }
 
             // Application arguments

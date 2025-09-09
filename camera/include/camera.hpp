@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SDL3/SDL_rect.h>
+#include <glm/glm.hpp>
 
 #include "stdfloat16.hpp"
 
@@ -21,7 +21,7 @@ using camera_t = struct camera {
     float16_t zoom = 1;
     float16_t zoomMin = 0.1;
     float16_t zoomMax = 5;
-    SDL_FRect rectangle{};
+    glm::vec2 position{};
 };
 
 } // namespace camera

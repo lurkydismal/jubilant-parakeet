@@ -15,7 +15,6 @@ namespace {
 namespace fcb {
 
 // TODO: Implement iterators
-// TODO: Implement element access
 // TODO: Implement data
 template < typename T, size_t N >
     requires( N > 0 )
@@ -127,50 +126,52 @@ struct forwardCircularBuffer {
     [[nodiscard]] constexpr auto at( size_t _index ) -> T& {
         requireInRange( _index );
 
-        return ( _data[ _index ] );
+        return ( _data.at( _index ) );
     }
 
     [[nodiscard]] constexpr auto at( size_t _index ) const -> const T& {
         requireInRange( _index );
 
-        return ( _data[ _index ] );
+        return ( _data.at( _index ) );
     }
 
     [[nodiscard]]
     constexpr auto front() -> T& {
         requireNonEmpty();
 
-        return ( _data[ 0 ] );
+        return ( _data.at( ( _elementAmount == N ) ? ( _currentBufferIndex )
+                                                   : ( 0 ) ) );
     }
 
     [[nodiscard]]
     constexpr auto front() const -> const T& {
         requireNonEmpty();
 
-        return ( _data[ 0 ] );
+        return ( _data.at( ( _elementAmount == N ) ? ( _currentBufferIndex )
+                                                   : ( 0 ) ) );
     }
 
     [[nodiscard]]
     constexpr auto back() -> T& {
         requireNonEmpty();
 
-        return ( _data[ _elementAmount - 1 ] );
+        return ( _data.at( _previousBufferIndex ) );
     }
 
     [[nodiscard]]
     constexpr auto back() const -> const T& {
         requireNonEmpty();
 
-        return ( _data[ _elementAmount - 1 ] );
+        return ( _data.at( _previousBufferIndex ) );
     }
 
     [[nodiscard]] CONST FORCE_INLINE constexpr auto data() -> T* {
-        return ( static_cast< T* >( _data ) );
+        return ( _data.data() );
     }
 
     [[nodiscard]]
     constexpr auto data() const -> const T* {
-        return ( static_cast< const T* >( _data ) );
+        return ( _data.data() );
     }
 
 private:

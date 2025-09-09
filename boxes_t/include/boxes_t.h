@@ -4,25 +4,24 @@
 #include <SDL3/SDL_render.h>
 
 #include "asset_t.h"
-#include "color_t.h"
 #include "log.h"
 #include "stdfunc.h"
 
 #define BOXES_FILE_EXTENSION "boxes"
 
-#define DEFAULT_BOXES           \
-    {                           \
-        .keyFrames = NULL,      \
-        .frames = NULL,         \
-        .currentFrame = 0,      \
-        .color = DEFAULT_COLOR, \
+#define DEFAULT_BOXES      \
+    {                      \
+        .keyFrames = NULL, \
+        .frames = NULL,    \
+        .currentFrame = 0, \
+        .color = 0,        \
     }
 
 typedef struct {
     SDL_FRect** keyFrames;
     size_t** frames;
     size_t currentFrame;
-    color_t color;
+    uint32_t color;
 } boxes_t;
 
 static FORCE_INLINE SDL_FRect** boxes_t$currentKeyFrames$get(

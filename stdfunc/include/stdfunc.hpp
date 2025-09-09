@@ -27,6 +27,7 @@
 #define HOT [[gnu::hot]]
 #define COLD [[gnu::cold]]
 #define SENTINEL [[gnu::sentinel]]
+#define EXPORT extern "C"
 
 namespace stdfunc {
 

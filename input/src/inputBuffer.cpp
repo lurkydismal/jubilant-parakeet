@@ -13,17 +13,6 @@ EXIT:
     return ( l_returnValue );
 }
 
-size_t inputBuffer_t$inputsSequence$getFrame$last(
-    inputBuffer_t* _inputBuffer ) {
-    size_t l_returnValue = 0;
-
-        l_returnValue =
-            _inputBuffer->frames[ _inputBuffer->previousBufferIndex ];
-
-EXIT:
-    return ( l_returnValue );
-}
-
 bool inputBuffer_t$insert( inputBuffer_t* restrict _inputBuffer,
                            const input_t* restrict _input,
                            size_t _frame ) {
