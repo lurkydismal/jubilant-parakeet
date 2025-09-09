@@ -176,19 +176,8 @@ export PURPLE_LIGHT_COLOR='\e[1;35m'
 export CYAN_LIGHT_COLOR='\e[1;36m'
 export RESET_COLOR='\e[0m'
 
-export BUILD_TYPE_COLOR="$PURPLE_LIGHT_COLOR"
-export DEFINES_COLOR="$CYAN_LIGHT_COLOR"
-export INCLUDES_COLOR="$BLUE_LIGHT_COLOR"
-export LIBRARIES_COLOR="$BLUE_LIGHT_COLOR"
-export EXTERNAL_LIBRARIES_COLOR="$BLUE_LIGHT_COLOR"
-export PARTS_TO_BUILD_COLOR="$YELLOW_COLOR"
-export SKIPPING_PART_IN_BUILD_COLOR="$GREEN_LIGHT_COLOR"
-export BUILT_EXECUTABLE_COLOR="$GREEN_LIGHT_COLOR"
-export SECTIONS_TO_STRIP_COLOR="$RED_LIGHT_COLOR"
-
-# Build helper functions
-# TODO: Better name
-not_found() {
+# Helper functions
+check_availability() {
     local what=$1
 
     command -v $what >/dev/null 2>&1 || {
@@ -220,7 +209,7 @@ cd "$SCRIPT_DIRECTORY" || exit
 
 source './config.sh' && {
 
-    not_found 'fd'
+    check_availability 'fd'
 
     mkdir -p "$BUILD_DIRECTORY"
 
@@ -344,9 +333,9 @@ source './config.sh' && {
         CPP_COMPILER="scan-build $SCAN_BUILD_FLAGS $CPP_COMPILER"
     fi
 
-    not_found $C_COMPILER
-    not_found $CPP_COMPILER
-    not_found $COMPILER
+    check_availability $C_COMPILER
+    check_availability $CPP_COMPILER
+    check_availability $COMPILER
 
     if [ ${#BUILD_DEFINES[@]} -ne 0 ]; then
         printf -v definesAsString -- "-D %s " "${BUILD_DEFINES[@]}"
