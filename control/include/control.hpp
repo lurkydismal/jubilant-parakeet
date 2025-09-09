@@ -6,7 +6,7 @@
 namespace control {
 
 using control_t = struct control {
-    control( SDL_Scancode _scancode, input::input_t _input )
+    constexpr control( SDL_Scancode _scancode, input::input_t _input )
         : scancode( _scancode ), input( _input ) {}
     control( input::input_t _input ) : input( _input ) {}
     control() = default;

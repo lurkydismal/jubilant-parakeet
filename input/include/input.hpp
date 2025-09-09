@@ -55,9 +55,10 @@ using button_t = enum class button : uint8_t {
 }
 
 using input_t = struct input {
-    input( direction_t _direction, button_t _button = button_t::none )
+    constexpr input( direction_t _direction, button_t _button = button_t::none )
         : direction( _direction ), button( _button ) {}
-    input( button_t _button, direction_t _direction = direction_t::none )
+    constexpr input( button_t _button,
+                     direction_t _direction = direction_t::none )
         : direction( _direction ), button( _button ) {}
     input() = default;
     input( const input& ) = default;
