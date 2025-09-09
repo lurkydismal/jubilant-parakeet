@@ -62,9 +62,7 @@ BUILD_DEFINES+=(
     "INI_CALL_HANDLER_ON_NEW_SECTION=1"
 )
 
-BUILD_INCLUDES+=(
-    "runtime/applicationState_t/include"
-)
+BUILD_INCLUDES+=()
 
 LIBRARIES_TO_LINK+=(
     "mimalloc"

@@ -25,11 +25,7 @@
 
 #endif
 
-#include "applicationState_t.h"
-#include "event.h"
-#include "init.h"
-#include "iterate.h"
-#include "quit.h"
+#include "runtime.hpp"
 #include "stdfunc.hpp"
 
 namespace {
