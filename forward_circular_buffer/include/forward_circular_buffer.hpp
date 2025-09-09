@@ -280,61 +280,59 @@ public:
         std::swap_ranges( begin(), end(), _buffer.begin() );
     }
 
-    // Iterators
-    [[nodiscard]] CONST constexpr auto begin() -> T* {
-        return ( ( T* )( data() ) );
+    // Iterators (logical order)
+    [[nodiscard]] CONST constexpr auto begin() -> iterator {
+        return iterator( this, 0 );
     }
 
-    [[nodiscard]]
-    constexpr auto begin() const -> T* {
-        return ( ( T* )( data() ) );
+    [[nodiscard]] CONST constexpr auto begin() const -> const_iterator {
+        return const_iterator( this, 0 );
     }
 
-    [[nodiscard]] CONST constexpr auto end() -> T* {
-        return ( ( T* )( data() + max_size() ) );
+    [[nodiscard]] CONST constexpr auto end() -> iterator {
+        return iterator( this, size() );
     }
 
-    [[nodiscard]]
-    constexpr auto end() const -> T* {
-        return ( ( T* )( data() + max_size() ) );
+    [[nodiscard]] CONST constexpr auto end() const -> const_iterator {
+        return const_iterator( this, size() );
     }
 
-    [[nodiscard]] CONST constexpr auto rbegin() -> std::reverse_iterator< T* > {
-        return ( std::reverse_iterator< T* >( end() ) );
+    [[nodiscard]] CONST constexpr auto rbegin()
+        -> std::reverse_iterator< iterator > {
+        return std::reverse_iterator< iterator >( end() );
     }
 
-    [[nodiscard]]
-    constexpr auto rbegin() const -> std::reverse_iterator< const T* > {
-        return ( std::reverse_iterator< const T* >( end() ) );
+    [[nodiscard]] CONST constexpr auto rbegin() const
+        -> std::reverse_iterator< const_iterator > {
+        return std::reverse_iterator< const_iterator >( end() );
     }
 
-    [[nodiscard]] CONST constexpr auto rend() -> std::reverse_iterator< T* > {
-        return ( std::reverse_iterator< T* >( begin() ) );
+    [[nodiscard]] CONST constexpr auto rend()
+        -> std::reverse_iterator< iterator > {
+        return std::reverse_iterator< iterator >( begin() );
     }
 
-    [[nodiscard]]
-    constexpr auto rend() const -> std::reverse_iterator< const T* > {
-        return ( std::reverse_iterator< const T* >( begin() ) );
+    [[nodiscard]] CONST constexpr auto rend() const
+        -> std::reverse_iterator< const_iterator > {
+        return std::reverse_iterator< const_iterator >( begin() );
     }
 
-    [[nodiscard]]
-    constexpr auto cbegin() const -> T* {
-        return ( ( T* )( data() ) );
+    [[nodiscard]] CONST constexpr auto cbegin() const -> const_iterator {
+        return const_iterator( this, 0 );
     }
 
-    [[nodiscard]]
-    constexpr auto cend() const -> T* {
-        return ( ( T* )( data() + max_size() ) );
+    [[nodiscard]] CONST constexpr auto cend() const -> const_iterator {
+        return const_iterator( this, size() );
     }
 
-    [[nodiscard]]
-    constexpr auto crbegin() const -> std::reverse_iterator< const T* > {
-        return ( std::reverse_iterator< const T* >( end() ) );
+    [[nodiscard]] CONST constexpr auto crbegin() const
+        -> std::reverse_iterator< const_iterator > {
+        return std::reverse_iterator< const_iterator >( cend() );
     }
 
-    [[nodiscard]]
-    constexpr auto crend() const -> std::reverse_iterator< const T* > {
-        return ( std::reverse_iterator< const T* >( begin() ) );
+    [[nodiscard]] CONST constexpr auto crend() const
+        -> std::reverse_iterator< const_iterator > {
+        return std::reverse_iterator< const_iterator >( cbegin() );
     }
 
     // Capacity
@@ -429,54 +427,3 @@ template < typename T, size_t N >
 using forwardCircularBuffer_t = forwardCircularBuffer< T, N >;
 
 } // namespace fcb
-
-#if 0
-    // Iterators accessors (logical order)
-    [[nodiscard]] CONST constexpr auto begin() -> iterator {
-        return iterator( this, 0 );
-    }
-
-    [[nodiscard]] CONST constexpr auto begin() const -> const_iterator {
-        return const_iterator( this, 0 );
-    }
-
-    [[nodiscard]] CONST constexpr auto end() -> iterator {
-        return iterator( this, size() );
-    }
-
-    [[nodiscard]] CONST constexpr auto end() const -> const_iterator {
-        return const_iterator( this, size() );
-    }
-
-    [[nodiscard]] CONST constexpr auto rbegin() -> std::reverse_iterator< iterator > {
-        return std::reverse_iterator< iterator >( end() );
-    }
-
-    [[nodiscard]] CONST constexpr auto rbegin() const -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( end() );
-    }
-
-    [[nodiscard]] CONST constexpr auto rend() -> std::reverse_iterator< iterator > {
-        return std::reverse_iterator< iterator >( begin() );
-    }
-
-    [[nodiscard]] CONST constexpr auto rend() const -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( begin() );
-    }
-
-    [[nodiscard]] CONST constexpr auto cbegin() const -> const_iterator {
-        return const_iterator( this, 0 );
-    }
-
-    [[nodiscard]] CONST constexpr auto cend() const -> const_iterator {
-        return const_iterator( this, size() );
-    }
-
-    [[nodiscard]] CONST constexpr auto crbegin() const -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( cend() );
-    }
-
-    [[nodiscard]] CONST constexpr auto crend() const -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( cbegin() );
-    }
-#endif

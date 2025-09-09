@@ -1,6 +1,6 @@
 Improve font_t
-Improve GLTF_t
 Change pthread() to fork() in asset_t async save
 
+fcb: Add assert checks to compare iterators from different buffers on comparisons/ arithmetic
 Implement hot reload callbacks in modules
 Move to available C++ 26
