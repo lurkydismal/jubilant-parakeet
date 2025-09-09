@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iterator>
+#include <type_traits>
 
 #include "stdfunc.hpp"
 
@@ -9,13 +10,13 @@ namespace {
 #define requireNonEmpty() ( stdfunc::assert( !this->empty() ) )
 #define requireInRange( _index ) \
     ( stdfunc::assert( ( _index ) < this->size() ) )
+#define ensureCapacity() ( stdfunc::assert( !this->full() ) )
 
 } // namespace
 
 namespace fcb {
 
-// TODO: Implement iterators
-// TODO: Implement data
+// TODO: Implement view
 template < typename T, size_t N >
     requires( N > 0 )
 struct forwardCircularBuffer {
@@ -414,6 +415,75 @@ public:
     [[nodiscard]]
     constexpr auto data() const -> const T* {
         return ( _data.data() );
+    }
+
+    // Vector operations
+    constexpr void clear() {
+        _currentBufferIndex = 0;
+        _previousBufferIndex = 0;
+        _elementAmount = 0;
+    }
+
+    constexpr void push_back( const T& _value ) {
+        ensureCapacity();
+
+        const size_t l_currentBufferIndex = _currentBufferIndex;
+
+        new ( _data.at( l_currentBufferIndex ) ) T( _value );
+
+        _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
+
+        _previousBufferIndex = l_currentBufferIndex;
+
+        _elementAmount++;
+    }
+
+    constexpr void push_back( T&& _value ) {
+        ensureCapacity();
+
+        const size_t l_currentBufferIndex = _currentBufferIndex;
+
+        new ( _data.at( l_currentBufferIndex ) ) T( std::move( _value ) );
+
+        _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
+
+        _previousBufferIndex = l_currentBufferIndex;
+
+        _elementAmount++;
+    }
+
+    template < typename... Arguments >
+        requires std::is_constructible_v< T, Arguments... >
+    constexpr auto emplace_back( Arguments&&... _arguments ) -> T& {
+        ensureCapacity();
+
+        const size_t l_currentBufferIndex = _currentBufferIndex;
+
+        new ( _data.at( l_currentBufferIndex ) )
+            T( std::forward< Arguments >( _arguments )... );
+
+        _elementAmount++;
+
+        return ( back() );
+    }
+
+    /**
+     * @brief Remove and return last element
+     *
+     * @return Removed element
+     */
+    constexpr auto pop_back() -> T {
+        // TODO: Contract instead
+        requireNonEmpty();
+
+        // Call destructor
+        back().~T();
+
+        _currentBufferIndex--;
+        _previousBufferIndex--;
+        _elementAmount--;
+
+        return ( back() );
     }
 
 private:
