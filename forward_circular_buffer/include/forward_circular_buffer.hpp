@@ -476,8 +476,7 @@ public:
         // TODO: Contract instead
         requireNonEmpty();
 
-        // Call destructor
-        back().~T();
+        delete back();
 
         _currentBufferIndex--;
         _previousBufferIndex--;
