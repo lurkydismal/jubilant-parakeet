@@ -235,7 +235,7 @@ TEST( duplicateString ) {
 
     // Large string
     duplicateStringTest(
-        "This is a very long test string to check memory allocation." );
+        "This is a very long test string to check memory allocation" );
 
     // NULL input
     {

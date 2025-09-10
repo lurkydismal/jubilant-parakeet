@@ -26,55 +26,20 @@ pthread_cond_t g_saveQueueCondition = PTHREAD_COND_INITIALIZER;
 /**
  * @brief Async save queue resolver
  */
-void resolver( const std::stop_token& _stopToken,
-               std::atomic< size_t >& _frameCount ) {
-    using clock = std::chrono::steady_clock;
-    using namespace std::chrono_literals;
-
-    auto l_timeLast = clock::now();
-
+void resolver( const std::stop_token& _stopToken ) {
     while ( !_stopToken.stop_requested() ) [[likely]] {
-        std::this_thread::sleep_for( 1s );
-
-        const auto l_timeNow = clock::now();
-
-        {
-            const auto l_framesCount = _frameCount.exchange( 0 );
-
-            const auto l_frameDuration = ( l_timeNow - l_timeLast );
-            const std::chrono::duration< double > l_frameDurationInSeconds =
-                l_frameDuration;
-
-            double l_FPS = 0;
-
-            if ( l_frameDurationInSeconds > 0s ) [[likely]] {
-                l_FPS = ( l_framesCount / l_frameDurationInSeconds.count() );
-            }
-
-            logg::info( "FPS: {:.2f}", l_FPS );
-        }
-
-        l_timeLast = l_timeNow;
-    }
-
-    logg::info( "FPS logger stopped." );
-}
-
-#if 0
-auto resolver( [[maybe_unused]] void* _data ) -> void* {
-    for ( ;; ) {
         saveRequest l_saveRequest;
 
         {
             pthread_mutex_lock( &g_saveQueueMutex );
 
-            while ( !g_saveQueueLength &&
-                    g_shouldAssetSaveQueueResolveThreadWork ) [[unlikely]] {
+            while ( !g_saveQueueLength && _stopToken.stop_requested() )
+                [[unlikely]] {
                 pthread_cond_wait( &g_saveQueueCondition, &g_saveQueueMutex );
             }
 
-            if ( !g_shouldAssetSaveQueueResolveThreadWork &&
-                 !g_saveQueueLength ) [[unlikely]] {
+            if ( !_stopToken.stop_requested() && !g_saveQueueLength )
+                [[unlikely]] {
                 pthread_mutex_unlock( &g_saveQueueMutex );
 
                 break;
@@ -85,7 +50,7 @@ auto resolver( [[maybe_unused]] void* _data ) -> void* {
 
             // Move the rest of queue
             __builtin_memmove(
-                reinterpret_cast< void* >( &( g_saveQueue[ 0 ] ) ),
+                std::bit_cast< void* >( g_saveQueue.data() ),
                 &( g_saveQueue[ 1 ] ),
                 ( ( g_saveQueueLength - 1 ) * sizeof( saveRequest ) ) );
 
@@ -107,9 +72,8 @@ auto resolver( [[maybe_unused]] void* _data ) -> void* {
         }
     }
 
-    return ( nullptr );
+    logg::info( "Asset save queue resolver stopped" );
 }
-#endif
 
 } // namespace
 
@@ -137,6 +101,7 @@ auto load( std::string_view _path ) -> asset_t {
     asset_t l_returnValue = std::nullopt;
 
     do {
+#if 0
         int l_fileDescriptor = open( _path, O_RDONLY );
 
         if ( l_fileDescriptor == -1 ) {
@@ -181,6 +146,7 @@ auto load( std::string_view _path ) -> asset_t {
         if ( !l_returnValue ) [[unlikely]] {
             break;
         }
+#endif
     } while ( false );
 
 EXIT:
@@ -198,6 +164,7 @@ auto save( std::span< std::byte > _asset,
         {
             // Open file descriptor
             {
+#if 0
                 size_t l_openFlags = ( O_WRONLY | O_CREAT );
 
                 if ( !_needAppend ) {
@@ -209,6 +176,7 @@ auto save( std::span< std::byte > _asset,
                 // 4 - Read for group members
                 // 4 - Read for others
                 l_fileDescriptor = open( _path, l_openFlags, 0644 );
+#endif
             }
 
             if ( l_fileDescriptor == -1 ) {
