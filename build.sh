@@ -154,7 +154,6 @@ export BUILD_DEFINES_HOT_RELOAD=(
 )
 
 export BUILD_INCLUDES=()
-export BUILD_INCLUDES_TESTS=()
 
 export LINK_FLAGS="-fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
 export LINK_FLAGS_DEBUG="-rdynamic -Wl,-rpath,\$ORIGIN"
@@ -351,6 +350,8 @@ source './config.sh' && {
         mapfile -t new_build_includes < <(printf -- "%s/include""\n" "${partsToBuild[@]}" "${staticParts[@]}")
 
         BUILD_INCLUDES+=("${new_build_includes[@]}")
+
+        BUILD_INCLUDES+=("$testsMainPackage"'/include')
 
         if [ ${#BUILD_INCLUDES[@]} -ne 0 ]; then
             printf -v includesAsString -- "-I $SCRIPT_DIRECTORY/%s " "${BUILD_INCLUDES[@]}"
@@ -726,16 +727,6 @@ source './config.sh' && {
     if [ "$BUILD_STATUS" -eq 0 ]; then
         # Tests
         if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[TESTS]}" ]; then
-            # Generate test includes
-            {
-                BUILD_INCLUDES_TESTS+=("$testsMainPackage"'/include')
-
-                if [ ${#BUILD_INCLUDES_TESTS[@]} -ne 0 ]; then
-                    printf -v testIncludesAsString -- "-I $SCRIPT_DIRECTORY/%s " "${BUILD_INCLUDES_TESTS[@]}"
-                    echo -e "$INCLUDES_COLOR""$testIncludesAsString""$RESET_COLOR"
-                fi
-            }
-
             for testToBuild in "${testsToBuild[@]}"; do
                 export FILES_TO_INCLUDE=""
                 export FILES_TO_COMPILE=""
@@ -749,7 +740,7 @@ source './config.sh' && {
                         "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
-                        "$includesAsString""$testIncludesAsString" \
+                        "$includesAsString" \
                         "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
                         "module" &
 
@@ -800,7 +791,7 @@ source './config.sh' && {
                         "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
-                        "$includesAsString""$testIncludesAsString" \
+                        "$includesAsString" \
                         "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
                         "module"
 

@@ -2,25 +2,27 @@
 
 #include <ctll.hpp>
 #include <ctre.hpp>
-#include <snappy.h>
 #include <xxhash.h>
-#include <zstd.h>
 
 #include <algorithm>
 #include <cstdarg>
-#include <expected>
 #include <filesystem>
 #include <gsl/pointers>
-#include <iostream>
-#include <print>
 #include <random>
 #include <ranges>
 #include <regex>
+#include <string_view>
+#include <type_traits>
+
+#if ( defined( DEBUG ) && !defined( TESTS ) )
+
+#include <iostream>
+#include <print>
 #include <source_location>
 #include <stacktrace>
-#include <string_view>
 #include <thread>
-#include <type_traits>
+
+#endif
 
 // Function attributes
 #define FORCE_INLINE [[gnu::always_inline]] inline
@@ -73,13 +75,13 @@ concept is_lambda =
 
 // Debug utility functions ( side-effects )
 
-#if ( defined( DEBUG ) && !defined( TESTS ) )
-
 #if defined( assert )
 
 #undef assert
 
 #endif
+
+#if ( defined( DEBUG ) && !defined( TESTS ) )
 
 namespace {
 
@@ -134,13 +136,14 @@ constexpr void assert( bool _result,
 #else
 
 template < typename... Arguments >
-[[noreturn]] void trap( std::format_string< Arguments... > _format,
-                        Arguments&&... _arguments ) {}
+void trap( [[maybe_unused]] std::format_string< Arguments... > _format = "",
+           [[maybe_unused]] Arguments&&... _arguments ) {}
 
 template < typename... Arguments >
-constexpr void assert( bool _result,
-                       std::format_string< Arguments... > _format,
-                       Arguments&&... _arguments ) {}
+constexpr void assert(
+    [[maybe_unused]] bool _result,
+    [[maybe_unused]] std::format_string< Arguments... > _format = "",
+    [[maybe_unused]] Arguments&&... _arguments ) {}
 
 #endif
 

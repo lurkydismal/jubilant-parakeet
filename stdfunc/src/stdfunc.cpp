@@ -1,5 +1,8 @@
 #include "stdfunc.hpp"
 
+#include <snappy.h>
+#include <zstd.h>
+
 namespace stdfunc {
 
 namespace random {
