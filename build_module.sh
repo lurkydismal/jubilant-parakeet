@@ -1,8 +1,29 @@
 #!/bin/bash
 TARGET_DIRECTORY=$1
+MODULE_TYPE_NAME=$7
 
-INCLUDE_PATHS=$(echo $FILES_TO_INCLUDE | sed "s~[^ ]*~-I $TARGET_DIRECTORY/&~g")
+INCLUDE_PATHS=$(echo $FILES_TO_INCLUDE | sed "s~[^ ]*~$TARGET_DIRECTORY/&~g")
 COMPILE_PATHS=$(echo $FILES_TO_COMPILE | sed "s~[^ ]*~$TARGET_DIRECTORY/&~g")
+
+check_existense() {
+    local files=$1
+
+    for file in "${files[@]}"; do
+        if [ ! -f "$file" ]; then
+            exit_failure "$(printf -- "Invalid %s '%-$((MODULE_NAME_FIELD_WIDTH + 1))s - invalid glob '%s'.\n" "$MODULE_TYPE_NAME" "$TARGET_DIRECTORY" "$file")"
+        fi
+    done
+}
+
+check_existense $INCLUDE_PATHS
+check_existense $COMPILE_PATHS
+
+# Prepend '-I ' to each include path
+{
+    IFS=' ' read -r -a new_include_paths <<<"$INCLUDE_PATHS"
+
+    printf -v INCLUDE_PATHS -- "-I %s " "${new_include_paths[@]}"
+}
 
 needBuild=0
 
@@ -13,14 +34,19 @@ needBuild=0
     # TODO: Better name
     newest_file=$(fd -e c -e cpp -e h -e hpp . | xargs stat --format '%Y %n' | sort -n | tail -1 | cut -d' ' -f2-)
 
-    if [ -n "${REBUILD_PARTS+x}" ] ||
+    if [[ "$6" -eq 1 ]] ||
         { [[ ! -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]] ||
             { [[ -f "$newest_file" ]] &&
                 [[ "$newest_file" -nt "$BUILD_DIRECTORY/$OUTPUT_FILE" ]]; }; }; then
         needBuild=1
 
     else
-        printf "%bSkipping module '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" "$SKIPPING_PART_IN_BUILD_COLOR" "$TARGET_DIRECTORY'" "$OUTPUT_FILE" "$RESET_COLOR"
+        printf -- "%bSkipping %s '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" \
+            "$SKIPPING_PART_IN_BUILD_COLOR" \
+            "$MODULE_TYPE_NAME" \
+            "$TARGET_DIRECTORY'" \
+            "$OUTPUT_FILE" \
+            "$RESET_COLOR"
     fi
 
     cd - >'/dev/null' || exit

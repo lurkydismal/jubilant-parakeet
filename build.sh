@@ -1,8 +1,22 @@
 #!/bin/bash
 shopt -s nullglob
 
+export RED_LIGHT_COLOR='\e[1;31m'
+export GREEN_LIGHT_COLOR='\e[1;32m'
+export YELLOW_COLOR='\e[1;33m'
+export BLUE_LIGHT_COLOR='\e[1;34m'
+export PURPLE_LIGHT_COLOR='\e[1;35m'
+export CYAN_LIGHT_COLOR='\e[1;36m'
+export RESET_COLOR='\e[0m'
+
+export FAIL_COLOR="$RED_LIGHT_COLOR"
+
 # Helper functions
 exit_failure() {
+    local message=$1
+
+    echo -e "$FAIL_COLOR""$message""$RESET_COLOR"
+
     # trap 'echo "Line $LINENO: $BASH_COMMAND";echo; exit 1' ERR
 
     exit 1
@@ -11,6 +25,8 @@ exit_failure() {
 exit_success() {
     exit 0
 }
+
+export -f exit_failure exit_success
 
 export SCRIPT_DIRECTORY
 SCRIPT_DIRECTORY=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
@@ -31,9 +47,7 @@ declare -A BUILD_TYPES=(
 BUILD_TYPE_NAME="${BUILD_TYPE_NAME:-DEBUG}"
 
 if [[ -z "${BUILD_TYPES[$BUILD_TYPE_NAME]+_}" ]]; then
-    echo "Unknown BUILD_TYPE_NAME '$BUILD_TYPE_NAME'"
-
-    exit_failure
+    exit_failure "Unknown BUILD_TYPE_NAME '$BUILD_TYPE_NAME'"
 fi
 
 export BUILD_TYPE="${BUILD_TYPE:-${BUILD_TYPES[$BUILD_TYPE_NAME]}}"
@@ -92,7 +106,7 @@ EOF
         i) STRIP_EXECUTABLE= ;;
         c) DISABLE_BUILD_CACHE= ;;
         a) REBUILD_STATIC_PARTS= ;;
-        u) export REBUILD_PARTS= ;;
+        u) REBUILD_PARTS= ;;
         *) exit_failure ;;
         esac
     done
@@ -168,22 +182,12 @@ export EXECUTABLE_SECTIONS_TO_STRIP=(
     ".relro_padding"
 )
 
-export RED_LIGHT_COLOR='\e[1;31m'
-export GREEN_LIGHT_COLOR='\e[1;32m'
-export YELLOW_COLOR='\e[1;33m'
-export BLUE_LIGHT_COLOR='\e[1;34m'
-export PURPLE_LIGHT_COLOR='\e[1;35m'
-export CYAN_LIGHT_COLOR='\e[1;36m'
-export RESET_COLOR='\e[0m'
-
 # Helper functions
 check_availability() {
     local what=$1
 
     command -v $what >/dev/null 2>&1 || {
-        echo "$what"' not found'
-
-        exit_failure
+        exit_failure "$what"' not found'
     }
 }
 
@@ -344,7 +348,7 @@ source './config.sh' && {
 
     # Generate includes
     {
-        mapfile -t new_build_includes < <(printf "%s/include""\n" "${partsToBuild[@]}" "${staticParts[@]}")
+        mapfile -t new_build_includes < <(printf -- "%s/include""\n" "${partsToBuild[@]}" "${staticParts[@]}")
 
         BUILD_INCLUDES+=("${new_build_includes[@]}")
 
@@ -397,6 +401,9 @@ source './config.sh' && {
     fi
 
     for partToBuild in "${partsToBuild[@]}"; do
+        export FILES_TO_INCLUDE=""
+        export FILES_TO_COMPILE=""
+
         source "$partToBuild/config.sh" && {
             OUTPUT_FILE='lib'"$partToBuild"'.a'
 
@@ -412,12 +419,14 @@ source './config.sh' && {
                 "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                 "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                 "$definesAsString" \
-                "$includesAsString" &
+                "$includesAsString" \
+                "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                "module" &
 
             processIDs+=($!)
-
-            unset FILES_TO_INCLUDE FILES_TO_COMPILE
         }
+
+        unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
         BUILD_STATUS=$?
 
@@ -435,6 +444,9 @@ source './config.sh' && {
         fi
 
         for staticPart in "${staticParts[@]}"; do
+            export FILES_TO_INCLUDE=""
+            export FILES_TO_COMPILE=""
+
             source "$staticPart/config.sh" && {
                 OUTPUT_FILE='lib'"$staticPart"'.a'
 
@@ -446,7 +458,7 @@ source './config.sh' && {
 
                 if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
                     if [ -f "$BUILD_DIRECTORY/$OUTPUT_FILE" ]; then
-                        printf "%bSkipping static '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" "$SKIPPING_PART_IN_BUILD_COLOR" "$staticPart'" "$OUTPUT_FILE" "$RESET_COLOR"
+                        printf -- "%bSkipping static '%-${MODULE_NAME_FIELD_WIDTH}s — '%s' already exists.%b\n" "$SKIPPING_PART_IN_BUILD_COLOR" "$staticPart'" "$OUTPUT_FILE" "$RESET_COLOR"
 
                         continue
                     fi
@@ -458,12 +470,14 @@ source './config.sh' && {
                     "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$definesAsString" \
-                    "$includesAsString" &
+                    "$includesAsString" \
+                    "$([ -n "${REBUILD_STATIC_PARTS+x}" ] && echo 1 || echo 0)" \
+                    "static" &
 
                 processIDs+=($!)
-
-                unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
+
+            unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
             BUILD_STATUS=$?
 
@@ -596,7 +610,9 @@ source './config.sh' && {
                         "$BUILD_C_FLAGS" \
                         "$BUILD_CPP_FLAGS" \
                         "$definesAsString" \
-                        "$includesAsString"
+                        "$includesAsString" \
+                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                        "module"
 
                     outputFile="$rootSharedObjectName"'.so'
 
@@ -630,6 +646,9 @@ source './config.sh' && {
     if [ "$BUILD_STATUS" -eq 0 ]; then
         # Build executable main package
         if [ "$BUILD_STATUS" -eq 0 ]; then
+            export FILES_TO_INCLUDE=""
+            export FILES_TO_COMPILE=""
+
             source "$executableMainPackage/config.sh" && {
                 OUTPUT_FILE='lib'"$executableMainPackage"'.a'
 
@@ -639,16 +658,18 @@ source './config.sh' && {
                     "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                     "$definesAsString" \
-                    "$includesAsString"
+                    "$includesAsString" \
+                    "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                    "module"
 
                 BUILD_STATUS=$?
 
                 if [ $BUILD_STATUS -ne 0 ]; then
                     exit
                 fi
-
-                unset FILES_TO_INCLUDE FILES_TO_COMPILE
             }
+
+            unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
             BUILD_STATUS=$?
 
@@ -716,6 +737,9 @@ source './config.sh' && {
             }
 
             for testToBuild in "${testsToBuild[@]}"; do
+                export FILES_TO_INCLUDE=""
+                export FILES_TO_COMPILE=""
+
                 source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
                     OUTPUT_FILE='lib'"$testToBuild"'_test.a'
 
@@ -725,12 +749,14 @@ source './config.sh' && {
                         "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
-                        "$includesAsString""$testIncludesAsString" &
+                        "$includesAsString""$testIncludesAsString" \
+                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                        "module" &
 
                     processIDs+=($!)
-
-                    unset FILES_TO_INCLUDE FILES_TO_COMPILE
                 }
+
+                unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
                 BUILD_STATUS=$?
 
@@ -764,6 +790,9 @@ source './config.sh' && {
 
             # Build tests main package
             if [ "$BUILD_STATUS" -eq 0 ]; then
+                export FILES_TO_INCLUDE=""
+                export FILES_TO_COMPILE=""
+
                 source "$testsMainPackage/config.sh" && {
                     OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
                         './build_module.sh' \
@@ -771,16 +800,18 @@ source './config.sh' && {
                         "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
                         "$definesAsString" \
-                        "$includesAsString""$testIncludesAsString"
+                        "$includesAsString""$testIncludesAsString" \
+                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                        "module"
 
                     BUILD_STATUS=$?
 
                     if [ $BUILD_STATUS -ne 0 ]; then
                         exit
                     fi
-
-                    unset FILES_TO_INCLUDE FILES_TO_COMPILE
                 }
+
+                unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
                 BUILD_STATUS=$?
 
