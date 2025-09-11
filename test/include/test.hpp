@@ -35,11 +35,11 @@ extern std::vector< std::pair< std::string, testFunction_t > > g_testRegistry;
 
 namespace {
 
-inline auto printFailed( std::string_view _reason,
-                         std::source_location _sourceLocation ) -> std::string {
-    return ( std::format( "{}[FAILED]{} {}:{}: {}", stdfunc::color::g_red,
-                          stdfunc::color::g_reset, _sourceLocation.file_name(),
-                          _sourceLocation.line(), _reason ) );
+inline void printFailed( std::string_view _reason,
+                         std::source_location _sourceLocation ) {
+    std::println( "{}[FAILED]{} {}:{}: {}", stdfunc::color::g_red,
+                  stdfunc::color::g_reset, _sourceLocation.file_name(),
+                  _sourceLocation.line(), _reason );
 }
 
 } // namespace
@@ -72,9 +72,6 @@ constexpr void assertFalse( T& _actual ) {
     assert( std::format( "Not false but {}", _actual ),
             [ & ] -> bool { return ( !_actual ); } );
 }
-
-#define ASSERT_FALSE( _actual ) \
-    assert( "Not false", [ & ] -> bool { return ( !( _actual ) ); } );
 
 template < typename T >
 constexpr void assertEqual( T& _actual, T& _expected ) {

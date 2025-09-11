@@ -164,9 +164,7 @@ export LINK_FLAGS_HOT_RELOAD=""
 
 export LIBRARIES_TO_LINK=()
 export EXTERNAL_LIBRARIES_TO_LINK=()
-export LIBRARIES_TO_LINK_TESTS=(
-    "m"
-)
+export LIBRARIES_TO_LINK_TESTS=()
 export C_COMPILER="clang"
 export CPP_COMPILER="clang++"
 
@@ -436,7 +434,7 @@ source './config.sh' && {
         fi
     done
 
-    if [ $BUILD_STATUS -eq 0 ]; then
+    {
         if [ ${#staticParts[@]} -ne 0 ]; then
             printf -v staticPartsAsString -- "$BUILD_DIRECTORY/lib%s.a " "${staticParts[@]}"
             echo -en "$PARTS_TO_BUILD_COLOR"
@@ -486,7 +484,7 @@ source './config.sh' && {
                 exit
             fi
         done
-    fi
+    }
 
     for processID in "${processIDs[@]}"; do
         wait "$processID"
@@ -513,138 +511,136 @@ source './config.sh' && {
 
     # Debug
     if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[DEBUG]}" ] && [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
-        if [ "$BUILD_STATUS" -eq 0 ]; then
-            # Convert static to shared objects
-            for processedFile in "${processedFilesStatic[@]}"; do
-                outputFile="${processedFile%.a}.so"
+        # Convert static to shared objects
+        for processedFile in "${processedFilesStatic[@]}"; do
+            outputFile="${processedFile%.a}.so"
 
-                if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
-                    if [ -f "$BUILD_DIRECTORY/$outputFile" ]; then
-                        continue
-                    fi
+            if [ -z "${REBUILD_STATIC_PARTS+x}" ]; then
+                if [ -f "$BUILD_DIRECTORY/$outputFile" ]; then
+                    continue
                 fi
-
-                if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
-                    echo "Linking static $outputFile"
-
-                    $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
-
-                    export NEED_HOT_RELOAD
-
-                    processIDs+=($!)
-                fi
-            done
-
-            for processID in "${processIDs[@]}"; do
-                wait "$processID"
-
-                processStatuses+=($?)
-            done
-
-            BUILD_STATUS=0
-
-            for processStatus in "${processStatuses[@]}"; do
-                if [[ "$processStatus" -ne 0 ]]; then
-                    BUILD_STATUS=$processStatus
-
-                    break
-                fi
-            done
-
-            if [ "$BUILD_STATUS" -ne 0 ]; then
-                exit
             fi
 
-            processIDs=()
-            processStatuses=()
+            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                echo "Linking static $outputFile"
 
-            # Convert to shared objects
-            for processedFile in "${processedFiles[@]}"; do
-                outputFile="${processedFile%.a}.so"
+                $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
-                if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
-                    echo "Linking $outputFile"
+                export NEED_HOT_RELOAD
 
-                    cd "$BUILD_DIRECTORY" || exit
+                processIDs+=($!)
+            fi
+        done
 
-                    $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
 
-                    cd - >'/dev/null' || exit
+            processStatuses+=($?)
+        done
 
-                    export NEED_HOT_RELOAD
+        BUILD_STATUS=0
 
-                    processIDs+=($!)
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        if [ "$BUILD_STATUS" -ne 0 ]; then
+            exit
+        fi
+
+        processIDs=()
+        processStatuses=()
+
+        # Convert to shared objects
+        for processedFile in "${processedFiles[@]}"; do
+            outputFile="${processedFile%.a}.so"
+
+            if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
+                echo "Linking $outputFile"
+
+                cd "$BUILD_DIRECTORY" || exit
+
+                $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
+
+                cd - >'/dev/null' || exit
+
+                export NEED_HOT_RELOAD
+
+                processIDs+=($!)
+            fi
+        done
+
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
+
+            processStatuses+=($?)
+        done
+
+        BUILD_STATUS=0
+
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        if [ "$BUILD_STATUS" -ne 0 ]; then
+            exit
+        fi
+
+        processIDs=()
+        processStatuses=()
+
+        if [ -z "${NEED_HOT_RELOAD+x}" ]; then
+            # Link root that will have DT_NEEDED for all shared objects
+            source "$rootSharedObjectName/config.sh" && {
+                OUTPUT_FILE="$rootSharedObjectName"'.a'
+
+                OUTPUT_FILE="$OUTPUT_FILE" \
+                    './build_module.sh' \
+                    "$rootSharedObjectName" \
+                    "$BUILD_C_FLAGS" \
+                    "$BUILD_CPP_FLAGS" \
+                    "$definesAsString" \
+                    "$includesAsString" \
+                    "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                    "module"
+
+                outputFile="$rootSharedObjectName"'.so'
+
+                echo "Linking $outputFile"
+
+                cd "$BUILD_DIRECTORY" || exit
+
+                $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
+
+                BUILD_STATUS=$?
+
+                cd - >'/dev/null' || exit
+
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
                 fi
-            done
+            }
+        fi
 
-            for processID in "${processIDs[@]}"; do
-                wait "$processID"
+        BUILD_STATUS=$?
 
-                processStatuses+=($?)
-            done
-
-            BUILD_STATUS=0
-
-            for processStatus in "${processStatuses[@]}"; do
-                if [[ "$processStatus" -ne 0 ]]; then
-                    BUILD_STATUS=$processStatus
-
-                    break
-                fi
-            done
-
-            if [ "$BUILD_STATUS" -ne 0 ]; then
-                exit
-            fi
-
-            processIDs=()
-            processStatuses=()
-
-            if [ -z "${NEED_HOT_RELOAD+x}" ]; then
-                # Link root that will have DT_NEEDED for all shared objects
-                source "$rootSharedObjectName/config.sh" && {
-                    OUTPUT_FILE="$rootSharedObjectName"'.a'
-
-                    OUTPUT_FILE="$OUTPUT_FILE" \
-                        './build_module.sh' \
-                        "$rootSharedObjectName" \
-                        "$BUILD_C_FLAGS" \
-                        "$BUILD_CPP_FLAGS" \
-                        "$definesAsString" \
-                        "$includesAsString" \
-                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
-                        "module"
-
-                    outputFile="$rootSharedObjectName"'.so'
-
-                    echo "Linking $outputFile"
-
-                    cd "$BUILD_DIRECTORY" || exit
-
-                    $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
-
-                    BUILD_STATUS=$?
-
-                    cd - >'/dev/null' || exit
-
-                    if [ $BUILD_STATUS -ne 0 ]; then
-                        exit
-                    fi
-                }
-            fi
-
-            BUILD_STATUS=$?
-
-            if [ $BUILD_STATUS -ne 0 ]; then
-                exit
-            fi
+        if [ $BUILD_STATUS -ne 0 ]; then
+            exit
         fi
     fi
 
     unset processedFilesHashes
 
     # Build main executable
-    if [ "$BUILD_STATUS" -eq 0 ]; then
+    {
         # Build executable main package
         if [ "$BUILD_STATUS" -eq 0 ]; then
             export FILES_TO_INCLUDE=""
@@ -679,52 +675,52 @@ source './config.sh' && {
             fi
         fi
 
+        if [ ${#LIBRARIES_TO_LINK[@]} -ne 0 ]; then
+            printf -v librariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK[@]}"
+            echo -e "$LIBRARIES_COLOR""$librariesToLinkAsString""$RESET_COLOR"
+        fi
+
         # Not Tests
         if [ "$BUILD_TYPE" -ne "${BUILD_TYPES[TESTS]}" ]; then
-            if [ "$BUILD_STATUS" -eq 0 ]; then
-                if [ ${#LIBRARIES_TO_LINK[@]} -ne 0 ]; then
-                    printf -v librariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK[@]}"
-                    echo -e "$LIBRARIES_COLOR""$librariesToLinkAsString""$RESET_COLOR"
+            if [ -z "${SCAN_BUILD+x}" ]; then
+                # Debug
+                if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[DEBUG]}" ] && [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
+                    cd "$BUILD_DIRECTORY" || exit
+
+                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+
+                    BUILD_STATUS=$?
+
+                    cd - >'/dev/null' || exit
+
+                else
+                    $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
+
+                    BUILD_STATUS=$?
                 fi
 
-                if [ -z "${SCAN_BUILD+x}" ]; then
-                    # Debug
-                    if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[DEBUG]}" ] && [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
-                        cd "$BUILD_DIRECTORY" || exit
-
-                        $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-
-                        BUILD_STATUS=$?
-
-                        cd - >'/dev/null' || exit
-
-                    else
-                        $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-
-                        BUILD_STATUS=$?
-                    fi
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
                 fi
 
-                if [ "$BUILD_STATUS" -eq 0 ]; then
-                    echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
+                echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
+            fi
 
-                    if [ -n "${STRIP_EXECUTABLE+x}" ]; then
-                        if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
-                            printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
-                            echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
-                        fi
-
-                        objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME" $sectionsToStripAsString
-
-                        strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
-                    fi
+            if [ -n "${STRIP_EXECUTABLE+x}" ]; then
+                if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
+                    printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
+                    echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
                 fi
+
+                objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME" $sectionsToStripAsString
+
+                strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
             fi
         fi
-    fi
+    }
 
     # Build tests
-    if [ "$BUILD_STATUS" -eq 0 ]; then
+    {
         # Tests
         if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[TESTS]}" ]; then
             for testToBuild in "${testsToBuild[@]}"; do
@@ -780,7 +776,7 @@ source './config.sh' && {
             processStatuses=()
 
             # Build tests main package
-            if [ "$BUILD_STATUS" -eq 0 ]; then
+            {
                 export FILES_TO_INCLUDE=""
                 export FILES_TO_COMPILE=""
 
@@ -809,9 +805,9 @@ source './config.sh' && {
                 if [ $BUILD_STATUS -ne 0 ]; then
                     exit
                 fi
-            fi
+            }
 
-            if [ "$BUILD_STATUS" -eq 0 ]; then
+            {
                 if [ ${#testsToBuild[@]} -ne 0 ]; then
                     printf -v testsToBuildAsString -- "$BUILD_DIRECTORY/lib%s_test.a " "${testsToBuild[@]}"
                     echo -e "$PARTS_TO_BUILD_COLOR""$testsToBuildAsString""$RESET_COLOR"
@@ -826,25 +822,27 @@ source './config.sh' && {
                     $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
 
                     BUILD_STATUS=$?
-                fi
 
-                if [ "$BUILD_STATUS" -eq 0 ]; then
-                    echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
-
-                    if [ -n "${STRIP_EXECUTABLE+x}" ]; then
-                        if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
-                            printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
-                            echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
-                        fi
-
-                        objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
-
-                        strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+                    if [ $BUILD_STATUS -ne 0 ]; then
+                        exit
                     fi
+
+                    echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
                 fi
-            fi
+
+                if [ -n "${STRIP_EXECUTABLE+x}" ]; then
+                    if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
+                        printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
+                        echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
+                    fi
+
+                    objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
+
+                    strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+                fi
+            }
         fi
-    fi
+    }
 
 }
 

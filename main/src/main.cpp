@@ -22,15 +22,21 @@
 #include <vector>
 
 #include "plthook.h"
+#include "stdfunc.hpp"
 
 #endif
 
+#include <experimental/scope>
+
+#include "event.hpp"
+#include "init.hpp"
+#include "iterate.hpp"
+#include "quit.hpp"
 #include "runtime.hpp"
-#include "stdfunc.hpp"
 
 namespace {
 
-applicationState_t g_applicationState;
+runtime::applicationState_t g_applicationState;
 
 #if defined( HOT_RELOAD )
 
@@ -449,85 +455,103 @@ auto hotReloadSo( std::string_view _sharedObjectPath ) -> bool {
 } // namespace
 
 auto main( int _argumentCount, char** _argumentVector ) -> int {
-    bool l_returnValue = false;
+    do {
+        {
+            auto l_argumentVectorView =
+                std::span( _argumentVector, _argumentCount ) |
+                std::ranges::views::transform(
+                    []( const char* _argument ) -> std::string_view {
+                        return ( _argument );
+                    } ) |
+                std::ranges::to< std::vector< std::string_view > >();
 
-#if defined( HOT_RELOAD )
+            if ( !runtime::init( g_applicationState, l_argumentVectorView ) )
+                [[unlikely]] {
+                break;
+            }
+        }
 
-    signal( SIGSEGV, crashHandler );
-    signal( SIGILL, crashHandler );
-    signal( SIGBUS, crashHandler );
+        auto l_onExit = std::experimental::scope_exit( [ & ] {
+            runtime::quit( g_applicationState );
 
-    l_returnValue = hotReloadSo( g_rootSharedObjectPath.c_str() );
+#if defined( __SANITIZE_LEAK__ )
 
-    if ( UNLIKELY( !l_returnValue ) ) {
-        goto EXIT;
-    }
+            __lsan_do_leak_check();
 
 #endif
+        } );
 
-    l_returnValue =
-        init( &g_applicationState, _argumentCount, _argumentVector );
-
-    if ( UNLIKELY( !l_returnValue ) ) {
-        goto EXIT;
-    }
-
-    {
 #if defined( HOT_RELOAD )
+
+        signal( SIGSEGV, crashHandler );
+        signal( SIGILL, crashHandler );
+        signal( SIGBUS, crashHandler );
+
+        if ( !hotReloadSo( g_rootSharedObjectPath.c_str() ) ) [[unlikely]] {
+            break;
+        }
 
         size_t l_iterationCount = 0;
 
 #endif
 
+        std::vector< runtime::event_t > l_events( 16 );
+
+        // Main loop
         for ( ;; ) {
-            SDL_PumpEvents();
+            vsync::begin();
 
-            event_t l_event;
+            const auto l_handleEvents = [ & ] {
+                // Poll events
+                {
+                    l_events.clear();
 
-            while ( SDL_PollEvent( &l_event ) ) {
-                l_returnValue = event( &g_applicationState, &l_event );
+                    SDL_PumpEvents();
 
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                    runtime::event_t l_event{};
+
+                    while ( SDL_PollEvent( &l_event ) ) {
+                        l_events.emplace_back( l_event );
+                    }
                 }
-            }
 
-            // NULL means last event on current frame
-            l_returnValue = event( &g_applicationState, NULL );
+                return ( std::ranges::all_of(
+                             l_events,
+                             [ & ]( const runtime::event_t& _event ) {
+                                 return ( runtime::event( g_applicationState,
+                                                          _event ) );
+                             } ) &&
+                         (
+                             // Empty means last event on current frame
+                             runtime::event( g_applicationState, {} ) ) );
+            };
 
-            if ( UNLIKELY( !l_returnValue ) ) {
+            if ( !l_handleEvents() ) {
                 break;
             }
 
-            l_returnValue = iterate( &g_applicationState );
-
-            if ( UNLIKELY( !l_returnValue ) ) {
+            if ( !runtime::iterate( g_applicationState ) ) {
                 break;
             }
+
+            vsync::end();
+
+            ( g_applicationState.renderContext.totalFramesRendered )++;
 
 #if defined( HOT_RELOAD )
 
             l_iterationCount++;
 
             if ( ( l_iterationCount % g_hotReloadCheckDelayFrames ) == 0 ) {
-                l_returnValue = hotReloadSo( g_rootSharedObjectPath.c_str() );
-
-                if ( UNLIKELY( !l_returnValue ) ) {
-                    goto EXIT;
+                if ( !hotReloadSo( g_rootSharedObjectPath.c_str() ) )
+                    [[unlikely]] {
+                    break;
                 }
             }
 #endif
         }
-    }
+    } while ( false );
 
-EXIT:
-    quit( &g_applicationState, l_returnValue );
-
-#if defined( __SANITIZE_LEAK__ )
-
-    __lsan_do_leak_check();
-
-#endif
-
-    return ( !l_returnValue );
+    return ( ( g_applicationState.status ) ? ( EXIT_SUCCESS )
+                                           : ( EXIT_FAILURE ) );
 }

@@ -8,6 +8,11 @@ COMPILE_PATHS=$(echo $FILES_TO_COMPILE | sed "s~[^ ]*~$TARGET_DIRECTORY/&~g")
 check_existense() {
     local files=$1
 
+    # No glob
+    if [[ $files == */ ]]; then
+        return
+    fi
+
     for file in "${files[@]}"; do
         if [ ! -f "$file" ]; then
             exit_failure "$(printf -- "Invalid %s '%-$((MODULE_NAME_FIELD_WIDTH + 1))s — invalid glob '%s'.\n" "$MODULE_TYPE_NAME" "$TARGET_DIRECTORY'" "$file")"

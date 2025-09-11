@@ -11,11 +11,8 @@
 
 namespace runtime {
 
-template < size_t N >
-    requires( N > 0 )
 auto init( applicationState_t& _applicationState,
-           [[maybe_unused]] std::span< std::string_view, N > _arguments )
-    -> bool {
+           [[maybe_unused]] std::span< std::string_view > _arguments ) -> bool {
     bool l_returnValue = false;
 
     do {

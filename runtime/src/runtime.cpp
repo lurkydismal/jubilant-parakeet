@@ -2,11 +2,11 @@
 
 namespace runtime {
 
-auto load( [[maybe_unused]] applicationState_t& _applicationState ) -> bool {
+auto applicationState_t::load() -> bool {
     return ( true );
 }
 
-auto unload( [[maybe_unused]] applicationState_t& _applicationState ) -> bool {
+auto applicationState_t::unload() -> bool {
     return ( true );
 }
 

@@ -4,6 +4,7 @@
 #include <print>
 #include <source_location>
 #include <string_view>
+#include <thread>
 
 #include "stdfunc.hpp"
 
