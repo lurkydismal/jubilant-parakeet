@@ -10,7 +10,7 @@ check_existense() {
 
     for file in "${files[@]}"; do
         if [ ! -f "$file" ]; then
-            exit_failure "$(printf -- "Invalid %s '%-$((MODULE_NAME_FIELD_WIDTH + 1))s - invalid glob '%s'.\n" "$MODULE_TYPE_NAME" "$TARGET_DIRECTORY" "$file")"
+            exit_failure "$(printf -- "Invalid %s '%-$((MODULE_NAME_FIELD_WIDTH + 1))s — invalid glob '%s'.\n" "$MODULE_TYPE_NAME" "$TARGET_DIRECTORY'" "$file")"
         fi
     done
 }
@@ -55,17 +55,21 @@ needBuild=0
 if ((needBuild)); then
     source "$SCRIPT_DIRECTORY/config.sh" &&
         make clean &&
-        make \
+        if make \
             "BUILD_C_FLAGS=$2" \
             "BUILD_CPP_FLAGS=$3" \
             "DEFINES=$4" \
             "INCLUDES=$5" \
             "FILES_TO_INCLUDE=$INCLUDE_PATHS" \
-            "FILES_TO_COMPILE=$COMPILE_PATHS" &&
-        mv "$OUTPUT_FILE" "$BUILD_DIRECTORY" &&
-        cd $TARGET_DIRECTORY &&
-        clang-format --style="file:$SCRIPT_DIRECTORY/.clang-format" \
-            -i \
-            $(echo $FILES_TO_INCLUDE $FILES_TO_COMPILE) &&
-        cd "$SCRIPT_DIRECTORY" || exit
+            "FILES_TO_COMPILE=$COMPILE_PATHS"; then
+            mv "$OUTPUT_FILE" "$BUILD_DIRECTORY" &&
+                cd $TARGET_DIRECTORY &&
+                clang-format --style="file:$SCRIPT_DIRECTORY/.clang-format" \
+                    -i \
+                    $(echo $FILES_TO_INCLUDE $FILES_TO_COMPILE) &&
+                cd "$SCRIPT_DIRECTORY" || exit
+
+        else
+            exit_failure "$(printf -- "Invalid %s '%-${MODULE_NAME_FIELD_WIDTH}s — failed to make.\n" "$MODULE_TYPE_NAME" "$TARGET_DIRECTORY'")"
+        fi
 fi
