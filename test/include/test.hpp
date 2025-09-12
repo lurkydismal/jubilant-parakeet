@@ -59,10 +59,10 @@ constexpr void assert( std::string_view _reason,
 
 template < typename T >
     requires std::is_convertible_v< T, bool >
-constexpr void _assertTrue( T _actual, size_t _line ) {
+constexpr void _assertTrue( T&& _actual, size_t _line ) {
     assert(
         std::format( "Not true but {}", _actual ),
-        [ & ] -> bool { return ( _actual ); }, _line );
+        [ & ] -> bool { return ( std::forward< T >( _actual ) ); }, _line );
 }
 
 #define assertTrue( _actual ) test::_assertTrue( ( _actual ), __LINE__ )

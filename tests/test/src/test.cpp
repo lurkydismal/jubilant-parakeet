@@ -1,22 +1,32 @@
 #include "test.hpp"
 
+#include <array>
+#include <variant>
+#include <vector>
+
+namespace {
+
+template < typename... Arguments >
+consteval auto t( Arguments&&... _arguments ) {
+    using varying_t = std::variant< std::decay_t< Arguments >... >;
+
+    std::vector< varying_t > a;
+
+    return ( a );
+}
+
+auto x = t( true, "", 123 );
+
+} // namespace
+
 namespace test {
 
-TEST( stringToBool, [] {
-#if 0
-    const std::array l_x = { true, false, 1, "", " true ", "hello" };
+TEST( assertTrue, ( [] { assertTrue( true ); } ) );
 
-    // Assert true
-    for ( const auto& _x : l_x ) {
-        assertTrue( _x );
-    }
-#endif
-    assertTrue( true );
-    assertTrue( false );
-    assertTrue( true );
-    assertTrue( true );
-    assertTrue( true );
-    assertTrue( true );
-} );
+TEST( assertFalse, ( [] { assertFalse( false ); } ) );
+
+TEST( assertEqual, ( [] { assertEqual( true, true ); } ) );
+
+TEST( assertNotEqual, ( [] { assertNotEqual( true, false ); } ) );
 
 } // namespace test

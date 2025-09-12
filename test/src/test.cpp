@@ -31,7 +31,7 @@ auto main( int _argumentCount, char** _argumentsVector ) -> int {
                       _name, stdfunc::color::g_reset );
 
         if ( !_function() ) {
-            std::println( "{}[PASSED]{}{}", stdfunc::color::g_green,
+            std::println( "{}[PASSED]{} {}", stdfunc::color::g_green,
                           stdfunc::color::g_reset, _name );
 
             l_passed++;
