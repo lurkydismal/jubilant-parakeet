@@ -21,7 +21,7 @@ extern std::vector< std::pair< std::string, testFunction_t > > g_testRegistry;
 
 template < typename Lambda >
     requires stdfunc::is_lambda< Lambda, void >
-void add( std::string_view _name, Lambda&& _lambda ) {
+constexpr void add( std::string_view _name, Lambda&& _lambda ) {
     g_testRegistry.emplace_back( std::pair{ _name, [ & ] -> bool {
                                                g_hasTestFailed = false;
 
@@ -32,9 +32,9 @@ void add( std::string_view _name, Lambda&& _lambda ) {
                                            } } );
 }
 
-#define TEST( _name, _lambda )                                        \
-    CONSTRUCTOR [[gnu::used]] static void register_##_name##_test() { \
-        test::add( ( #_name ), ( _lambda ) );                         \
+#define TEST( _name, _lambda )                                           \
+    CONSTRUCTOR [[gnu::used]] constexpr void register_##_name##_test() { \
+        test::add( ( #_name ), ( _lambda ) );                            \
     }
 
 template < typename Checker >
@@ -77,24 +77,28 @@ constexpr void _assertFalse( T _actual, size_t _line ) {
 
 #define assertFalse( _actual ) test::_assertFalse( ( _actual ), __LINE__ )
 
+// TODO: Check if requires is needed
 template < typename T1, typename T2 >
-    requires std::equality_comparable_with< T1, T2 >
 constexpr void _assertEqual( T1 _actual, T2 _expected, size_t _line ) {
-    assert(
-        std::format( "Expected {} but got {}", _expected, _actual ),
-        [ & ] -> bool { return ( _actual == _expected ); }, _line );
+    if constexpr ( std::equality_comparable_with< T1, T2 > ) {
+        assert(
+            std::format( "Expected {} but got {}", _expected, _actual ),
+            [ & ] -> bool { return ( _actual == _expected ); }, _line );
+    }
 }
 
 #define assertEqual( _actual, _expected ) \
     test::_assertEqual( ( _actual ), ( _expected ), __LINE__ )
 
+// TODO: Check if requires is needed
 template < typename T1, typename T2 >
-    requires std::equality_comparable_with< T1, T2 >
 constexpr void _assertNotEqual( T1 _actual, T2 _expected, size_t _line ) {
-    assert(
-        std::format( "Expected different from {} but got {}", _expected,
-                     _actual ),
-        [ & ] -> bool { return ( _actual != _expected ); }, _line );
+    if constexpr ( std::equality_comparable_with< T1, T2 > ) {
+        assert(
+            std::format( "Expected different from {} but got {}", _expected,
+                         _actual ),
+            [ & ] -> bool { return ( _actual != _expected ); }, _line );
+    }
 }
 
 #define assertNotEqual( _actual, _expected ) \

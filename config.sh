@@ -14,8 +14,6 @@ export partsToBuild=(
     # "font_t"
     "asset"
     # "watch_t"
-    "log"
-    "stdfunc"
 )
 export testsToBuild=(
     # "runtime"
@@ -33,13 +31,15 @@ export testsToBuild=(
     # "asset"
     # "watch_t"
     # "log"
-    # "stdfunc"
+    "stdfunc"
     "test"
 )
 export staticParts=(
     "plthook"
     "slickdl"
     "forward_circular_buffer"
+    "log"
+    "stdfunc"
 )
 export rootSharedObjectName="root"
 
@@ -60,8 +60,6 @@ BUILD_INCLUDES+=()
 LIBRARIES_TO_LINK+=(
     "mimalloc"
     "zstd"
-    "elf"
-    "unwind"
 )
 
 EXTERNAL_LIBRARIES_TO_LINK+=(

@@ -294,6 +294,23 @@ void fill( Container& _container, T _min, T _max ) {
     return ( l_returnValue );
 }
 
+template < template < typename > typename Container, typename... Arguments >
+[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
+    using variant_t = std::variant< std::decay_t< Arguments >... >;
+
+    return ( Container< variant_t >{
+        variant_t( std::forward< Arguments >( _arguments ) )... } );
+}
+
+template < template < typename, size_t > typename Container,
+           typename... Arguments >
+[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
+    using variant_t = std::variant< std::decay_t< Arguments >... >;
+
+    return ( std::array< variant_t, sizeof...( Arguments ) >{
+        variant_t( std::forward< Arguments >( _arguments ) )... } );
+}
+
 namespace filesystem {
 
 // Utility OS specific functions ( no side-effects )
