@@ -26,17 +26,20 @@ inline auto formatLocation( std::string_view _prefix,
                             const std::source_location& _sourceLocation =
                                 std::source_location::current() )
     -> std::string {
-    return ( std::format(
-        "{}Thread {}{}{}: File '{}{}{}': line {}{}{} "
-        "in function '{}{}{}' | Message: ",
-        formatPrefix( _prefix, _prefixColor ),
-        stdfunc::color::g_resetForeground, g_colorThreadId,
-        std::this_thread::get_id(), stdfunc::color::g_resetForeground,
-        g_colorFileName, _sourceLocation.file_name(),
-        stdfunc::color::g_resetForeground, g_colorLineNumber,
-        _sourceLocation.line(), stdfunc::color::g_resetForeground,
-        g_colorFunctionName, _sourceLocation.function_name(),
-        stdfunc::color::g_resetForeground ) );
+    return (
+        std::format( "{}Thread {}{}{}: File '{}{}{}': line {}{}{} "
+                     "in function '{}{}{}' | Message: ",
+                     formatPrefix( _prefix, _prefixColor ),
+                     stdfunc::color::g_resetForeground, g_colorThreadId,
+                     std::this_thread::get_id(),
+                     stdfunc::color::g_resetForeground, g_colorFileName,
+                     std::filesystem::path( _sourceLocation.file_name() )
+                         .filename()
+                         .string(),
+                     stdfunc::color::g_resetForeground, g_colorLineNumber,
+                     _sourceLocation.line(), stdfunc::color::g_resetForeground,
+                     g_colorFunctionName, _sourceLocation.function_name(),
+                     stdfunc::color::g_resetForeground ) );
 }
 
 #if defined( DEBUG )

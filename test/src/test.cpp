@@ -30,7 +30,7 @@ auto main( int _argumentCount, char** _argumentsVector ) -> int {
         std::println( "{}Running {} test...{}", stdfunc::color::g_cyanLight,
                       _name, stdfunc::color::g_reset );
 
-        if ( _function() == 0 ) {
+        if ( !_function() ) {
             std::println( "{}[PASSED]{}{}", stdfunc::color::g_green,
                           stdfunc::color::g_reset, _name );
 

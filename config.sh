@@ -34,6 +34,7 @@ export testsToBuild=(
     # "watch_t"
     # "log"
     # "stdfunc"
+    "test"
 )
 export staticParts=(
     "plthook"

@@ -32,12 +32,14 @@
 #define HOT [[gnu::hot]]
 #define COLD [[gnu::cold]]
 #define SENTINEL [[gnu::sentinel]]
+#define CONSTRUCTOR [[gnu::constructor]]
+#define DESTRUCTOR [[gnu::destructor]]
 #define EXPORT extern "C"
-
-namespace stdfunc {
 
 // Struct attributes
 #define PACKED [[gnu::packed]]
+
+namespace stdfunc {
 
 // Constants
 inline constexpr char g_commentSymbol = '#';
@@ -57,6 +59,11 @@ inline constexpr std::string_view g_reset = "\x1b[0m";
 } // namespace color
 
 // Concepts
+template < typename... Arguments >
+concept has_common_type = ( requires {
+    typename std::common_type_t< Arguments... >;
+} && ( !std::is_void_v< std::common_type_t< Arguments... > > ));
+
 template < typename T >
 concept is_container = std::ranges::range< T >;
 
