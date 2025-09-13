@@ -2,10 +2,13 @@
 
 #include <ctll.hpp>
 #include <ctre.hpp>
+#include <snappy.h>
 #include <xxhash.h>
+#include <zstd.h>
 
 #include <algorithm>
 #include <cstdarg>
+#include <expected>
 #include <filesystem>
 #include <gsl/pointers>
 #include <iostream>
@@ -363,6 +366,47 @@ template < size_t N >
 }
 
 } // namespace filesystem
+
+namespace compress {
+
+/**
+ * @brief [TODO:description]
+ *
+ * @detailed Compression level. Level 1 is the fastest Level 2 is a little
+ * slower but provides better compression.
+ *
+ * @param _data View to string
+ * @param _level Compression level
+ *
+ * @return Compressed string
+ */
+// TODO: Make constexpr
+[[nodiscard]] auto text( std::string_view _text, size_t _level = 1 )
+    -> std::optional< std::string >;
+
+[[nodiscard]] auto data( std::span< std::byte > _data, size_t _level = 3 )
+    -> std::optional< std::vector< std::byte > >;
+
+} // namespace compress
+
+namespace decompress {
+
+/**
+ * @brief [TODO:description]
+ *
+ * @param _data View to string
+ *
+ * @return Compressed string
+ */
+// TODO: Make constexpr
+[[nodiscard]] auto text( std::string_view _data )
+    -> std::optional< std::string >;
+
+[[nodiscard]] auto decompress( std::span< std::byte > _data,
+                               size_t _originalSize )
+    -> std::optional< std::vector< std::byte > >;
+
+} // namespace decompress
 
 namespace meta {
 

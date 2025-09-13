@@ -19,6 +19,7 @@ using float16x32_t = float16_t __attribute__( (
     vector_size( stdfunc::bitsToBytes( g_floaT16TypeBitAmount * 32 ) ) ) );
 
 namespace std {
+
 template <>
 class numeric_limits< float16_t > {
 public:
@@ -27,7 +28,9 @@ public:
     static constexpr auto min() noexcept -> float16_t {
         return ( 6.103515625e-5f );
     }
+
     static constexpr auto max() noexcept -> float16_t { return ( 65504.0f ); }
+
     static constexpr auto lowest() noexcept -> float16_t {
         return ( -65504.0f );
     }
@@ -37,15 +40,19 @@ public:
     }
 
     static constexpr auto round_error() noexcept -> float16_t { return 0.5f; }
+
     static constexpr auto infinity() noexcept -> float16_t {
         return ( float16_t( INFINITY ) );
     }
+
     static constexpr auto quiet_NaN() noexcept -> float16_t {
         return ( float16_t( NAN ) );
     }
+
     static constexpr auto signaling_NaN() noexcept -> float16_t {
         return ( float16_t( NAN ) );
     }
+
     static constexpr auto denorm_min() noexcept -> float16_t {
         return ( 5.960464477539063e-8f );
     }
@@ -68,6 +75,7 @@ public:
     static constexpr bool tinyness_before = false;
     static constexpr float_denorm_style has_denorm = denorm_present;
 };
+
 } // namespace std
 
 template <>
@@ -77,6 +85,7 @@ struct std::formatter< float16_t, char > {
     }
 
     auto format( float16_t _value, std::format_context& _context ) const {
-        return ( std::format_to( _context.out(), "{{}}", _value ) );
+        return ( std::format_to( _context.out(), "{{}}",
+                                 static_cast< float >( _value ) ) );
     }
 };

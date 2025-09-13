@@ -1,7 +1,131 @@
 #include "stdfunc.hpp"
 
-namespace stdfunc::random {
+namespace stdfunc {
+
+namespace random {
 
 thread_local engine_t g_engine{ std::random_device{}() };
 
 }
+
+namespace compress {
+
+auto text( std::string_view _text, size_t _level )
+    -> std::optional< std::string > {
+    std::optional< std::string > l_returnValue = std::nullopt;
+
+    do {
+        if ( _text.empty() ) [[unlikely]] {
+            break;
+        }
+
+        if ( !_level ) [[unlikely]] {
+            break;
+        }
+
+        std::string& l_compressed = l_returnValue.value();
+
+        if ( !snappy::Compress( _text.data(), _text.size(), &l_compressed,
+                                snappy::CompressionOptions( _level ) ) )
+            [[unlikely]] {
+            break;
+        }
+
+        l_returnValue = l_compressed;
+    } while ( false );
+
+    return ( l_returnValue );
+}
+
+auto data( std::span< std::byte > _data, size_t _level )
+    -> std::optional< std::vector< std::byte > > {
+    std::optional< std::vector< std::byte > > l_returnValue = std::nullopt;
+
+    do {
+        if ( _data.empty() ) [[unlikely]] {
+            break;
+        }
+
+        if ( !_level ) [[unlikely]] {
+            break;
+        }
+
+        const size_t l_maxCompressedSize = ZSTD_compressBound( _data.size() );
+
+        std::vector< std::byte > l_compressed( l_maxCompressedSize );
+
+        const size_t l_compressedSize =
+            ZSTD_compress( l_compressed.data(), l_compressed.size(),
+                           _data.data(), _data.size(), _level );
+
+        if ( ZSTD_isError( l_compressedSize ) ) [[unlikely]] {
+            break;
+        }
+
+        l_compressed.resize( l_compressedSize );
+
+        l_returnValue = l_compressed;
+    } while ( false );
+
+    return ( l_returnValue );
+}
+
+} // namespace compress
+
+namespace decompress {
+
+auto text( std::string_view _data ) -> std::optional< std::string > {
+    std::optional< std::string > l_returnValue = std::nullopt;
+
+    do {
+        if ( _data.empty() ) [[unlikely]] {
+            break;
+        }
+
+        std::string& l_decompressed = l_returnValue.value();
+
+        if ( !snappy::Uncompress( _data.data(), _data.size(),
+                                  &l_decompressed ) ) [[unlikely]] {
+            break;
+        }
+
+        l_returnValue = l_decompressed;
+    } while ( false );
+
+    return ( l_returnValue );
+}
+
+auto decompress( std::span< std::byte > _data, size_t _originalSize )
+    -> std::optional< std::vector< std::byte > > {
+    std::optional< std::vector< std::byte > > l_returnValue = std::nullopt;
+
+    do {
+        if ( _data.empty() ) [[unlikely]] {
+            break;
+        }
+
+        if ( !_originalSize ) [[unlikely]] {
+            break;
+        }
+
+        std::vector< std::byte > l_decompressed( _originalSize );
+
+        const size_t l_decompressedSize =
+            ZSTD_decompress( l_decompressed.data(), l_decompressed.size(),
+                             _data.data(), _data.size() );
+
+        if ( ZSTD_isError( l_decompressedSize ) ) [[unlikely]] {
+            break;
+        }
+
+        l_decompressed.resize( l_decompressedSize );
+
+        l_returnValue = l_decompressed;
+    } while ( false );
+
+    return ( l_returnValue );
+}
+
+} // namespace decompress
+
+} // namespace stdfunc
