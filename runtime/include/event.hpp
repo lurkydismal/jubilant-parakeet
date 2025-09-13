@@ -3,13 +3,12 @@
 #include <SDL3/SDL_events.h>
 
 #include "runtime.hpp"
-#include "stdfunc.hpp"
 
 namespace runtime {
 
 using event_t = SDL_Event;
 
-EXPORT auto event( applicationState_t& _applicationState,
-                   const event_t& _event ) -> bool;
+auto event( applicationState_t& _applicationState, const event_t& _event )
+    -> bool;
 
 } // namespace runtime
