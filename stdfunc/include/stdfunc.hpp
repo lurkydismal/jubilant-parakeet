@@ -112,7 +112,7 @@ template < typename... Arguments >
 } // namespace
 
 template < typename... Arguments >
-[[noreturn]] void trap( std::format_string< Arguments... > _format,
+[[noreturn]] void trap( std::format_string< Arguments... > _format = "",
                         Arguments&&... _arguments ) {
     _trap( _format, std::source_location::current(),
            std::forward< Arguments >( _arguments )... );
@@ -120,7 +120,7 @@ template < typename... Arguments >
 
 template < typename... Arguments >
 constexpr void assert( bool _result,
-                       std::format_string< Arguments... > _format,
+                       std::format_string< Arguments... > _format = "",
                        Arguments&&... _arguments ) {
     if ( !_result ) [[unlikely]] {
         _trap( _format, std::source_location::current(),
@@ -144,13 +144,13 @@ constexpr void assert( bool _result,
 // Utility functions ( no side-effects )
 template < typename T >
     requires std::is_arithmetic_v< T >
-constexpr auto bitsToBytes( T _bits ) -> T {
+[[nodiscard]] constexpr auto bitsToBytes( T _bits ) -> T {
     return ( ( _bits + 7 ) / 8 );
 }
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-constexpr auto lengthOfNumber( T _number ) -> size_t {
+[[nodiscard]] constexpr auto lengthOfNumber( T _number ) -> size_t {
     return ( ( _number < 10ULL )                     ? ( 1 )
              : ( _number < 100ULL )                  ? ( 2 )
              : ( _number < 1000ULL )                 ? ( 3 )
@@ -173,8 +173,7 @@ constexpr auto lengthOfNumber( T _number ) -> size_t {
                                                      : ( 20 ) );
 }
 
-// TODO: Decide on inline
-static inline constexpr auto isSpace( char _symbol ) -> bool {
+[[nodiscard]] constexpr auto isSpace( char _symbol ) -> bool {
     return ( ( _symbol == ' ' ) || ( _symbol == '\f' ) || ( _symbol == '\n' ) ||
              ( _symbol == '\r' ) || ( _symbol == '\t' ) ||
              ( _symbol == '\v' ) );
@@ -184,7 +183,7 @@ namespace {
 
 template < typename ViewRange >
     requires std::ranges::input_range< ViewRange >
-constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
+[[nodiscard]] constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
     return ( std::forward< ViewRange >( _viewRange ) |
              std::views::drop_while( isSpace ) |
              std::views::take_while( []( char _symbol ) {
@@ -196,13 +195,14 @@ constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
 
 } // namespace
 
-static inline auto sanitizeString( std::string_view _string ) {
+[[nodiscard]] inline auto sanitizeString( std::string_view _string ) {
     return ( _sanitizeString( _string ) );
 }
 
 template < std::size_t N >
     requires( N > 0 )
-consteval auto sanitizeString( const ctll::fixed_string< N >& _string ) {
+[[nodiscard]] consteval auto sanitizeString(
+    const ctll::fixed_string< N >& _string ) {
     return ( _sanitizeString( _string ) );
 }
 
@@ -274,8 +274,8 @@ void fill( Container& _container, T _min, T _max ) {
 
 } // namespace random
 
-static inline auto generateHash( std::span< std::byte > _data,
-                                 size_t _seed = 0x9e3779b1 ) -> size_t {
+[[nodiscard]] inline auto generateHash( std::span< std::byte > _data,
+                                        size_t _seed = 0x9e3779b1 ) -> size_t {
     size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
 
     return ( l_returnValue );
@@ -284,7 +284,7 @@ static inline auto generateHash( std::span< std::byte > _data,
 namespace filesystem {
 
 // Utility OS specific functions ( no side-effects )
-static inline auto getApplicationDirectoryAbsolutePath()
+[[nodiscard]] inline auto getApplicationDirectoryAbsolutePath()
     -> std::optional< std::filesystem::path > {
     std::optional< std::filesystem::path > l_returnValue = std::nullopt;
 
@@ -313,7 +313,8 @@ namespace {
 
 template < typename Matcher >
     requires is_lambda< Matcher, bool, const std::string& >
-auto _getPathsByRegexp( std::string_view _directory, Matcher&& _matcher )
+[[nodiscard]] auto _getPathsByRegexp( std::string_view _directory,
+                                      Matcher&& _matcher )
     -> std::vector< std::filesystem::path > {
     std::vector< std::filesystem::path > l_returnValue;
 
@@ -336,8 +337,8 @@ auto _getPathsByRegexp( std::string_view _directory, Matcher&& _matcher )
 } // namespace
 
 // Runtime regexp
-static inline auto getPathsByRegexp( std::string& _regexp,
-                                     std::string_view _directory )
+[[nodiscard]] inline auto getPathsByRegexp( std::string& _regexp,
+                                            std::string_view _directory )
     -> std::vector< std::filesystem::path > {
     std::regex l_matcher( _regexp );
 
@@ -350,8 +351,8 @@ static inline auto getPathsByRegexp( std::string& _regexp,
 // Compile-time regexp
 template < size_t N >
     requires( N > 0 )
-auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
-                       std::string_view _directory )
+[[nodiscard]] auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
+                                     std::string_view _directory )
     -> std::vector< std::filesystem::path > {
     auto l_matcher = ctre::match< _regexp >;
 
@@ -368,10 +369,10 @@ namespace meta {
 // Utility Compiler specific functions ( side-effects )
 // format - "%s%s %s = %p'
 SENTINEL
-static inline void dumpCallback( void* _callback,
-                                 void* _context,
-                                 const char* _format,
-                                 ... )
+inline void dumpCallback( void* _callback,
+                          void* _context,
+                          const char* _format,
+                          ... )
     __attribute__( ( format( printf,
                              3, // Format index
                              4  // First format argument index
@@ -423,7 +424,7 @@ static inline void dumpCallback( void* _callback,
 
 template < typename T >
     requires is_struct< T >
-auto iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
+void iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
                                       gsl::not_null< void* > _context ) {
     T l_structSample;
 
