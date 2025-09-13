@@ -211,31 +211,13 @@ template < typename T >
              ( _symbol == '\v' ) );
 }
 
-namespace {
-
-template < typename ViewRange >
-    requires std::ranges::input_range< ViewRange >
-[[nodiscard]] constexpr auto _sanitizeString( ViewRange&& _viewRange ) {
-    return ( std::forward< ViewRange >( _viewRange ) |
-             std::views::drop_while( isSpace ) |
+[[nodiscard]] constexpr auto sanitizeString( std::string_view _string ) {
+    return ( _string | std::views::drop_while( isSpace ) |
              std::views::take_while( []( char _symbol ) {
                  return ( _symbol != g_commentSymbol );
              } ) |
              std::views::reverse | std::views::drop_while( isSpace ) |
              std::views::reverse );
-}
-
-} // namespace
-
-[[nodiscard]] inline auto sanitizeString( std::string_view _string ) {
-    return ( _sanitizeString( _string ) );
-}
-
-template < std::size_t N >
-    requires( N > 0 )
-[[nodiscard]] consteval auto sanitizeString(
-    const ctll::fixed_string< N >& _string ) {
-    return ( _sanitizeString( _string ) );
 }
 
 // Utility functions ( side-effects )
@@ -466,8 +448,7 @@ namespace decompress {
 [[nodiscard]] auto text( std::string_view _data )
     -> std::optional< std::string >;
 
-[[nodiscard]] auto decompress( std::span< std::byte > _data,
-                               size_t _originalSize )
+[[nodiscard]] auto data( std::span< std::byte > _data, size_t _originalSize )
     -> std::optional< std::vector< std::byte > >;
 
 } // namespace decompress

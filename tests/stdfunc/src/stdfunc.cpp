@@ -1,11 +1,13 @@
 #include "stdfunc.hpp"
 
-#include <ctll/fixed_string.hpp>
-
 #include <ranges>
 
 #include "test.hpp"
 
+// TODO: Add STRINGIFY, MACRO_TO_STRING,, _b, _bytes, bitsToBytes, isSpace,
+// random$numberMinMax, random$value, random$view, random$fillMinMax,
+// random$fill, makeVariantContainer, compress$text, compress$data,
+// decompress$text, decompress$data, meta$iterateStructUnionTopMostFields
 namespace stdfunc {
 
 TEST( lengthOfNumber, ( [] {
@@ -85,39 +87,30 @@ TEST( generateHash, ( [] {
           }
       } ) );
 
-#if 0
 TEST( sanitizeString, ( [] {
           // Normal case with spaces and a comment
-          assertEqual( sanitizeString( ctll::fixed_string(
-                           "  Hello  World   # Comment here" ) ),
+          assertEqual( sanitizeString( "  Hello  World   # Comment here" ),
                        "HelloWorld" );
 
           // Leading and trailing spaces
-          assertEqual( sanitizeString( ctll::fixed_string( "   test   " ) ),
-                       "test" );
+          assertEqual( sanitizeString( "   test   " ), "test" );
 
           // No spaces, no comments
-          assertEqual(
-              sanitizeString( ctll::fixed_string( "NoSpacesOrComments" ) ),
-              "NoSpacesOrComments" );
+          assertEqual( sanitizeString( "NoSpacesOrComments" ),
+                       "NoSpacesOrComments" );
 
           // Only spaces
-          assertEqual( sanitizeString( ctll::fixed_string( "       " ) ), "" );
+          assertEqual( sanitizeString( "       " ), "" );
 
           // Only comment
-          assertEqual(
-              sanitizeString( ctll::fixed_string( "   # This is a comment" ) ),
-              "" );
+          assertEqual( sanitizeString( "   # This is a comment" ), "" );
 
           // Empty string
           assertEqual( sanitizeString( "" ), "" );
 
           // Comment in the middle
-          assertEqual(
-              sanitizeString( ctll::fixed_string( "KeepThis # RemoveThis" ) ),
-              "KeepThis" );
+          assertEqual( sanitizeString( "KeepThis # RemoveThis" ), "KeepThis" );
       } ) );
-#endif
 
 TEST( getApplicationDirectoryAbsolutePath, ( [] {
           auto l_path = filesystem::getApplicationDirectoryAbsolutePath();
