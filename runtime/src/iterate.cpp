@@ -18,14 +18,14 @@ auto iterate( applicationState_t& _applicationState ) -> bool {
         {
             // Begin frame
             {
-                SDL_RenderClear( _applicationState.renderer );
+                SDL_RenderClear( _applicationState.renderContext.renderer );
             }
 
             // TODO: Scene
 
             // End frame
             {
-                SDL_RenderPresent( _applicationState.renderer );
+                SDL_RenderPresent( _applicationState.renderContext.renderer );
             }
         }
 

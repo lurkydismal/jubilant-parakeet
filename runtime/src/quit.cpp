@@ -46,12 +46,12 @@ void quit( applicationState_t& _applicationState ) {
             }
         }
 
-        if ( _applicationState->renderer ) [[likely]] {
-            SDL_DestroyRenderer( _applicationState->renderer );
+        if ( _applicationState.renderContext.renderer ) [[likely]] {
+            SDL_DestroyRenderer( _applicationState.renderContext.renderer );
         }
 
-        if ( _applicationState.window ) [[likely]] {
-            SDL_DestroyWindow( _applicationState.window );
+        if ( _applicationState.renderContext.window.handle ) [[likely]] {
+            SDL_DestroyWindow( _applicationState.renderContext.window.handle );
         }
     }
 

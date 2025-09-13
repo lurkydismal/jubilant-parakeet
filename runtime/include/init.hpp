@@ -25,16 +25,17 @@ auto init( applicationState_t& _applicationState,
             {
                 logg::info(
                     "Window name: '{}', Version: '{}', Identifier: '{}'",
-                    _applicationState.settings.window.name,
-                    _applicationState.settings.version,
-                    _applicationState.settings.identifier );
+                    window::window_t::g_name,
+                    applicationState_t::metadata::g_version,
+                    applicationState_t::metadata::g_identifier );
 
                 if ( !SDL_SetAppMetadata(
-                         std::string( _applicationState.settings.window.name )
+                         std::string( window::window_t::g_name ).c_str(),
+                         std::format( "{}",
+                                      applicationState_t::metadata::g_version )
                              .c_str(),
-                         std::string( _applicationState.settings.version )
-                             .c_str(),
-                         std::string( _applicationState.settings.identifier )
+                         std::string(
+                             applicationState_t::metadata::g_identifier )
                              .c_str() ) ) {
                     logg::error( "Setting render scale: '{}'", SDL_GetError() );
 
@@ -50,34 +51,26 @@ auto init( applicationState_t& _applicationState,
             // Window and Renderer
             {
                 if ( !SDL_CreateWindowAndRenderer(
-                         std::string( _applicationState.settings.window.name )
-                             .c_str(),
-                         _applicationState.settings.window.width,
-                         _applicationState.settings.window.height,
+                         std::string( window::window_t::g_name ).c_str(),
+                         _applicationState.renderContext.window.width,
+                         _applicationState.renderContext.window.height,
                          ( SDL_WINDOW_INPUT_FOCUS ),
-                         &( _applicationState.window ),
-                         &( _applicationState.renderer ) ) ) {
+                         &( _applicationState.renderContext.window.handle ),
+                         &( _applicationState.renderContext.renderer ) ) ) {
                     logg::error( "Window or Renderer creation: '{}'",
                                  SDL_GetError() );
 
                     break;
                 }
 
-#if 0
-                _applicationState.width =
-                    _applicationState.settings.window.width;
-                _applicationState.height =
-                    _applicationState.settings.window.width;
-
-                logg::variable( _applicationState.width );
-                logg::variable( _applicationState.height );
-#endif
+                logg::variable( _applicationState.renderContext.window.width );
+                logg::variable( _applicationState.renderContext.window.height );
             }
 
             // Default scale mode
             {
                 if ( !SDL_SetDefaultTextureScaleMode(
-                         _applicationState.renderer,
+                         _applicationState.renderContext.renderer,
                          SDL_SCALEMODE_PIXELART ) ) {
                     logg::error( "Setting render pixel art scale mode: '{}'",
                                  SDL_GetError() );
@@ -86,7 +79,7 @@ auto init( applicationState_t& _applicationState,
                         "Falling back to render nearest scale mode" );
 
                     if ( !SDL_SetDefaultTextureScaleMode(
-                             _applicationState.renderer,
+                             _applicationState.renderContext.renderer,
                              SDL_SCALEMODE_NEAREST ) ) {
                         logg::error( "Setting render nearest scale mode: '{}'",
                                      SDL_GetError() );
@@ -103,15 +96,18 @@ auto init( applicationState_t& _applicationState,
             {
                 const float l_scaleX =
                     ( static_cast< float >(
-                          _applicationState.settings.window.width ) /
-                      static_cast< float >( _applicationState.logicalWidth ) );
+                          _applicationState.renderContext.window.width ) /
+                      static_cast< float >(
+                          _applicationState.renderContext.logicalWidth ) );
                 const float l_scaleY =
                     ( static_cast< float >(
-                          _applicationState.settings.window.height ) /
-                      static_cast< float >( _applicationState.logicalHeight ) );
+                          _applicationState.renderContext.window.height ) /
+                      static_cast< float >(
+                          _applicationState.renderContext.logicalHeight ) );
 
-                if ( !SDL_SetRenderScale( _applicationState.renderer, l_scaleX,
-                                          l_scaleY ) ) {
+                if ( !SDL_SetRenderScale(
+                         _applicationState.renderContext.renderer, l_scaleX,
+                         l_scaleY ) ) {
                     logg::error( "Setting render scale: '{}'", SDL_GetError() );
 
                     break;
@@ -127,15 +123,16 @@ auto init( applicationState_t& _applicationState,
         }
 
         // Vsync
-        if ( !vsync::init( _applicationState.settings.window.vsync,
-                           _applicationState.settings.window.desiredFPS ) ) {
+        if ( !vsync::init(
+                 _applicationState.renderContext.window.vsync,
+                 _applicationState.renderContext.window.desiredFPS ) ) {
             logg::error( "Initializing Vsync" );
 
             break;
         }
 
         // FPS
-        FPS::init( _applicationState.totalFramesRendered );
+        FPS::init( _applicationState.renderContext.totalFramesRendered );
 
         // Gamepad
         {

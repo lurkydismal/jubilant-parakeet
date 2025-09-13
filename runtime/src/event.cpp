@@ -1,3 +1,5 @@
+#include "event.hpp"
+
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 
@@ -13,32 +15,33 @@ namespace runtime {
 namespace {
 
 auto onWindowResize( applicationState_t& _applicationState,
-                     const float _width,
-                     const float _height ) -> bool {
+                     float _width,
+                     float _height ) -> bool {
     bool l_returnValue = false;
 
     do {
-        if ( !_width || !_height ) {
-            stdfunc::trap();
+        if ( !_width || !_height ) [[unlikely]] {
+            stdfunc::trap( "Invalid window width {} or height {}", _width,
+                           _height );
 
             break;
         }
 
         static size_t l_lastResizeFrame = 0;
         const size_t l_totalFramesRendered =
-            _applicationState.totalFramesRendered;
+            _applicationState.renderContext.totalFramesRendered;
 
-        if ( l_lastResizeFrame < l_totalFramesRendered ) {
-            const float l_logicalWidth = _applicationState.logicalWidth;
-            const float l_logicalHeigth = _applicationState.logicalHeight;
+        if ( l_lastResizeFrame < l_totalFramesRendered ) [[likely]] {
+            const float l_logicalWidth =
+                _applicationState.renderContext.logicalWidth;
+            const float l_logicalHeigth =
+                _applicationState.renderContext.logicalHeight;
 
             const float l_scaleX = ( _width / l_logicalWidth );
             const float l_scaleY = ( _height / l_logicalHeigth );
 
-            if ( !SDL_SetRenderScale( _applicationState.renderer, l_scaleX,
-                                      l_scaleY ) ) {
-                l_returnValue = false;
-
+            if ( !SDL_SetRenderScale( _applicationState.renderContext.renderer,
+                                      l_scaleX, l_scaleY ) ) [[unlikely]] {
                 logg::error( "Setting render scale: '{}'", SDL_GetError() );
 
                 break;
@@ -53,26 +56,32 @@ auto onWindowResize( applicationState_t& _applicationState,
     return ( l_returnValue );
 }
 
-void handleKeyboardState( applicationState_t& _applicationState ) {
-    static size_t l_lastInputFrame = 0;
-    const size_t l_totalFramesRendered = _applicationState.totalFramesRendered;
+auto handleKeyboardState( applicationState_t& _applicationState ) -> bool {
+    bool l_returnValue = false;
 
-    if ( l_lastInputFrame < l_totalFramesRendered ) {
-        input::input_t l_input;
+    do {
+        static size_t l_lastInputFrame = 0;
+        const size_t l_totalFramesRendered =
+            _applicationState.renderContext.totalFramesRendered;
 
-        {
-            int l_keysAmount = 0;
-            const bool* l_keysState = SDL_GetKeyboardState( &l_keysAmount );
+        if ( l_lastInputFrame < l_totalFramesRendered ) [[likely]] {
+            input::input_t l_input;
 
-            [[assume( l_keysAmount == SDL_SCANCODE_COUNT )]];
+            {
+                int l_keysAmount = 0;
+                const bool* l_keysState = SDL_GetKeyboardState( &l_keysAmount );
 
-            for ( auto [ _index, _isPressed ] :
-                  std::span( l_keysState, l_keysAmount ) |
-                      std::views::enumerate ) {
-                if ( _isPressed ) {
-                    auto l_scancode = static_cast< SDL_Scancode >( _index );
+                [[assume( l_keysAmount == SDL_SCANCODE_COUNT )]];
 
-                    // TODO: Implement
+                for ( auto [ _index, _isPressed ] :
+                      std::span( l_keysState, l_keysAmount ) |
+                          std::views::enumerate ) {
+                    // Unlikely because of all keys not much is pressed at once
+                    if ( _isPressed ) [[unlikely]] {
+                        [[maybe_unused]] auto l_scancode =
+                            static_cast< SDL_Scancode >( _index );
+
+                        // TODO: Implement
 #if 0
                     const control::control_t& l_control =
                         _applicationState.settings.controls.get( l_scancode );
@@ -82,21 +91,21 @@ void handleKeyboardState( applicationState_t& _applicationState ) {
                         l_input.button |= l_control.input.button;
                     }
 #endif
+                    }
                 }
             }
+
+            _applicationState.currentInput = l_input;
         }
 
-#if 0
-        _applicationState.currentInput = l_input;
-#endif
-    }
+        l_lastInputFrame = l_totalFramesRendered;
+    } while ( false );
 
-    l_lastInputFrame = l_totalFramesRendered;
+    return ( l_returnValue );
 }
 
 } // namespace
 
-// FIX: Remove goto
 auto event( applicationState_t& _applicationState, const event_t& _event )
     -> bool {
     bool l_returnValue = false;
@@ -104,43 +113,55 @@ auto event( applicationState_t& _applicationState, const event_t& _event )
     do {
         const event_t l_emptyEVent{};
 
+        /**
+         * @brief Empty means last event on current frame
+         */
         const bool l_isEventEmpty =
             ( __builtin_memcmp( &_event, &l_emptyEVent, sizeof( _event ) ) ==
               0 );
 
-        // Empty means last event on current frame
-        if ( l_isEventEmpty ) {
-            handleKeyboardState( _applicationState );
+        if ( l_isEventEmpty ) [[unlikely]] {
+            if ( !handleKeyboardState( _applicationState ) ) {
+                break;
+            }
 
         } else {
-            switch ( _event.type ) {
-                case SDL_EVENT_QUIT: {
-                    _applicationState.status = true;
+            auto l_handleEvent = [ & ] {
+                bool l_returnValue = false;
 
-                    l_returnValue = false;
+                switch ( _event.type ) {
+                    case SDL_EVENT_QUIT:
+                        [[unlikely]] {
+                            _applicationState.status = true;
 
-                    goto EXIT;
-                }
+                            l_returnValue = false;
 
-                case SDL_EVENT_WINDOW_RESIZED: {
-                    const float l_newWidth = _event.window.data1;
-                    const float l_newHeight = _event.window.data2;
+                            break;
+                        }
 
-                    if ( !onWindowResize( _applicationState, l_newWidth,
-                                          l_newHeight ) ) {
-                        goto EXIT;
+                    case SDL_EVENT_WINDOW_RESIZED: {
+                        const float l_newWidth = _event.window.data1;
+                        const float l_newHeight = _event.window.data2;
+
+                        l_returnValue = onWindowResize(
+                            _applicationState, l_newWidth, l_newHeight );
+
+                        break;
                     }
 
-                    break;
+                    default: {
+                    }
                 }
 
-                default: {
-                }
+                return ( l_returnValue );
+            };
+
+            if ( !l_handleEvent() ) [[unlikely]] {
+                break;
             }
         }
 
         l_returnValue = true;
-    EXIT:
     } while ( false );
 
     return ( l_returnValue );

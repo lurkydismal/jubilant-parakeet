@@ -6,32 +6,43 @@
 #include <atomic>
 
 #include "camera.hpp"
-// #include "settings.hpp"
+#include "input.hpp"
+#include "stdfloat16.hpp"
+#include "window.hpp"
 
 namespace runtime {
 
 using applicationState_t = struct applicationState {
     applicationState() = default;
-    applicationState( const applicationState& ) = default;
-    applicationState( applicationState&& ) = default;
+    applicationState( const applicationState& ) = delete;
+    applicationState( applicationState&& ) = delete;
     ~applicationState() = default;
-    auto operator=( const applicationState& ) -> applicationState& = default;
-    auto operator=( applicationState&& ) -> applicationState& = default;
+    auto operator=( const applicationState& ) -> applicationState& = delete;
+    auto operator=( applicationState&& ) -> applicationState& = delete;
 
-    auto load() -> bool { return ( true ); }
-    auto unload() -> bool { return ( true ); }
+    auto load() -> bool;
+    auto unload() -> bool;
 
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-#if 0
-    settings_t settings;
-#endif
-    camera::camera_t camera;
-    size_t logicalWidth = 1280;
-    size_t logicalHeight = 720;
-    std::atomic< size_t > totalFramesRendered = 0;
+    struct {
+        window::window_t window;
+        SDL_Renderer* renderer = nullptr;
+        camera::camera_t camera;
+
+        size_t logicalWidth = 1280;
+        size_t logicalHeight = 720;
+        std::atomic< size_t > totalFramesRendered = 0;
+    } renderContext;
+
+    struct metadata {
+        static constexpr float16_t g_version = 0.1;
+        static constexpr std::string_view g_identifier =
+            window::window_t::g_name;
+    };
+
+    // TODO: Write
     bool isPaused = false;
     bool status = false;
+    input::input_t currentInput;
 };
 
 } // namespace runtime

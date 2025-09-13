@@ -4,6 +4,6 @@
 
 namespace runtime {
 
-auto quit( applicationState_t& _applicationState ) -> bool;
+void quit( applicationState_t& _applicationState );
 
 }
