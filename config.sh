@@ -9,11 +9,10 @@ export partsToBuild=(
     "state_t"
     "animation_t"
     "boxes_t"
-    "settings_t"
     "window"
     "vsync"
     # "font_t"
-    "asset_t"
+    "asset"
     "watch_t"
     "log"
     "stdfunc"
@@ -28,18 +27,17 @@ export testsToBuild=(
     "state_t"
     "animation_t"
     "boxes_t"
-    "settings_t"
     "window"
     "vsync"
     # "font_t"
-    "asset_t"
+    "asset"
     # "watch_t"
     "log"
     "stdfunc"
 )
 export staticParts=(
-    "inih"
     "plthook"
+    "slickdl"
     "forward_circular_buffer"
 )
 export rootSharedObjectName="root"
@@ -54,17 +52,13 @@ BUILD_DEFINES+=(
     "XXH_NO_STDLIB"
     "XXH_NO_STREAM"
     "XXH_STATIC_LINKING_ONLY"
-
-    # inih
-    "INI_ALLOW_INLINE_COMMENTS=1"
-    "INI_STOP_ON_FIRST_ERROR=1"
-    "INI_CALL_HANDLER_ON_NEW_SECTION=1"
 )
 
 BUILD_INCLUDES+=()
 
 LIBRARIES_TO_LINK+=(
     "mimalloc"
+    "zstd"
     "elf"
     "unwind"
 )
