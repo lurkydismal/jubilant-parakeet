@@ -69,3 +69,14 @@ public:
     static constexpr float_denorm_style has_denorm = denorm_present;
 };
 } // namespace std
+
+template <>
+struct std::formatter< float16_t, char > {
+    constexpr auto parse( std::format_parse_context& _context ) {
+        return ( _context.begin() );
+    }
+
+    auto format( float16_t _value, std::format_context& _context ) const {
+        return ( std::format_to( _context.out(), "{{}}", _value ) );
+    }
+};

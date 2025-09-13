@@ -19,8 +19,6 @@
 #include <thread>
 #include <type_traits>
 
-namespace stdfunc {
-
 // Function attributes
 #define FORCE_INLINE [[gnu::always_inline]] inline
 #define NO_OPTIMIZE [[gnu::optimize( "0" )]]
@@ -29,6 +27,8 @@ namespace stdfunc {
 #define HOT [[gnu::hot]]
 #define COLD [[gnu::cold]]
 #define SENTINEL [[gnu::sentinel]]
+
+namespace stdfunc {
 
 // Struct attributes
 #define PACKED [[gnu::packed]]
@@ -87,8 +87,6 @@ constexpr std::string_view g_trapColorFunctionName = color::g_purpleLight;
 
 constexpr size_t g_backtraceLimit = 5;
 
-} // namespace
-
 template < typename... Arguments >
 [[noreturn]] void _trap( std::format_string< Arguments... > _format,
                          const std::source_location _sourceLocation,
@@ -110,6 +108,8 @@ template < typename... Arguments >
     __builtin_trap();
 }
 
+} // namespace
+
 template < typename... Arguments >
 [[noreturn]] void trap( std::format_string< Arguments... > _format,
                         Arguments&&... _arguments ) {
@@ -121,7 +121,7 @@ template < typename... Arguments >
 constexpr void assert( bool _result,
                        std::format_string< Arguments... > _format,
                        Arguments&&... _arguments ) {
-    if ( !( _result ) ) {
+    if ( !_result ) [[unlikely]] {
         _trap( _format, std::source_location::current(),
                std::forward< Arguments >( _arguments )... );
     }
@@ -205,13 +205,13 @@ consteval auto sanitizeString( const ctll::fixed_string< N >& _string ) {
     return ( _sanitizeString( _string ) );
 }
 
+// Utility functions ( side-effects )
 namespace random {
 
-namespace {
-
-// Utility functions ( side-effects )
 using engine_t = std::
     conditional_t< ( sizeof( size_t ) > 4 ), std::mt19937_64, std::mt19937 >;
+
+namespace {
 
 extern thread_local engine_t g_engine;
 
@@ -364,7 +364,7 @@ auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
 
 namespace meta {
 
-// Utility Compiler specific functions ( no side-effects )
+// Utility Compiler specific functions ( side-effects )
 // format - "%s%s %s = %p'
 SENTINEL
 static inline void dumpCallback( void* _callback,

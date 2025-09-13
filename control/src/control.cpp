@@ -1,8 +1,7 @@
-#include "control_t.h"
+#include "control.hpp"
 
-#include "log.h"
-#include "stdfunc.hpp"
-
+// TODO: Decide on this
+#if 0
 static const SDL_Scancode g_keyboardLayoutScancodes[] = {
     SDL_SCANCODE_ESCAPE,
     SDL_SCANCODE_F1,
@@ -115,44 +114,7 @@ static const char* g_keyboardLayoutKeyNames[] = {
     ".",      "/",      "R.Shift", "Up",   "L.Ctrl", "L.Alt",   "Space",
     "R.Alt",  "R.Ctrl", "Left",    "Down", "Right" };
 
-control_t control_t$create( void ) {
-    control_t l_returnValue = DEFAULT_CONTROL;
-
-    {
-        l_returnValue.input = input_t$create();
-    }
-
-    return ( l_returnValue );
-}
-
-bool control_t$destroy( control_t* restrict _control ) {
-    bool l_returnValue = false;
-
-    if ( UNLIKELY( !_control ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
-        _control->scancode = SDL_SCANCODE_UNKNOWN;
-
-        l_returnValue = input_t$destroy( &( _control->input ) );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error, "Destroying input" );
-
-            goto EXIT;
-        }
-
-        l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-SDL_Scancode control_t$scancode$convert$fromString( const char* _string ) {
+auto control_t$scancode$convert$fromString( const char* _string ) -> SDL_Scancode {
     // Unknown
     SDL_Scancode l_returnValue = SDL_SCANCODE_UNKNOWN;
 
@@ -177,8 +139,8 @@ EXIT:
     return ( l_returnValue );
 }
 
-const char* control_t$scancode$convert$toStaticString(
-    SDL_Scancode _scancode ) {
+auto control_t$scancode$convert$toStaticString(
+    SDL_Scancode _scancode ) -> const char* {
     FOR_RANGE( size_t, 0, arrayLengthNative( g_keyboardLayoutScancodes ) ) {
         if ( g_keyboardLayoutScancodes[ _index ] == _scancode ) {
             return ( g_keyboardLayoutKeyNames[ _index ] );
@@ -187,3 +149,4 @@ const char* control_t$scancode$convert$toStaticString(
 
     return ( CONTROL_AS_STRING_UNKNOWN );
 }
+#endif

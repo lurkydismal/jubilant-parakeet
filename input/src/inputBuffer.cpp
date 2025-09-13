@@ -1,60 +1,13 @@
-#include "inputBuffer_t.h"
+#include "inputBuffer.hpp"
 
-#include "log.h"
-#include "stdfunc.h"
-
-inputBuffer_t inputBuffer_t$create( void ) {
-    inputBuffer_t l_returnValue = DEFAULT_INPUT_BUFFER;
-
-    {
-        __builtin_memset( l_returnValue.inputs, 0,
-                          sizeof( l_returnValue.inputs ) );
-        __builtin_memset( l_returnValue.frames, 0,
-                          sizeof( l_returnValue.frames ) );
-    }
-
-    return ( l_returnValue );
-}
-
-bool inputBuffer_t$destroy( inputBuffer_t* restrict _inputBuffer ) {
-    bool l_returnValue = false;
-
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
-        __builtin_memset( _inputBuffer->inputs, 0,
-                          sizeof( _inputBuffer->inputs ) );
-        __builtin_memset( _inputBuffer->frames, 0,
-                          sizeof( _inputBuffer->frames ) );
-
-        _inputBuffer->currentBufferIndex = 0;
-        _inputBuffer->previousBufferIndex = 0;
-
-        l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
+#if 0
 
 input_t* inputBuffer_t$inputsSequence$getInput$last(
     inputBuffer_t* _inputBuffer ) {
     input_t* l_returnValue = NULL;
 
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
         l_returnValue =
             &( _inputBuffer->inputs[ _inputBuffer->previousBufferIndex ] );
-    }
 
 EXIT:
     return ( l_returnValue );
@@ -64,16 +17,8 @@ size_t inputBuffer_t$inputsSequence$getFrame$last(
     inputBuffer_t* _inputBuffer ) {
     size_t l_returnValue = 0;
 
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
         l_returnValue =
             _inputBuffer->frames[ _inputBuffer->previousBufferIndex ];
-    }
 
 EXIT:
     return ( l_returnValue );
@@ -146,36 +91,11 @@ EXIT:
     return ( l_returnValue );
 }
 
-input_t** inputBuffer_t$inputsSequence$get( inputBuffer_t* _inputBuffer,
-                                            const size_t _currentFrame ) {
-    input_t** l_returnValue = NULL;
-
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
-        l_returnValue = inputBuffer_t$inputsSequence$get$withLimit(
-            _inputBuffer, _currentFrame, SIZE_MAX );
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
 input_t** inputBuffer_t$inputsSequence$get$withLimit(
     inputBuffer_t* _inputBuffer,
     const size_t _currentFrame,
     const size_t _limitAmount ) {
     input_t** l_returnValue = NULL;
-
-    if ( UNLIKELY( !_inputBuffer ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
 
     {
         l_returnValue = createArray( input_t* );
@@ -273,3 +193,4 @@ input_t** inputBuffer_t$inputsSequence$get$withLimit(
 EXIT:
     return ( l_returnValue );
 }
+#endif

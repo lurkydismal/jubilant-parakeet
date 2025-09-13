@@ -15,7 +15,7 @@ void logger( const std::stop_token& _stopToken,
 
     auto l_timeLast = clock::now();
 
-    while ( !_stopToken.stop_requested() ) {
+    while ( !_stopToken.stop_requested() ) [[likely]] {
         std::this_thread::sleep_for( 1s );
 
         const auto l_timeNow = clock::now();
@@ -29,17 +29,17 @@ void logger( const std::stop_token& _stopToken,
 
             double l_FPS = 0;
 
-            if ( l_frameDurationInSeconds > 0s ) {
+            if ( l_frameDurationInSeconds > 0s ) [[likely]] {
                 l_FPS = ( l_framesCount / l_frameDurationInSeconds.count() );
             }
 
-            log::info( "FPS: {:.2f}", l_FPS );
+            logg::info( "FPS: {:.2f}", l_FPS );
         }
 
         l_timeLast = l_timeNow;
     }
 
-    log::info( "FPS logger stopped." );
+    logg::info( "FPS logger stopped." );
 }
 
 } // namespace
@@ -53,7 +53,7 @@ void init( std::atomic< size_t >& _frameCount ) {
 void quit() {
     g_loggerThread.request_stop();
 
-    if ( g_loggerThread.joinable() ) {
+    if ( g_loggerThread.joinable() ) [[likely]] {
         g_loggerThread.join();
     }
 }
