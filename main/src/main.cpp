@@ -77,7 +77,7 @@ auto hasPathChanged( std::string_view _path ) -> bool {
         assert( ( stat( std::string( _path ).c_str(), &l_statisticss ) == 0 ),
                 "stat failed" );
 
-        if ( l_statisticss.st_mtime <= l_lastModificationTime ) {
+        if ( l_statisticss.st_mtime <= l_lastModificationTime ) [[likely]] {
             break;
         }
 

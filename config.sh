@@ -6,7 +6,7 @@ export partsToBuild=(
     "input"
     "FPS"
     "object_t"
-    "camera_t"
+    "camera"
     "state_t"
     "animation_t"
     "boxes_t"
@@ -27,7 +27,7 @@ export testsToBuild=(
     "input"
     "FPS"
     "object_t"
-    # "camera_t"
+    # "camera"
     "state_t"
     "animation_t"
     "boxes_t"
@@ -45,6 +45,7 @@ export testsToBuild=(
 export staticParts=(
     "inih"
     "plthook"
+    "forward_circular_buffer"
 )
 export rootSharedObjectName="root"
 
@@ -81,4 +82,4 @@ EXTERNAL_LIBRARIES_TO_LINK+=(
     "sdl3-image"
 )
 
-export MODULE_NAME_FIELD_WIDTH=14
+export MODULE_NAME_FIELD_WIDTH=24
