@@ -85,7 +85,6 @@ TEST( generateHash, ( [] {
           }
       } ) );
 
-#if 0
 TEST( sanitizeString, ( [] {
           // Normal case with spaces and a comment
           assertEqual( sanitizeString( ctll::fixed_string(
@@ -117,7 +116,6 @@ TEST( sanitizeString, ( [] {
               sanitizeString( ctll::fixed_string( "KeepThis # RemoveThis" ) ),
               "KeepThis" );
       } ) );
-#endif
 
 TEST( getApplicationDirectoryAbsolutePath, ( [] {
           auto l_path = filesystem::getApplicationDirectoryAbsolutePath();

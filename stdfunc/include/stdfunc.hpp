@@ -227,7 +227,7 @@ template < typename ViewRange >
 
 } // namespace
 
-[[nodiscard]] inline auto sanitizeString( std::string_view _string ) {
+[[nodiscard]] constexpr auto sanitizeString( std::string_view _string ) {
     return ( _sanitizeString( _string ) );
 }
 
