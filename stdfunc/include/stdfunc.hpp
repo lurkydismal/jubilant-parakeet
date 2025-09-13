@@ -65,7 +65,10 @@ concept has_common_type = ( requires {
 } && ( !std::is_void_v< std::common_type_t< Arguments... > > ));
 
 template < typename T >
-concept is_container = std::ranges::range< T >;
+concept is_container = ( std::ranges::range< T > && requires( T _container ) {
+    typename T::value_type;
+    { _container.size() } -> std::convertible_to< std::size_t >;
+} );
 
 template < typename T >
 concept is_struct = ( std::is_class_v< T > && !std::is_union_v< T > );
@@ -79,6 +82,22 @@ concept is_lambda =
 // Utility macros ( no side-effects )
 #define STRINGIFY( _value ) #_value
 #define MACRO_TO_STRING( _macro ) STRINGIFY( _macro )
+
+// Literals
+[[nodiscard]] constexpr auto operator""_b( char _symbol ) -> std::byte {
+    return ( static_cast< std::byte >( _symbol ) );
+}
+
+[[nodiscard]] constexpr auto operator""_b( unsigned long long _symbol )
+    -> std::byte {
+    return ( static_cast< std::byte >( _symbol ) );
+}
+
+template < typename SymbolTypes, SymbolTypes... _symbols >
+[[nodiscard]] constexpr auto operator""_bytes() {
+    return ( std::array< std::byte, sizeof...( _symbols ) >{
+        std::byte{ _symbols }... } );
+}
 
 // Debug utility functions ( side-effects )
 
@@ -225,11 +244,7 @@ namespace random {
 using engine_t = std::
     conditional_t< ( sizeof( size_t ) > 4 ), std::mt19937_64, std::mt19937 >;
 
-namespace {
-
 extern thread_local engine_t g_engine;
-
-} // namespace
 
 template < typename T >
     requires std::is_arithmetic_v< T >
@@ -264,8 +279,7 @@ template < typename Container >
 auto value( const Container& _container ) -> typename Container::value_type& {
     assert( !_container.empty() );
 
-    return (
-        _container.at( randomNumber< size_t >( 0, _container.size() - 1 ) ) );
+    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
 }
 
 template < typename Container >
@@ -281,14 +295,37 @@ auto view( const Container& _container ) {
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_arithmetic_v< T >
 void fill( Container& _container, T _min, T _max ) {
-    std::ranges::generate(
-        _container, [ & ] { return ( randomNumber< T >( _min, _max ) ); } );
+    std::ranges::generate( _container,
+                           [ & ] { return ( number< T >( _min, _max ) ); } );
+}
+
+template < typename Container, typename T = typename Container::value_type >
+    requires is_container< Container > && std::is_same_v< T, std::byte >
+void fill( Container& _container, uint8_t _min, uint8_t _max ) {
+    std::ranges::generate( _container, [ & ] {
+        return ( static_cast< std::byte >( number< uint8_t >( _min, _max ) ) );
+    } );
+}
+
+template < typename Container, typename T = typename Container::value_type >
+    requires is_container< Container > && std::is_arithmetic_v< T >
+void fill( Container& _container ) {
+    std::ranges::generate( _container, [ & ] { return ( number< T >() ); } );
+}
+
+template < typename Container, typename T = typename Container::value_type >
+    requires is_container< Container > && std::is_same_v< T, std::byte >
+void fill( Container& _container ) {
+    std::ranges::generate( _container, [ & ] {
+        return ( static_cast< std::byte >( number< uint8_t >() ) );
+    } );
 }
 
 } // namespace random
 
-[[nodiscard]] inline auto generateHash( std::span< std::byte > _data,
-                                        size_t _seed = 0x9e3779b1 ) -> size_t {
+[[nodiscard]] constexpr auto generateHash( std::span< std::byte > _data,
+                                           size_t _seed = 0x9e3779b1 )
+    -> size_t {
     size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
 
     return ( l_returnValue );
