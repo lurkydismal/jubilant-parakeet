@@ -1,4 +1,4 @@
-#include "camera_t.hpp"
+#include "camera.hpp"
 
 namespace camera {
 
