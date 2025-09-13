@@ -38,12 +38,11 @@ applicationState_t g_applicationState;
 
 #if defined( HOT_RELOAD )
 
-constexpr const std::string_view g_hotReloadRootSharedObjectFileName = "root";
-constexpr const size_t g_hotReloadCheckDelayFrames = 2;
+constexpr std::string_view g_hotReloadRootSharedObjectFileName = "root";
+constexpr size_t g_hotReloadCheckDelayFrames = 2;
 
 const std::string g_hotReloadUnloadFunctionSignature = "hotReload$unload";
-constexpr const std::string_view g_hotReloadLoadFunctionSignature =
-    "hotReload$load";
+constexpr std::string_view g_hotReloadLoadFunctionSignature = "hotReload$load";
 
 using hotReload$unload_t = bool ( * )( void** _state,
                                        size_t* _stateSize,
@@ -181,7 +180,7 @@ auto collectStatesFromHandle( gsl::not_null< void* >& _handle,
 // FIX: Implement
 constexpr auto getUndefinedFunctionsFromSoPath(
     [[maybe_unused]] std::string_view _sharedObjectPath ) {
-    constexpr const std::array< std::string_view, 35 > l_returnValue = {
+    constexpr std::array< std::string_view, 35 > l_returnValue = {
         "__extendhfsf2",
         "__truncsfhf2",
         "snappy_max_compressed_length",
@@ -223,7 +222,7 @@ constexpr auto getUndefinedFunctionsFromSoPath(
 }
 
 constexpr auto getMainExecutableFunctionNamesToPatch() {
-    constexpr const std::array< std::string_view, 5 > l_returnValue = {
+    constexpr std::array< std::string_view, 5 > l_returnValue = {
         // Main loop
         "init",
         "event",
