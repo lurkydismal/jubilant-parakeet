@@ -136,7 +136,6 @@ struct forwardCircularBuffer {
         }
 
     private:
-        // TODO: Improve name
         forwardCircularBuffer* _data = nullptr;
         size_t _index = 0;
 
@@ -254,7 +253,6 @@ struct forwardCircularBuffer {
         }
 
     private:
-        // TODO: Improve name
         const forwardCircularBuffer* _data = nullptr;
         size_t _index = 0;
     };

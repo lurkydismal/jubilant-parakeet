@@ -1,5 +1,4 @@
 #!/bin/bash
-# TODO: texture_t
 export partsToBuild=(
     "runtime"
     "control"
