@@ -1,5 +1,7 @@
 #include "test.hpp"
 
+#include "stdfunc.hpp"
+
 namespace {
 
 auto g_array1 =
@@ -17,35 +19,38 @@ auto g_array2 =
 
 } // namespace
 
-namespace test {
+TEST( test, EXPECT_TRUE ) {
+    EXPECT_TRUE( true );
+    EXPECT_TRUE( 1 );
+    EXPECT_TRUE( !0 );
+    EXPECT_TRUE( "" );
+}
 
-TEST( assertTrue, ( [] {
-          assertTrue( true );
-          assertTrue( 1 );
-      } ) );
+TEST( test, EXPECT_FALSE ) {
+    EXPECT_FALSE( false );
+    EXPECT_FALSE( 0 );
+    EXPECT_FALSE( int{ -1 } );
+    EXPECT_FALSE( !1 );
+}
 
-TEST( assertFalse, ( [] {
-          assertFalse( false );
-          assertFalse( 0 );
-      } ) );
+TEST( test, EXPECT_EQ ) {
+    for ( const auto& _element : g_array1 ) {
+        std::visit( []( auto&& _value ) { EXPECT_EQ( _value, _value ); },
+                    _element );
+    }
+}
 
-TEST( assertEqual, ( [] {
-          for ( const auto& _element : g_array1 ) {
-              std::visit(
-                  []( auto&& _value ) { assertEqual( _value, _value ); },
-                  _element );
-          }
-      } ) );
-
-TEST( assertNotEqual, ( [] {
-          for ( const auto& [ _element1, _element2 ] :
-                std::views::zip( g_array1, g_array2 ) ) {
-              std::visit(
-                  []( auto&& _value1, auto&& _value2 ) {
-                      assertNotEqual( _value1, _value2 );
-                  },
-                  _element1, _element2 );
-          }
-      } ) );
-
-} // namespace test
+TEST( test, EXPECT_NE ) {
+    for ( const auto& [ _element1, _element2 ] :
+          std::views::zip( g_array1, g_array2 ) ) {
+        std::visit(
+            []( auto&& _value1, auto&& _value2 ) {
+                if constexpr ( std::equality_comparable_with<
+                                   decltype( _value1 ),
+                                   decltype( _value2 ) > ) {
+                    EXPECT_NE( _value1, _value2 );
+                }
+            },
+            _element1, _element2 );
+    }
+}

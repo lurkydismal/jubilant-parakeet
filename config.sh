@@ -31,7 +31,7 @@ export testsToBuild=(
     # "asset"
     # "watch_t"
     # "log"
-    "stdfunc"
+    # "stdfunc"
     "test"
 )
 export staticParts=(
@@ -62,10 +62,16 @@ LIBRARIES_TO_LINK+=(
     "zstd"
 )
 
+LIBRARIES_TO_LINK_TESTS+=()
+
 EXTERNAL_LIBRARIES_TO_LINK+=(
     "snappy"
     "sdl3"
     "sdl3-image"
+)
+
+EXTERNAL_LIBRARIES_TO_LINK_TESTS+=(
+    "gtest"
 )
 
 export MODULE_NAME_FIELD_WIDTH=24

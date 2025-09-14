@@ -163,8 +163,9 @@ export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
 export LINK_FLAGS_HOT_RELOAD=""
 
 export LIBRARIES_TO_LINK=()
-export EXTERNAL_LIBRARIES_TO_LINK=()
 export LIBRARIES_TO_LINK_TESTS=()
+export EXTERNAL_LIBRARIES_TO_LINK=()
+export EXTERNAL_LIBRARIES_TO_LINK_TESTS=()
 export C_COMPILER="clang"
 export CPP_COMPILER="clang++"
 
@@ -642,7 +643,7 @@ source './config.sh' && {
     # Build main executable
     {
         # Build executable main package
-        if [ "$BUILD_STATUS" -eq 0 ]; then
+        {
             export FILES_TO_INCLUDE=""
             export FILES_TO_COMPILE=""
 
@@ -673,7 +674,7 @@ source './config.sh' && {
             if [ $BUILD_STATUS -ne 0 ]; then
                 exit
             fi
-        fi
+        }
 
         if [ ${#LIBRARIES_TO_LINK[@]} -ne 0 ]; then
             printf -v librariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK[@]}"
@@ -720,85 +721,100 @@ source './config.sh' && {
     }
 
     # Build tests
-    {
-        # Tests
-        if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[TESTS]}" ]; then
-            for testToBuild in "${testsToBuild[@]}"; do
-                export FILES_TO_INCLUDE=""
-                export FILES_TO_COMPILE=""
+    if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[TESTS]}" ]; then
+        if [ ${#EXTERNAL_LIBRARIES_TO_LINK_TESTS[@]} -ne 0 ]; then
+            printf -v externalLibrariesTestsAsString -- "%s " "${EXTERNAL_LIBRARIES_TO_LINK_TESTS[@]}"
 
-                source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
-                    OUTPUT_FILE='lib'"$testToBuild"'_test.a'
+            echo -e '\n'"$EXTERNAL_LIBRARIES_COLOR""$externalLibrariesTestsAsString""$RESET_COLOR"
+            externalLibrariesTestsBuildFlagsAsString="$(pkg-config --static --cflags "$externalLibrariesTestsAsString")"' '
 
-                    OUTPUT_FILE="$OUTPUT_FILE" \
-                        './build_module.sh' \
-                        "$TESTS_DIRECTORY/$testToBuild" \
-                        "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
-                        "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
-                        "$definesAsString" \
-                        "$includesAsString" \
-                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
-                        "module" &
+            SEARCH_STATUS=$?
 
-                    processIDs+=($!)
-                }
-
-                unset FILES_TO_INCLUDE FILES_TO_COMPILE
-
-                BUILD_STATUS=$?
-
-                if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
-                fi
-            done
-
-            for processID in "${processIDs[@]}"; do
-                wait "$processID"
-
-                processStatuses+=($?)
-            done
-
-            BUILD_STATUS=0
-
-            for processStatus in "${processStatuses[@]}"; do
-                if [[ "$processStatus" -ne 0 ]]; then
-                    BUILD_STATUS=$processStatus
-
-                    break
-                fi
-            done
-
-            if [ "$BUILD_STATUS" -ne 0 ]; then
-                exit
+            if [ $SEARCH_STATUS -ne 0 ]; then
+                exit $SEARCH_STATUS
             fi
 
-            processIDs=()
-            processStatuses=()
+            echo -e "$INCLUDES_COLOR""$externalLibrariesTestsBuildFlagsAsString""$RESET_COLOR"
+            externalLibrariesTestsLinkFlagsAsString="$(pkg-config --static --libs "$externalLibrariesTestsAsString")"' '
 
-            # Build tests main package
-            {
-                export FILES_TO_INCLUDE=""
-                export FILES_TO_COMPILE=""
+            SEARCH_STATUS=$?
 
-                source "$testsMainPackage/config.sh" && {
-                    OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
-                        './build_module.sh' \
-                        "$testsMainPackage" \
-                        "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString" \
-                        "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString" \
-                        "$definesAsString" \
-                        "$includesAsString" \
-                        "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
-                        "module"
+            if [ $SEARCH_STATUS -ne 0 ]; then
+                exit $SEARCH_STATUS
+            fi
 
-                    BUILD_STATUS=$?
+            echo -e "$LIBRARIES_COLOR""$externalLibrariesTestsLinkFlagsAsString""$RESET_COLOR"
 
-                    if [ $BUILD_STATUS -ne 0 ]; then
-                        exit
-                    fi
-                }
+            unset externalLibrariesTestsAsString
+        fi
 
-                unset FILES_TO_INCLUDE FILES_TO_COMPILE
+        for testToBuild in "${testsToBuild[@]}"; do
+            export FILES_TO_INCLUDE=""
+            export FILES_TO_COMPILE=""
+
+            source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
+                OUTPUT_FILE='lib'"$testToBuild"'_test.a'
+
+                OUTPUT_FILE="$OUTPUT_FILE" \
+                    './build_module.sh' \
+                    "$TESTS_DIRECTORY/$testToBuild" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
+                    "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
+                    "$definesAsString" \
+                    "$includesAsString" \
+                    "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                    "module" &
+
+                processIDs+=($!)
+            }
+
+            unset FILES_TO_INCLUDE FILES_TO_COMPILE
+
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
+            fi
+        done
+
+        for processID in "${processIDs[@]}"; do
+            wait "$processID"
+
+            processStatuses+=($?)
+        done
+
+        BUILD_STATUS=0
+
+        for processStatus in "${processStatuses[@]}"; do
+            if [[ "$processStatus" -ne 0 ]]; then
+                BUILD_STATUS=$processStatus
+
+                break
+            fi
+        done
+
+        if [ "$BUILD_STATUS" -ne 0 ]; then
+            exit
+        fi
+
+        processIDs=()
+        processStatuses=()
+
+        # Build tests main package
+        {
+            export FILES_TO_INCLUDE=""
+            export FILES_TO_COMPILE=""
+
+            source "$testsMainPackage/config.sh" && {
+                OUTPUT_FILE='lib'"$testsMainPackage"'.a' \
+                    './build_module.sh' \
+                    "$testsMainPackage" \
+                    "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
+                    "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
+                    "$definesAsString" \
+                    "$includesAsString" \
+                    "$([ -n "${REBUILD_PARTS+x}" ] && echo 1 || echo 0)" \
+                    "module"
 
                 BUILD_STATUS=$?
 
@@ -807,42 +823,50 @@ source './config.sh' && {
                 fi
             }
 
-            {
-                if [ ${#testsToBuild[@]} -ne 0 ]; then
-                    printf -v testsToBuildAsString -- "$BUILD_DIRECTORY/lib%s_test.a " "${testsToBuild[@]}"
-                    echo -e "$PARTS_TO_BUILD_COLOR""$testsToBuildAsString""$RESET_COLOR"
+            unset FILES_TO_INCLUDE FILES_TO_COMPILE
+
+            BUILD_STATUS=$?
+
+            if [ $BUILD_STATUS -ne 0 ]; then
+                exit
+            fi
+        }
+
+        {
+            if [ ${#testsToBuild[@]} -ne 0 ]; then
+                printf -v testsToBuildAsString -- "$BUILD_DIRECTORY/lib%s_test.a " "${testsToBuild[@]}"
+                echo -e "$PARTS_TO_BUILD_COLOR""$testsToBuildAsString""$RESET_COLOR"
+            fi
+
+            if [ ${#LIBRARIES_TO_LINK_TESTS[@]} -ne 0 ]; then
+                printf -v testsLibrariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK_TESTS[@]}"
+                echo -e "$LIBRARIES_COLOR""$testsLibrariesToLinkAsString""$RESET_COLOR"
+            fi
+
+            if [ -z "${SCAN_BUILD+x}" ]; then
+                $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $externalLibrariesTestsLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+
+                BUILD_STATUS=$?
+
+                if [ $BUILD_STATUS -ne 0 ]; then
+                    exit
                 fi
 
-                if [ ${#LIBRARIES_TO_LINK_TESTS[@]} -ne 0 ]; then
-                    printf -v testsLibrariesToLinkAsString -- "-l%s " "${LIBRARIES_TO_LINK_TESTS[@]}"
-                    echo -e "$LIBRARIES_COLOR""$testsLibrariesToLinkAsString""$RESET_COLOR"
+                echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
+            fi
+
+            if [ -n "${STRIP_EXECUTABLE+x}" ]; then
+                if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
+                    printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
+                    echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
                 fi
 
-                if [ -z "${SCAN_BUILD+x}" ]; then
-                    $COMPILER $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/"'lib'"$testsMainPackage"'.a' $testsToBuildAsString $staticPartsAsString $partsToBuildAsString '-Wl,--no-whole-archive' $librariesToLinkAsString $externalLibrariesLinkFlagsAsString $testsLibrariesToLinkAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+                objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
 
-                    BUILD_STATUS=$?
-
-                    if [ $BUILD_STATUS -ne 0 ]; then
-                        exit
-                    fi
-
-                    echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
-                fi
-
-                if [ -n "${STRIP_EXECUTABLE+x}" ]; then
-                    if [ ${#EXECUTABLE_SECTIONS_TO_STRIP[@]} -ne 0 ]; then
-                        printf -v sectionsToStripAsString -- "--remove-section %s " "${EXECUTABLE_SECTIONS_TO_STRIP[@]}"
-                        echo -e "$SECTIONS_TO_STRIP_COLOR""$sectionsToStripAsString""$RESET_COLOR"
-                    fi
-
-                    objcopy "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS" $sectionsToStripAsString
-
-                    strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
-                fi
-            }
-        fi
-    }
+                strip --strip-section-headers "$BUILD_DIRECTORY/$EXECUTABLE_NAME_TESTS"
+            fi
+        }
+    fi
 
 }
 
