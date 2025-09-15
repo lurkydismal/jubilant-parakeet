@@ -82,7 +82,6 @@ concept is_lambda =
 
 // Utility macros ( no side-effects )
 #define STRINGIFY( _value ) #_value
-#define MACRO_TO_STRING( _macro ) STRINGIFY( _macro )
 
 // Debug utility functions ( side-effects )
 
