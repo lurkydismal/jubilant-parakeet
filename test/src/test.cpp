@@ -65,19 +65,32 @@ public:
 
     // Print test result, where, summary
     void OnTestPartResult( const testing::TestPartResult& _result ) override {
-        const std::string l_result =
-            ( ( _result.passed() )
-                  ? ( std::format( "{}[PASSED]{}", stdfunc::color::g_green,
-                                   stdfunc::color::g_reset ) )
-                  : ( std::format( "{}[FAILED]{}", stdfunc::color::g_red,
-                                   stdfunc::color::g_reset ) ) );
+        std::string l_result;
+
+        if ( _result.passed() ) {
+            l_result = std::format( "{}[PASSED]{}", stdfunc::color::g_green,
+                                    stdfunc::color::g_reset );
+
+        } else if ( _result.skipped() ) {
+            l_result =
+                std::format( "{}[SKIPPED]{}", stdfunc::color::g_blueLight,
+                             stdfunc::color::g_reset );
+
+        } else {
+            l_result = std::format( "{}[FAILED]{}", stdfunc::color::g_red,
+                                    stdfunc::color::g_reset );
+        }
 
         const std::string l_where =
             std::format( "{}:{}", _result.file_name(), _result.line_number() );
 
-        const std::string l_message =
-            std::format( "{}{}{}", stdfunc::color::g_purpleLight,
-                         _result.message(), stdfunc::color::g_reset );
+        std::string l_message;
+
+        if ( !_result.passed() ) {
+            l_message =
+                std::format( "{}{}{}", stdfunc::color::g_purpleLight,
+                             _result.message(), stdfunc::color::g_reset );
+        }
 
         std::print( "{} {}\n{}", l_result, l_where, l_message );
     }
@@ -163,9 +176,14 @@ public:
             l_iterateTestSuites( [ & ]( auto _testSuite ) {
                 l_iterateTestInfos( _testSuite, [ & ]( auto _testInfo ) {
                     if ( _testInfo->result()->Failed() ) {
+                        const std::string l_where =
+                            std::format( "{}{}:{}{}", stdfunc::color::g_reset,
+                                         _testInfo->file(), _testInfo->line(),
+                                         stdfunc::color::g_red );
+
                         std::format_to( std::back_inserter( l_failedTests ),
-                                        "\t{}.{}\n", _testSuite->name(),
-                                        _testInfo->name() );
+                                        "\t{}.{} {}\n", _testSuite->name(),
+                                        _testInfo->name(), l_where );
                     }
                 } );
             } );
