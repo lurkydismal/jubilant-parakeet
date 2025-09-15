@@ -462,8 +462,7 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
                 std::ranges::views::transform(
                     []( const char* _argument ) -> std::string_view {
                         return ( _argument );
-                    } ) |
-                std::ranges::to< std::vector< std::string_view > >();
+                    } );
 
             if ( !runtime::init( g_applicationState, l_argumentVectorView ) )
                 [[unlikely]] {

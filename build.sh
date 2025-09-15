@@ -835,7 +835,9 @@ source './config.sh' && {
         {
             if [ ${#testsToBuild[@]} -ne 0 ]; then
                 printf -v testsToBuildAsString -- "$BUILD_DIRECTORY/lib%s_test.a " "${testsToBuild[@]}"
-                echo -e "$PARTS_TO_BUILD_COLOR""$testsToBuildAsString""$RESET_COLOR"
+                echo -en "$PARTS_TO_BUILD_COLOR"
+                printf -- "lib%s"'_test.a ' "${testsToBuild[@]}"
+                echo -e "$RESET_COLOR"
             fi
 
             if [ ${#LIBRARIES_TO_LINK_TESTS[@]} -ne 0 ]; then

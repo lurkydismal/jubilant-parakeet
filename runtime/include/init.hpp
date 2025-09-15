@@ -2,6 +2,7 @@
 
 #include <SDL3/SDL_init.h>
 
+#include <ranges>
 #include <span>
 
 #include "FPS.hpp"
@@ -11,8 +12,9 @@
 
 namespace runtime {
 
+template < std::ranges::input_range Range >
 auto init( applicationState_t& _applicationState,
-           [[maybe_unused]] std::span< std::string_view > _arguments ) -> bool {
+           [[maybe_unused]] Range&& _arguments ) -> bool {
     bool l_returnValue = false;
 
     do {
