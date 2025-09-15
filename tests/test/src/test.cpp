@@ -357,3 +357,71 @@ TEST(Additional, SucceedFailAddFailure) {
 //     return RUN_ALL_TESTS();
 // }
 #endif
+
+#if 0
+#include <gtest/gtest.h>
+
+#include <iostream>
+
+class CustomPrinter : public testing::TestEventListener {
+public:
+    // Forward events you don't care about to a default listener if you want.
+    explicit CustomPrinter(testing::TestEventListener* default_listener)
+        : default_listener_(default_listener) {}
+
+    // Called before any test activity starts.
+    void OnTestProgramStart(const testing::UnitTest& unit_test) override {
+        std::cout << "[CUSTOM] Starting test program with "
+                  << unit_test.test_to_run_count() << " tests\n";
+    }
+
+    void OnTestStart(const testing::TestInfo& test_info) override {
+        std::cout << "[CUSTOM] Running " << test_info.test_suite_name()
+                  << "." << test_info.name() << "\n";
+    }
+
+    void OnTestPartResult(const testing::TestPartResult& result) override {
+        if (result.failed()) {
+            std::cout << "[CUSTOM][FAIL] " << result.summary() << "\n";
+        } else {
+            std::cout << "[CUSTOM][OK] " << result.summary() << "\n";
+        }
+    }
+
+    void OnTestEnd(const testing::TestInfo& test_info) override {
+        std::cout << "[CUSTOM] Finished " << test_info.test_suite_name()
+                  << "." << test_info.name()
+                  << (test_info.result()->Passed() ? " PASSED" : " FAILED")
+                  << "\n";
+    }
+
+    // Other event callbacks can be overridden if needed.
+
+    // Delegate to default printer for events you don’t handle
+    void OnTestIterationStart(const testing::UnitTest& unit_test,
+                              int iteration) override {
+        default_listener_->OnTestIterationStart(unit_test, iteration);
+    }
+    void OnTestIterationEnd(const testing::UnitTest& unit_test,
+                            int iteration) override {
+        default_listener_->OnTestIterationEnd(unit_test, iteration);
+    }
+
+private:
+    testing::TestEventListener* default_listener_;
+};
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+
+    // Grab the event listeners list.
+    testing::TestEventListeners& listeners =
+        testing::UnitTest::GetInstance()->listeners();
+
+    // Save default printer and replace it.
+    testing::TestEventListener* default_printer = listeners.Release(listeners.default_result_printer());
+    listeners.Append(new CustomPrinter(default_printer));
+
+    return RUN_ALL_TESTS();
+}
+#endif
