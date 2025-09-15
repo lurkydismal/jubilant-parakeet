@@ -367,7 +367,7 @@ namespace {
 template < typename Matcher >
     requires is_lambda< Matcher, bool, const std::string& >
 [[nodiscard]] auto _getPathsByRegexp( std::string_view _directory,
-                                      Matcher&& _matcher )
+                                      Matcher _matcher )
     -> std::vector< std::filesystem::path > {
     std::vector< std::filesystem::path > l_returnValue;
 
@@ -379,7 +379,7 @@ template < typename Matcher >
 
         const std::string l_filename = _entry.path().filename().string();
 
-        if ( std::forward< Matcher >( _matcher )( l_filename ) ) {
+        if ( _matcher( l_filename ) ) {
             l_returnValue.emplace_back( _entry.path() );
         }
     }
@@ -422,10 +422,10 @@ namespace compress {
 /**
  * @brief [TODO:description]
  *
- * @detailed Compression level. Level 1 is the fastest Level 2 is a little
+ * @detailed Compression level: Level 1 is the fastest Level 2 is a little
  * slower but provides better compression.
  *
- * @param _data View to string
+ * @param _data String view
  * @param _level Compression level
  *
  * @return Compressed string
@@ -434,6 +434,17 @@ namespace compress {
 [[nodiscard]] auto text( std::string_view _text, size_t _level = 1 )
     -> std::optional< std::string >;
 
+/**
+ * @brief [TODO:description]
+ *
+ * @detailed Compression level: TODO: Write
+ *
+ * @param _data Data view
+ * @param _level Compression level
+ *
+ * @return Compressed data
+ */
+// TODO: Make constexpr
 [[nodiscard]] auto data( std::span< std::byte > _data, size_t _level = 3 )
     -> std::optional< std::vector< std::byte > >;
 
@@ -444,14 +455,22 @@ namespace decompress {
 /**
  * @brief [TODO:description]
  *
- * @param _data View to string
+ * @param _data Data view
  *
- * @return Compressed string
+ * @return Decompressed string
  */
 // TODO: Make constexpr
 [[nodiscard]] auto text( std::string_view _data )
     -> std::optional< std::string >;
 
+/**
+ * @brief [TODO:description]
+ *
+ * @param _data Data view
+ *
+ * @return Decompressed string
+ */
+// TODO: Make constexpr
 [[nodiscard]] auto data( std::span< std::byte > _data, size_t _originalSize )
     -> std::optional< std::vector< std::byte > >;
 
