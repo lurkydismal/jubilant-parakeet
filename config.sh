@@ -31,7 +31,7 @@ export testsToBuild=(
     # "asset"
     # "watch_t"
     # "log"
-    # "stdfunc"
+    "stdfunc"
     "test"
 )
 export staticParts=(

@@ -8,47 +8,28 @@
 // decompress$text, decompress$data, meta$iterateStructUnionTopMostFields
 namespace stdfunc {
 
-#if 0
-TEST( STRINGIFY, ( [] {
-          assertEqual( STRINGIFY( Tessst ), "Tessst" );
-          assertEqual( STRINGIFY( stdfunc::color::g_green ),
-                       "stdfunc::color::g_green" );
-      } ) );
-#endif
+TEST( stdfunc, STRINGIFY ) {
+    EXPECT_EQ( STRINGIFY( Tessst ), "Tessst" );
+    EXPECT_EQ( STRINGIFY( stdfunc::color::g_green ),
+               "stdfunc::color::g_green" );
+}
 
-#if 0
-TEST( MACRO_TO_STRING, ( [] {
-#define y 123
-#define x y
-#define z() y
-          assertEqual( MACRO_TO_STRING( x ), "123" );
-          assertEqual( MACRO_TO_STRING( y ), "123" );
-          assertEqual( MACRO_TO_STRING( z ), "123" );
+TEST( stdfunc, _b ) {
+    EXPECT_EQ( 'A'_b, std::byte{ 0xA } );
+    EXPECT_EQ( 'a'_b, std::byte{ 0xA } );
+    EXPECT_EQ( 'G'_b, std::byte{ 0 } );
 
-#undef z
-#undef x
-#undef y
-      } ) );
-#endif
-
-#if 0
-TEST( _b, ( [] {
-          assertEqual( 'A'_b, 0xA );
-          assertEqual( 'a'_b, 0xA );
-          assertEqual( 'G'_b, 0 );
-
-          assertEqual( 0_b, 0 );
-          assertEqual( 10_b, 0xA );
-          assertEqual( 17_b, 0x11 );
-      } ) );
-#endif
+    EXPECT_EQ( 0_b, std::byte{ 0 } );
+    EXPECT_EQ( 10_b, std::byte{ 0xA } );
+    EXPECT_EQ( 17_b, std::byte{ 0x11 } );
+}
 
 #if 0
 TEST( _bytes, ( [] {
           std::array l_array = { std::byte{ 0xF }, std::byte{ 0xF },
                                  std::byte{ 0xF } };
 
-          assertEqual( "FFF"_bytes, l_array );
+          EXPECT_EQ( "FFF"_bytes, l_array );
       } ) );
 #endif
 
@@ -69,7 +50,7 @@ TEST( lengthOfNumber, ( [] {
               }
           }
 
-          assertEqual( l_actualLengthFailed, l_expectedLengthFailed );
+          EXPECT_EQ( l_actualLengthFailed, l_expectedLengthFailed );
       } ) );
 #endif
 
@@ -124,7 +105,7 @@ TEST( generateHash, ( [] {
 
                       stdfunc::random::fill( l_buffer );
 
-                      assertEqual( l_buffer.size(), l_bufferLength );
+                      EXPECT_EQ( l_buffer.size(), l_bufferLength );
 
                       const size_t l_actualHash = generateHash( l_buffer );
 
@@ -138,27 +119,27 @@ TEST( generateHash, ( [] {
 #if 0
 TEST( sanitizeString, ( [] {
           // Normal case with spaces and a comment
-          assertEqual( sanitizeString( "  Hello  World   # Comment here" ),
+          EXPECT_EQ( sanitizeString( "  Hello  World   # Comment here" ),
                        "HelloWorld" );
 
           // Leading and trailing spaces
-          assertEqual( sanitizeString( "   test   " ), "test" );
+          EXPECT_EQ( sanitizeString( "   test   " ), "test" );
 
           // No spaces, no comments
-          assertEqual( sanitizeString( "NoSpacesOrComments" ),
+          EXPECT_EQ( sanitizeString( "NoSpacesOrComments" ),
                        "NoSpacesOrComments" );
 
           // Only spaces
-          assertEqual( sanitizeString( "       " ), "" );
+          EXPECT_EQ( sanitizeString( "       " ), "" );
 
           // Only comment
-          assertEqual( sanitizeString( "   # This is a comment" ), "" );
+          EXPECT_EQ( sanitizeString( "   # This is a comment" ), "" );
 
           // Empty string
-          assertEqual( sanitizeString( "" ), "" );
+          EXPECT_EQ( sanitizeString( "" ), "" );
 
           // Comment in the middle
-          assertEqual( sanitizeString( "KeepThis # RemoveThis" ), "KeepThis" );
+          EXPECT_EQ( sanitizeString( "KeepThis # RemoveThis" ), "KeepThis" );
       } ) );
 #endif
 
