@@ -19,7 +19,7 @@
 #include <iostream>
 #include <print>
 #include <source_location>
-#include <stacktrace>
+// #include <stacktrace>
 #include <thread>
 
 #endif
@@ -101,25 +101,31 @@ constexpr std::string_view g_trapColorFileName = color::g_purpleLight;
 constexpr std::string_view g_trapColorLineNumber = color::g_purpleLight;
 constexpr std::string_view g_trapColorFunctionName = color::g_purpleLight;
 
-constexpr size_t g_backtraceLimit = 5;
+constexpr size_t g_backtraceLimit = 10;
 
 template < typename... Arguments >
 [[noreturn]] void _trap( std::format_string< Arguments... > _format,
-                         const std::source_location _sourceLocation,
+                         std::source_location _sourceLocation,
                          Arguments&&... _arguments ) {
     std::print( std::cerr,
                 "{}[TRAP] {}Thread {}{}{}: File '{}{}{}': line {}{}{} "
                 "in function '{}{}{}' | Message: ",
                 g_trapColorLevel, color::g_resetForeground, g_trapColorThreadId,
                 std::this_thread::get_id(), color::g_resetForeground,
-                g_trapColorFileName, _sourceLocation.file_name(),
+                g_trapColorFileName,
+                std::filesystem::path( _sourceLocation.file_name() )
+                    .filename()
+                    .string(),
                 color::g_resetForeground, g_trapColorLineNumber,
                 _sourceLocation.line(), color::g_resetForeground,
                 g_trapColorFunctionName, _sourceLocation.function_name(),
                 color::g_resetForeground );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
+#if 0
+    // FIX: Undefined symbol in debug build
     std::println( "{}", std::stacktrace::current( 2, g_backtraceLimit ) );
+#endif
 
     __builtin_trap();
 }

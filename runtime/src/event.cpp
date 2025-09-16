@@ -20,12 +20,9 @@ auto onWindowResize( applicationState_t& _applicationState,
     bool l_returnValue = false;
 
     do {
-        if ( !_width || !_height ) [[unlikely]] {
-            stdfunc::trap( "Invalid window width {} or height {}", _width,
-                           _height );
-
-            break;
-        }
+        stdfunc::assert( ( _width && _height ),
+                         "Invalid window width {} or height {}", _width,
+                         _height );
 
         static size_t l_lastResizeFrame = 0;
         const size_t l_totalFramesRendered =

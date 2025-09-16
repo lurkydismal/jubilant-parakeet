@@ -12,7 +12,7 @@ namespace {
 
 vsync_t g_vsyncType = vsync_t::unknownVsync;
 float g_desiredFPS = 0;
-struct timespec g_sleepTime, g_startTime, g_endTime;
+timespec g_sleepTime, g_startTime, g_endTime;
 
 } // namespace
 
@@ -72,7 +72,7 @@ void end() {
     if ( g_vsyncType == vsync_t::off ) {
         clock_gettime( CLOCK_MONOTONIC, &g_endTime );
 
-        struct timespec l_adjustedSleepTime{};
+        timespec l_adjustedSleepTime{};
 
         {
             const size_t l_iterationTimeNano =
