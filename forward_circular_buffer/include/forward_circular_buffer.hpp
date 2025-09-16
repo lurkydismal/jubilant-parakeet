@@ -281,57 +281,57 @@ public:
 
     // Iterators (logical order)
     [[nodiscard]] CONST constexpr auto begin() -> iterator {
-        return iterator( this, 0 );
+        return ( iterator( this, 0 ) );
     }
 
     [[nodiscard]] CONST constexpr auto begin() const -> const_iterator {
-        return const_iterator( this, 0 );
+        return ( const_iterator( this, 0 ) );
     }
 
     [[nodiscard]] CONST constexpr auto end() -> iterator {
-        return iterator( this, size() );
+        return ( iterator( this, size() ) );
     }
 
     [[nodiscard]] CONST constexpr auto end() const -> const_iterator {
-        return const_iterator( this, size() );
+        return ( const_iterator( this, size() ) );
     }
 
     [[nodiscard]] CONST constexpr auto rbegin()
         -> std::reverse_iterator< iterator > {
-        return std::reverse_iterator< iterator >( end() );
+        return ( std::reverse_iterator< iterator >( end() ) );
     }
 
     [[nodiscard]] CONST constexpr auto rbegin() const
         -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( end() );
+        return ( std::reverse_iterator< const_iterator >( end() ) );
     }
 
     [[nodiscard]] CONST constexpr auto rend()
         -> std::reverse_iterator< iterator > {
-        return std::reverse_iterator< iterator >( begin() );
+        return ( std::reverse_iterator< iterator >( begin() ) );
     }
 
     [[nodiscard]] CONST constexpr auto rend() const
         -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( begin() );
+        return ( std::reverse_iterator< const_iterator >( begin() ) );
     }
 
     [[nodiscard]] CONST constexpr auto cbegin() const -> const_iterator {
-        return const_iterator( this, 0 );
+        return ( const_iterator( this, 0 ) );
     }
 
     [[nodiscard]] CONST constexpr auto cend() const -> const_iterator {
-        return const_iterator( this, size() );
+        return ( const_iterator( this, size() ) );
     }
 
     [[nodiscard]] CONST constexpr auto crbegin() const
         -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( cend() );
+        return ( std::reverse_iterator< const_iterator >( cend() ) );
     }
 
     [[nodiscard]] CONST constexpr auto crend() const
         -> std::reverse_iterator< const_iterator > {
-        return std::reverse_iterator< const_iterator >( cbegin() );
+        return ( std::reverse_iterator< const_iterator >( cbegin() ) );
     }
 
     // Capacity
@@ -382,14 +382,14 @@ public:
     constexpr auto front() -> T& {
         requireNonEmpty();
 
-        return ( _data.at( ( full() ) ? ( _currentBufferIndex ) : ( 0 ) ) );
+        return ( ( _data.at( ( full() ) ) ? ( _currentBufferIndex ) : ( 0 ) ) );
     }
 
     [[nodiscard]]
     constexpr auto front() const -> const T& {
         requireNonEmpty();
 
-        return ( _data.at( ( full() ) ? ( _currentBufferIndex ) : ( 0 ) ) );
+        return ( ( _data.at( ( full() ) ) ? ( _currentBufferIndex ) : ( 0 ) ) );
     }
 
     [[nodiscard]]
@@ -427,7 +427,7 @@ public:
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
 
-        new ( _data.at( l_currentBufferIndex ) ) T( _value );
+        _data.at( l_currentBufferIndex ) = _value;
 
         _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
 
@@ -441,7 +441,7 @@ public:
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
 
-        new ( _data.at( l_currentBufferIndex ) ) T( std::move( _value ) );
+        _data.at( l_currentBufferIndex ) = std::move( _value );
 
         _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
 
@@ -457,7 +457,7 @@ public:
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
 
-        new ( _data.at( l_currentBufferIndex ) )
+        _data.at( l_currentBufferIndex ) =
             T( std::forward< Arguments >( _arguments )... );
 
         _elementAmount++;
@@ -474,13 +474,20 @@ public:
         // TODO: Contract instead
         requireNonEmpty();
 
-        delete back();
+        const size_t l_removedIndex = _previousBufferIndex;
+
+        T l_returnValue = std::move( back() );
+
+        // Call destructor
+        back().~T();
 
         _currentBufferIndex--;
-        _previousBufferIndex--;
+        // TODO: Improve
+        _previousBufferIndex =
+            ( ( l_removedIndex + max_size() - 1 ) % max_size() );
         _elementAmount--;
 
-        return ( back() );
+        return ( l_returnValue );
     }
 
 private:
