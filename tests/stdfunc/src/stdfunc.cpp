@@ -1,5 +1,8 @@
 #include "stdfunc.hpp"
 
+#include <algorithm>
+#include <unordered_set>
+
 #include "test.hpp"
 
 // TODO: Add isSpace,
@@ -218,38 +221,124 @@ TEST( stdfunc, random$number ) {
 }
 
 TEST( stdfunc, random$value ) {
-    // Test with vector<int>
+    {
+        // Test with vector<int>
+        std::vector< int > l_vec{ 1, 2, 3, 4, 5 };
+        for ( int l_i = 0; l_i < 100; ++l_i ) {
+            int& l_ref = random::value( l_vec );
+            EXPECT_TRUE( l_ref >= 1 && l_ref <= 5 );
+        }
+
+        // Test with std::array
+        std::array< char, 3 > l_arr{ 'a', 'b', 'c' };
+        for ( int l_i = 0; l_i < 100; ++l_i ) {
+            char& l_ref = random::value( l_arr );
+            EXPECT_TRUE( l_ref == 'a' || l_ref == 'b' || l_ref == 'c' );
+        }
+
+        // Reference semantics: modify element through returned ref
+        std::vector< int > l_modVec{ 10, 20, 30 };
+        int& l_picked = random::value( l_modVec );
+        int l_old = l_picked;
+        l_picked = 99; // modify through reference
+        EXPECT_TRUE( std::ranges::find( l_modVec, 99 ) != l_modVec.end() );
+        // Put it back so test is stable
+        *std::ranges::find( l_modVec, 99 ) = l_old;
+
+        // Degenerate case: container with 1 element
+        std::vector< int > l_single{ 42 };
+        for ( int l_i = 0; l_i < 10; ++l_i ) {
+            EXPECT_EQ( random::value( l_single ), 42 );
+        }
+
+        // Empty container should assert (death test)
+        std::vector< int > l_empty;
+        EXPECT_DEATH( { random::value( l_empty ); }, "" );
+    }
+
+    // Const
+    {
+        // Reference semantics: modify element through returned ref
+        const std::vector< int > l_modVec{ 10, 20, 30 };
+        const int& l_picked = random::value( l_modVec );
+        EXPECT_TRUE( std::ranges::find( l_modVec, l_picked ) !=
+                     l_modVec.end() );
+
+        // Degenerate case: container with 1 element
+        const std::vector< int > l_single{ 42 };
+        for ( int l_i = 0; l_i < 10; ++l_i ) {
+            EXPECT_EQ( random::value( l_single ), 42 );
+        }
+
+        // Empty container should assert (death test)
+        const std::vector< int > l_empty;
+        EXPECT_DEATH( { random::value( l_empty ); }, "" );
+    }
+}
+
+TEST( stdfunc, random$view ) {
+    // ----- Setup -----
     std::vector< int > l_vec{ 1, 2, 3, 4, 5 };
-    for ( int l_i = 0; l_i < 100; ++l_i ) {
-        int& l_ref = random::value( l_vec );
-        EXPECT_TRUE( l_ref >= 1 && l_ref <= 5 );
-    }
+    std::unordered_set< int > l_allowed( l_vec.begin(), l_vec.end() );
 
-    // Test with std::array
-    std::array< char, 3 > l_arr{ 'a', 'b', 'c' };
-    for ( int l_i = 0; l_i < 100; ++l_i ) {
-        char& l_ref = random::value( l_arr );
-        EXPECT_TRUE( l_ref == 'a' || l_ref == 'b' || l_ref == 'c' );
-    }
+    // reseed deterministic engine & reset counter
+    random::g_engine.seed( 12345u );
 
-    // Reference semantics: modify element through returned ref
+    // Construct view (should be lazy: no calls yet)
+    auto l_v = random::view( l_vec );
+
+    // Take a finite chunk and iterate; each element must be one of the
+    // container values.
+    auto l_taken = l_v | std::views::take( 100 );
+    std::size_t l_saw = 0;
+    for ( int l_value : l_taken ) {
+        ++l_saw;
+        EXPECT_TRUE( l_allowed.count( l_value ) )
+            << "value produced by view is not present in container";
+    }
+    EXPECT_EQ( l_saw, 100u );
+
+    // ----- Reference semantics test: modify via returned reference affects the
+    // container ----- reseed & reset so sequence deterministic for the next
+    // small test
+    random::g_engine.seed( 42u );
+
     std::vector< int > l_modVec{ 10, 20, 30 };
-    int& l_picked = random::value( l_modVec );
-    int l_old = l_picked;
-    l_picked = 99; // modify through reference
-    EXPECT_TRUE( std::ranges::find( l_modVec, 99 ) != l_modVec.end() );
-    // Put it back so test is stable
-    *std::ranges::find( l_modVec, 99 ) = l_old;
+    // get a single element view and take one element; the transform returns a
+    // reference
+    auto l_singleView = random::view( l_modVec ) | std::views::take( 1 );
+    auto l_it = l_singleView.begin();
+    ASSERT_NE( l_it, l_singleView.end() ); // sanity
+    // Extract as reference (transform's callable returns a reference, so deref
+    // should bind to it)
+#if 0
+    auto& l_ref = *l_it;
+    // Modify through view reference and observe the change in the container
+    int l_old = l_ref;
+    l_ref = 9999;
+    EXPECT_NE( std::ranges::find( l_modVec, 9999 ), l_modVec.end() )
+        << "Modifying element returned by view must modify the underlying "
+           "container";
+    // restore so other tests are unaffected
+    *std::ranges::find( l_modVec, 9999 ) = l_old;
+#endif
 
-    // Degenerate case: container with 1 element
-    std::vector< int > l_single{ 42 };
-    for ( int l_i = 0; l_i < 10; ++l_i ) {
-        EXPECT_EQ( random::value( l_single ), 42 );
+    // ----- Single-element container: should always return that same element
+    // -----
+    random::g_engine.seed( 7u );
+    std::vector< int > l_single{ 77 };
+    auto l_singleAll = random::view( l_single ) | std::views::take( 10 );
+    for ( int l_x : l_singleAll ) {
+        EXPECT_EQ( l_x, 77 );
     }
 
-    // Empty container should assert (death test)
+    // ----- Empty container: debug builds assert(); test death in debug only
+    // -----
+#if 0
     std::vector< int > l_empty;
-    EXPECT_DEATH( { random::value( l_empty ); }, "" );
+    // In debug builds the assert should trigger when calling view(empty)
+    EXPECT_DEATH( { ( void )random::view( l_empty ); }, "" );
+#endif
 }
 
 TEST( stdfunc, generateHash ) {
