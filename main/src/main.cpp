@@ -74,7 +74,7 @@ auto hasPathChanged( std::string_view _path ) -> bool {
     do {
         static long l_lastModificationTime = 0;
 
-        struct stat l_statisticss{};
+        stat l_statisticss{};
 
         assert( ( stat( std::string( _path ).c_str(), &l_statisticss ) == 0 ),
                 "stat failed" );
@@ -108,7 +108,7 @@ auto collectStatesFromHandle( gsl::not_null< void* >& _handle,
     do {
         const Lmid_t l_namespaceId = getNamespaceId( _handle );
 
-        struct link_map* l_linkMap = nullptr;
+        link_map* l_linkMap = nullptr;
 
         // Get dymanic library link map
         {
@@ -294,13 +294,13 @@ auto hotReloadSo( std::string_view _sharedObjectPath ) -> bool {
 
                         assert( l_namespaceId != LONG_MAX );
 
-                        struct link_map* l_linkMap;
+                        link_map* l_linkMap;
                         const int l_result = dlinfo(
                             l_managerHandle, RTLD_DI_LINKMAP, &l_linkMap );
 
                         assert( l_result >= 0 );
 
-                        for ( struct link_map* _linkMap = l_linkMap; _linkMap;
+                        for ( link_map* _linkMap = l_linkMap; _linkMap;
                               _linkMap = _linkMap->l_next ) {
                             const char* l_sharedObjectPath = _linkMap->l_name;
 
@@ -457,14 +457,15 @@ auto hotReloadSo( std::string_view _sharedObjectPath ) -> bool {
 auto main( int _argumentCount, char** _argumentVector ) -> int {
     do {
         {
-            auto l_argumentVectorView =
+            auto l_argumentVector =
                 std::span( _argumentVector, _argumentCount ) |
                 std::ranges::views::transform(
                     []( const char* _argument ) -> std::string_view {
                         return ( _argument );
-                    } );
+                    } ) |
+                std::ranges::to< std::vector >();
 
-            if ( !runtime::init( g_applicationState, l_argumentVectorView ) )
+            if ( !runtime::init( g_applicationState, l_argumentVector ) )
                 [[unlikely]] {
                 break;
             }

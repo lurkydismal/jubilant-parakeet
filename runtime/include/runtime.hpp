@@ -33,9 +33,12 @@ using applicationState_t = struct applicationState {
     } renderContext;
 
     struct metadata {
-        static constexpr float g_version = 0.1;
         static constexpr std::string_view g_identifier =
             window::window_t::g_name;
+        static constexpr std::string_view g_description = "TODO: Write";
+        static constexpr float g_version = 0.1;
+        static constexpr std::string_view g_contactAddress =
+            "lurkydismal@duck.com";
     };
 
     // TODO: Write

@@ -2,22 +2,28 @@
 
 #include <SDL3/SDL_init.h>
 
-#include <ranges>
-#include <span>
-
 #include "FPS.hpp"
+#include "arhodigp.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
 #include "vsync.hpp"
 
 namespace runtime {
 
-template < std::ranges::input_range Range >
 auto init( applicationState_t& _applicationState,
-           [[maybe_unused]] Range&& _arguments ) -> bool {
+           std::span< std::string_view > _arguments ) -> bool {
     bool l_returnValue = false;
 
     do {
+        // Parse arguments
+        if ( !arhodigp::parseArguments(
+                 "", _arguments, applicationState_t::metadata::g_identifier,
+                 applicationState_t::metadata::g_description,
+                 applicationState_t::metadata::g_version,
+                 applicationState_t::metadata::g_contactAddress ) ) {
+            break;
+        }
+
         // Generate application state
         {
             // Metadata
