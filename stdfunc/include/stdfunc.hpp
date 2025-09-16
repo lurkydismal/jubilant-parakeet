@@ -355,7 +355,7 @@ template < template < typename, size_t > typename Container,
 [[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
     using variant_t = std::variant< std::decay_t< Arguments >... >;
 
-    return ( std::array< variant_t, sizeof...( Arguments ) >{
+    return ( Container< variant_t, sizeof...( Arguments ) >{
         variant_t( std::forward< Arguments >( _arguments ) )... } );
 }
 
@@ -423,29 +423,81 @@ template < size_t N >
 namespace compress {
 
 /**
- * @brief [TODO:description]
+ * @brief Compress a UTF-8 (or arbitrary) text string.
  *
- * @detailed Compression level: Level 1 is the fastest Level 2 is a little
- * slower but provides better compression.
+ * This is a convenience wrapper around a fast, stream-oriented text compressor
+ * (current implementation: **Snappy**). The function returns a `std::string`
+ * containing the compressed frame. The compressed output is binary data and
+ * may contain NUL bytes — treat it as opaque.
  *
- * @param _data String view
- * @param _level Compression level
+ * @param _text  Input text to compress. Treated as a sequence of bytes; no
+ *               string encoding validation is performed.
+ * @param _level Compression level: Level 1 is the fastest Level 2 is a little
+ *               slower but provides better compression.
  *
- * @return Compressed string
+ * @return `std::optional<std::string>`:
+ *         - contains compressed bytes on success;
+ *         - `std::nullopt` on failure (e.g. underlying library error,
+ *           out-of-memory, or other API-level failure).
+ *
+ * @threadsafe Safe to call concurrently from multiple threads as long as the
+ *            underlying compressor library is initialized appropriately and
+ *            you do not mutate any shared global compressor state. The
+ *            implementation should allocate thread-local temporaries.
+ *
+ * @complexity Time: roughly linear in `_text.size()`; exact constant factors
+ *             depend on compressor. Memory: allocates an output buffer sized
+ *             to the compressor's worst-case output (implementation dependent).
+ *
+ * @example
+ * std::optional<std::string> c = compress::text("hello world");
+ * if (c) {
+ *     // c->data() contains compressed bytes (not a printable string)
+ * }
  */
 // TODO: Make constexpr
 [[nodiscard]] auto text( std::string_view _text, size_t _level = 1 )
     -> std::optional< std::string >;
 
 /**
- * @brief [TODO:description]
+ * @brief Compress arbitrary binary data.
  *
- * @detailed Compression level: TODO: Write
+ * This function compresses a block of bytes using a general-purpose binary
+ * compressor (current implementation: **Zstandard (zstd)**). It returns a
+ * vector of bytes containing the compressed frame. The result should be
+ * treated as opaque binary data.
  *
- * @param _data Data view
- * @param _level Compression level
+ * @param _data  Input data to compress (view into caller-owned memory).
+ * @param _level Compression level. For zstd typical valid values are
+ *               1..22 (implementation-dependent). Lower values favor speed,
+ *               higher values favor compression ratio. Default is `3`
+ *               (a reasonable speed/ratio tradeoff).
  *
- * @return Compressed data
+ *               Rough guideline (zstd):
+ *                 - 1 : fastest, lowest compression
+ *                 - 3 : fast, good default
+ *                 - 9 : slower, noticeably better compression
+ *                 - 19-22 : slowest, best compression (may be very slow/memory
+ * heavy)
+ *
+ * @return `std::optional<std::vector<std::byte>>`:
+ *         - contains compressed bytes on success;
+ *         - `std::nullopt` on failure (invalid arguments, compression error,
+ *           or underlying library failure).
+ *
+ * @threadsafe Thread-safe to call concurrently unless the implementation uses
+ *            a shared mutable compressor context (it typically won't). If you
+ *            plan high-concurrency workloads, benchmark and consider per-thread
+ *            contexts or streaming APIs.
+ *
+ * @complexity Time: roughly linear in `_data.size()` with constants depending
+ *             on `_level`. Memory: allocates output buffer of size proportional
+ *             to compressor worst-case.
+ *
+ * @example
+ * std::vector<std::byte> in = ...;
+ * auto outOpt = compress::data(std::span(in), level=5);
+ * if (outOpt) { write outOpt->data() to disk/network  }
  */
 // TODO: Make constexpr
 [[nodiscard]] auto data( std::span< std::byte > _data, size_t _level = 3 )
@@ -456,22 +508,67 @@ namespace compress {
 namespace decompress {
 
 /**
- * @brief [TODO:description]
+ * @brief Decompress a text frame produced by `compress::text`.
  *
- * @param _data Data view
+ * Attempts to decompress the binary frame in `_data` and return the original
+ * text as `std::string`. Returns `std::nullopt` on failure (invalid frame,
+ * corruption, unsupported format, or other decompression error).
  *
- * @return Decompressed string
+ * @param _data Compressed frame (binary). The function treats the bytes as
+ *              opaque input for the decompressor.
+ *
+ * @return `std::optional<std::string>`:
+ *         - decompressed original string on success;
+ *         - `std::nullopt` on failure.
+ *
+ * @threadsafe Safe to call concurrently from multiple threads provided the
+ *            underlying library does not require exclusive initialization.
+ *
+ * @complexity Time: roughly linear in the size of the decompressed data.
+ *
+ * @note If `compress::text` is implemented with Snappy (no framing for original
+ *       size), the decompressor will use the framing/format produced by that
+ *       compressor. If your compressed frames do not include the original
+ *       size, the decompressor must rely on the compressor frame metadata.
+ *
+ * @example
+ * auto de = decompress::text(compressed_string);
+ * if (de) { std::string s = std::move(*de); }
  */
 // TODO: Make constexpr
 [[nodiscard]] auto text( std::string_view _data )
     -> std::optional< std::string >;
 
 /**
- * @brief [TODO:description]
+ * @brief Decompress binary data produced by `compress::data`.
  *
- * @param _data Data view
+ * Decompress a binary compressed frame into a `std::vector<std::byte>` of the
+ * original size `_originalSize`. Some compressors (like zstd) may store the
+ * original size in the frame; however many APIs expect the caller to provide
+ * the expected decompressed size. If your compressor stores the original size
+ * in the frame, `_originalSize` can be unused — consult your implementation.
  *
- * @return Decompressed string
+ * @param _data         Compressed frame bytes.
+ * @param _originalSize Expected size of the decompressed output in bytes.
+ *                      The function may use this to allocate the output buffer
+ *                      and to validate the decompressed result. Passing an
+ *                      incorrect `_originalSize` may cause decompression to
+ *                      fail or return truncated/incorrect data.
+ *
+ * @return `std::optional<std::vector<std::byte>>`:
+ *         - decompressed byte vector on success;
+ *         - `std::nullopt` on failure (bad frame, corruption, mismatch with
+ *           `_originalSize`, etc.).
+ *
+ * @threadsafe Safe to call concurrently, subject to underlying library rules.
+ *
+ * @complexity Time: approximately linear in `_originalSize` (or the
+ *             decompressed amount).
+ *
+ * @example
+ * auto outOpt = decompress::data(std::span(compressedBytes),
+ * expected_original_size); if (outOpt) { write(outOpt->data(), outOpt->size());
+ * }
  */
 // TODO: Make constexpr
 [[nodiscard]] auto data( std::span< std::byte > _data, size_t _originalSize )
