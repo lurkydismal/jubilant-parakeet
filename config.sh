@@ -26,7 +26,7 @@ export testsToBuild=(
     # "animation_t"
     # "boxes_t"
     # "window"
-    # "vsync"
+    "vsync"
     # "font_t"
     # "asset"
     # "watch_t"
