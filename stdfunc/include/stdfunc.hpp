@@ -362,7 +362,7 @@ template < template < typename, size_t > typename Container,
 namespace filesystem {
 
 // Utility OS specific functions ( no side-effects )
-[[nodiscard]] inline auto getApplicationDirectoryAbsolutePath()
+[[nodiscard]] auto getApplicationDirectoryAbsolutePath()
     -> std::optional< std::filesystem::path >;
 
 namespace {
