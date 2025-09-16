@@ -26,7 +26,7 @@ auto text( std::string_view _text, size_t _level )
             break;
         }
 
-        std::string& l_compressed = l_returnValue.value();
+        std::string l_compressed;
 
         if ( !snappy::Compress( _text.data(), _text.size(), &l_compressed,
                                 snappy::CompressionOptions( _level ) ) )
@@ -85,7 +85,7 @@ auto text( std::string_view _data ) -> std::optional< std::string > {
             break;
         }
 
-        std::string& l_decompressed = l_returnValue.value();
+        std::string l_decompressed;
 
         if ( !snappy::Uncompress( _data.data(), _data.size(),
                                   &l_decompressed ) ) [[unlikely]] {

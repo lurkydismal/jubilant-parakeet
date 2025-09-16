@@ -64,7 +64,7 @@ TEST( test, EXPECT_NE ) {
 }
 
 // Basic assertions
-TEST( BasicAssertions, TrueFalseAndNull ) {
+TEST( test, BasicAssertions$TrueFalseAndNull ) {
     EXPECT_TRUE( true );
     EXPECT_FALSE( false );
 
@@ -79,7 +79,7 @@ TEST( BasicAssertions, TrueFalseAndNull ) {
     EXPECT_EQ( nullptr, nullptr );
 }
 
-TEST( ComparisonAssertions, EqualityAndOrdering ) {
+TEST( test, ComparisonAssertions$EqualityAndOrdering ) {
     EXPECT_EQ( 5, 2 + 3 );
     EXPECT_NE( 5, 2 + 2 );
     EXPECT_LT( 1, 2 );
@@ -88,7 +88,7 @@ TEST( ComparisonAssertions, EqualityAndOrdering ) {
     EXPECT_GE( 3, 3 );
 }
 
-TEST( StringAssertions, CStyleAndStdString ) {
+TEST( test, StringAssertions$CStyleAndStdString ) {
     const char* l_s1 = "hello";
     const char* l_s2 = "hello";
     std::string l_ss = "hello world";
@@ -102,7 +102,7 @@ TEST( StringAssertions, CStyleAndStdString ) {
     EXPECT_THAT( l_ss, HasSubstr( "world" ) ); // needs gmock
 }
 
-TEST( FloatingAssertions, NearAndNan ) {
+TEST( test, FloatingAssertions$NearAndNan ) {
     double l_a = 0.1 + 0.2;
     // approximate comparison
     EXPECT_NEAR( l_a, 0.3, 1e-12 );
@@ -112,7 +112,7 @@ TEST( FloatingAssertions, NearAndNan ) {
 }
 
 // Fatal vs Non-Fatal demonstration
-TEST( FatalNonFatal, ExpectVsAssert ) {
+TEST( test, FatalNonFatal$ExpectVsAssert ) {
 #if 0
     EXPECT_EQ( 1, 2 ) << "This EXPECT fails but test continues";
 #endif
@@ -122,7 +122,7 @@ TEST( FatalNonFatal, ExpectVsAssert ) {
 }
 
 // Capture stdout/stderr
-TEST( CaptureStdout, CaptureAndCheck ) {
+TEST( test, CaptureStdout$CaptureAndCheck ) {
     internal::CaptureStdout();
     std::cout << "hello capture";
     std::string l_output = internal::GetCapturedStdout();
@@ -202,7 +202,7 @@ TYPED_TEST( TypedExample, IsDefaultConstructible ) {
 }
 
 // Matchers examples (requires gmock)
-TEST( Matchering, ContainerAndStringMatchers ) {
+TEST( test, Matchering$ContainerAndStringMatchers ) {
     std::vector< int > l_v{ 1, 2, 3 };
     EXPECT_THAT( l_v, ElementsAre( 1, 2, 3 ) );
     EXPECT_THAT( l_v, Each( Gt( 0 ) ) );
@@ -213,14 +213,14 @@ TEST( Matchering, ContainerAndStringMatchers ) {
     EXPECT_THAT( l_s, MatchesRegex( ".*def.*" ) );
 }
 
-TEST( Matchering, UnorderedAndContains ) {
+TEST( test, Matchering$UnorderedAndContains ) {
     std::vector< int > l_v{ 3, 1, 2 };
     EXPECT_THAT( l_v, UnorderedElementsAre( 1, 2, 3 ) );
     EXPECT_THAT( l_v, Contains( 2 ) );
 }
 
 // SCOPED_TRACE and failure context
-TEST( Tracing, ScopedTraceMakesMessagesClearer ) {
+TEST( test, Tracing$ScopedTraceMakesMessagesClearer ) {
     for ( int l_i = 0; l_i < 3; ++l_i ) {
         SCOPED_TRACE( Message() << "iteration=" << l_i );
         EXPECT_LT( l_i, 5 ); // all pass but if they fail the trace helps
@@ -228,7 +228,7 @@ TEST( Tracing, ScopedTraceMakesMessagesClearer ) {
 }
 
 // GTEST_SKIP and test properties
-TEST( SkippingAndProperties, SkipAndRecord ) {
+TEST( test, SkippingAndProperties$SkipAndRecord ) {
     GTEST_SKIP() << "Skipping because example";
     // RecordProperty is useful for integration with CI/test-reporters
     RecordProperty( "reason", "example skip" );
@@ -236,7 +236,7 @@ TEST( SkippingAndProperties, SkipAndRecord ) {
 }
 
 // Multithreaded-ish test: user-spawned threads that gtest doesn't manage
-TEST( UserThreads, WorkerThreadsDoWork ) {
+TEST( test, UserThreads$WorkerThreadsDoWork ) {
     std::atomic< int > l_counter{ 0 };
     std::vector< std::thread > l_threads;
     l_threads.reserve( 4 );
@@ -259,7 +259,7 @@ void willAbort() {
     abort(); // triggers SIGABRT
 }
 
-TEST( DeathTests, EXPECT_DEATH_Abort ) {
+TEST( test, DeathTests$EXPECT_DEATH_Abort ) {
     // regex ".*" matches any output
     EXPECT_DEATH( willAbort(), ".*" );
 }
@@ -268,7 +268,7 @@ void willExitCode( int _code ) {
     std::exit( _code );
 }
 
-TEST( DeathTests, EXPECT_EXIT_Code42 ) {
+TEST( test, DeathTests$EXPECT_EXIT_Code42 ) {
     // ExitedWithCode matcher checks exit status
     EXPECT_EXIT( willExitCode( 42 ), ExitedWithCode( 42 ), ".*" );
 }
@@ -279,7 +279,7 @@ void printsAndExits() {
     std::exit( 3 );
 }
 
-TEST( ExitTests, PrintsAndExits ) {
+TEST( test, ExitTests$PrintsAndExits ) {
     EXPECT_EXIT( printsAndExits(), ExitedWithCode( 3 ),
                  HasSubstr( "bye world" ) );
 }
@@ -293,7 +293,7 @@ TEST( ExitTests, PrintsAndExits ) {
 
 // Additional helpers/assertions demonstration
 #if 0
-TEST( Additional, SucceedFailAddFailure ) {
+TEST( test, Additional$SucceedFailAddFailure ) {
     SUCCEED() << "explicit success marker";
     ADD_FAILURE() << "explicit failure marker (non-fatal)";
     // Because ADD_FAILURE is non-fatal, the test continues and ends as failed.
