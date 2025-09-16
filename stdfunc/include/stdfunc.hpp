@@ -262,10 +262,29 @@ auto number() -> T {
 
 template < typename Container >
     requires is_container< Container >
-auto value( const Container& _container ) -> typename Container::value_type& {
+auto value( Container& _container ) -> typename Container::value_type& {
     assert( !_container.empty() );
 
     return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
+}
+
+template < typename Container >
+    requires is_container< Container >
+auto value( const Container& _container ) -> const
+    typename Container::value_type& {
+    assert( !_container.empty() );
+
+    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
+}
+
+template < typename Container >
+    requires is_container< Container >
+auto view( Container& _container ) {
+    assert( !_container.empty() );
+
+    return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
+                 return ( random::value( _container ) );
+             } ) );
 }
 
 template < typename Container >
@@ -274,7 +293,7 @@ auto view( const Container& _container ) {
     assert( !_container.empty() );
 
     return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
-                 return ( randomValueFromContainer( _container ) );
+                 return ( random::value( _container ) );
              } ) );
 }
 
