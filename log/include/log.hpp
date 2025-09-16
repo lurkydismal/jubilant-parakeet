@@ -105,8 +105,8 @@ void _variable( std::string_view _variableName,
 #else
 
 template < typename... Arguments >
-inline void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
-                   [[maybe_unused]] Arguments&&... _arguments ) {}
+void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
+            [[maybe_unused]] Arguments&&... _arguments ) {}
 
 #define variable( _variableToLog ) ( ( void )_variableToLog )
 

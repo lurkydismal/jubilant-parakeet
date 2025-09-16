@@ -42,20 +42,20 @@
 namespace stdfunc {
 
 // Constants
-inline constexpr char g_commentSymbol = '#';
-inline constexpr size_t g_decimalRadix = 10;
+constexpr char g_commentSymbol = '#';
+constexpr size_t g_decimalRadix = 10;
 
 namespace color {
 
-inline constexpr std::string_view g_cyanLight = "\x1b[1;36m";
-inline constexpr std::string_view g_blueLight = "\x1b[1;34m";
-inline constexpr std::string_view g_green = "\x1b[1;32m";
-inline constexpr std::string_view g_purpleLight = "\x1b[1;35m";
-inline constexpr std::string_view g_red = "\x1b[1;31m";
-inline constexpr std::string_view g_yellow = "\x1b[1;33m";
-inline constexpr std::string_view g_resetForeground = "\x1b[39m";
-inline constexpr std::string_view g_resetBackground = "\x1b[49m";
-inline constexpr std::string_view g_reset = "\x1b[0m";
+constexpr std::string_view g_cyanLight = "\x1b[1;36m";
+constexpr std::string_view g_blueLight = "\x1b[1;34m";
+constexpr std::string_view g_green = "\x1b[1;32m";
+constexpr std::string_view g_purpleLight = "\x1b[1;35m";
+constexpr std::string_view g_red = "\x1b[1;31m";
+constexpr std::string_view g_yellow = "\x1b[1;33m";
+constexpr std::string_view g_resetForeground = "\x1b[39m";
+constexpr std::string_view g_resetBackground = "\x1b[49m";
+constexpr std::string_view g_reset = "\x1b[0m";
 
 } // namespace color
 
@@ -362,30 +362,8 @@ template < template < typename, size_t > typename Container,
 namespace filesystem {
 
 // Utility OS specific functions ( no side-effects )
-[[nodiscard]] inline auto getApplicationDirectoryAbsolutePath()
-    -> std::optional< std::filesystem::path > {
-    std::optional< std::filesystem::path > l_returnValue = std::nullopt;
-
-    do {
-        std::array< char, PATH_MAX > l_executablePath{};
-
-        // Get executable path
-        {
-            const ssize_t l_executablePathLength = readlink(
-                "/proc/self/exe", l_executablePath.data(), ( PATH_MAX - 1 ) );
-
-            if ( l_executablePathLength == -1 ) [[unlikely]] {
-                break;
-            }
-        }
-
-        l_returnValue =
-            std::filesystem::path( std::string_view( l_executablePath ) )
-                .remove_filename();
-    } while ( false );
-
-    return ( l_returnValue );
-}
+[[nodiscard]] auto getApplicationDirectoryAbsolutePath()
+    -> std::optional< std::filesystem::path >;
 
 namespace {
 

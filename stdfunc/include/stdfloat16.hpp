@@ -2,7 +2,7 @@
 
 #include "stdfunc.hpp"
 
-inline constexpr size_t g_floaT16TypeBitAmount = 16;
+constexpr size_t g_floaT16TypeBitAmount = 16;
 
 using float16_t = _Float16 __attribute__( (
     aligned( stdfunc::bitsToBytes( g_floaT16TypeBitAmount ) ) ) );

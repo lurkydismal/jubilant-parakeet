@@ -37,8 +37,9 @@ export testsToBuild=(
 export staticParts=(
     "plthook"
     "slickdl"
-    "forward_circular_buffer"
+    "arhodigp"
     "log"
+    "forward_circular_buffer"
     "stdfunc"
 )
 export rootSharedObjectName="root"
@@ -53,6 +54,14 @@ BUILD_DEFINES+=(
     "XXH_NO_STDLIB"
     "XXH_NO_STREAM"
     "XXH_STATIC_LINKING_ONLY"
+)
+
+BUILD_DEFINES_RELEASE+=(
+    "NDEBUG"
+)
+
+BUILD_DEFINES_PROFILE+=(
+    "NDEBUG"
 )
 
 BUILD_INCLUDES+=()
