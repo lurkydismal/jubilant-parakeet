@@ -30,8 +30,13 @@ export testsToBuild=(
     # "font_t"
     # "asset"
     # "watch_t"
-    # "log"
+
+    # "slickdl"
+    # "arhodigp"
+    "log"
+    # "forward_circular_buffer"
     "stdfunc"
+
     "test"
 )
 export staticParts=(
