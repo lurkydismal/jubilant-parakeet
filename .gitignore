@@ -12,6 +12,7 @@
 
 # Binary
 **/*.o
+**/*.tmp
 **/**out**
 **/*vgcore*
 **/*.data

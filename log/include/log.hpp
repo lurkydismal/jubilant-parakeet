@@ -15,58 +15,57 @@ constexpr std::string_view g_colorFileName = stdfunc::color::g_purpleLight;
 constexpr std::string_view g_colorLineNumber = stdfunc::color::g_purpleLight;
 constexpr std::string_view g_colorFunctionName = stdfunc::color::g_purpleLight;
 
-inline auto formatPrefix( std::string_view _prefix,
-                          std::string_view _prefixColor = "" ) -> std::string {
-    return ( std::format( "{}{}{}", _prefixColor, _prefix,
+constexpr auto formatWithColor( auto _what, std::string_view _color )
+    -> std::string {
+    return ( std::format( "{}{}{}", _color, _what,
                           stdfunc::color::g_resetForeground ) );
 }
 
-inline auto formatLocation( std::string_view _prefix,
-                            std::string_view _prefixColor = "",
-                            const std::source_location& _sourceLocation =
+inline auto formatLocation( const std::source_location& _sourceLocation =
                                 std::source_location::current() )
     -> std::string {
-    return (
-        std::format( "{}Thread {}{}{}: File '{}{}{}': line {}{}{} "
-                     "in function '{}{}{}' | Message: ",
-                     formatPrefix( _prefix, _prefixColor ),
-                     stdfunc::color::g_resetForeground, g_colorThreadId,
-                     std::this_thread::get_id(),
-                     stdfunc::color::g_resetForeground, g_colorFileName,
-                     std::filesystem::path( _sourceLocation.file_name() )
-                         .filename()
-                         .string(),
-                     stdfunc::color::g_resetForeground, g_colorLineNumber,
-                     _sourceLocation.line(), stdfunc::color::g_resetForeground,
-                     g_colorFunctionName, _sourceLocation.function_name(),
-                     stdfunc::color::g_resetForeground ) );
+    return ( std::format(
+        "Thread {}: '{}:{}' "
+        "in '{}'",
+        formatWithColor( std::this_thread::get_id(), g_colorThreadId ),
+        formatWithColor( std::filesystem::path( _sourceLocation.file_name() )
+                             .filename()
+                             .string(),
+                         g_colorFileName ),
+        formatWithColor( _sourceLocation.line(), g_colorLineNumber ),
+        formatWithColor( _sourceLocation.function_name(),
+                         g_colorFunctionName ) ) );
 }
 
 #if defined( DEBUG )
 
 template < typename... Arguments >
-inline void _debug(
-    [[maybe_unused]] std::format_string< Arguments... > _format,
-    [[maybe_unused]] const std::source_location& _sourceLocation,
-    [[maybe_unused]] Arguments&&... _arguments ) {
-    std::print( "{}", formatLocation( "DEBUG: ", stdfunc::color::g_cyanLight,
-                                      _sourceLocation ) );
+void _debug( [[maybe_unused]] std::format_string< Arguments... > _format,
+             [[maybe_unused]] const std::source_location& _sourceLocation,
+             [[maybe_unused]] Arguments&&... _arguments ) {
+    std::print( "{}{} | Message: ",
+                formatWithColor( "DEBUG: ", stdfunc::color::g_cyanLight ),
+                formatLocation( _sourceLocation ) );
 
-    std::println( _format, std::forward< Arguments >( _arguments )... );
+    std::print( _format, std::forward< Arguments >( _arguments )... );
+
+    std::println( "{}", stdfunc::color::g_reset );
 }
 
 #endif
 
 template < typename... Arguments >
-inline void _error( std::format_string< Arguments... > _format,
-                    const std::source_location& _sourceLocation,
-                    Arguments&&... _arguments ) {
-    std::print(
-        std::cerr, "{}",
-        formatLocation( "ERROR: ", stdfunc::color::g_red, _sourceLocation ) );
+void _error( std::format_string< Arguments... > _format,
+             const std::source_location& _sourceLocation,
+             Arguments&&... _arguments ) {
+    std::print( std::cerr, "{}{} | Message: ",
+                formatWithColor( "ERROR: ", stdfunc::color::g_red ),
+                formatLocation( _sourceLocation ) );
 
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
+
+    std::println( "{}", stdfunc::color::g_reset );
 }
 
 } // namespace
@@ -76,27 +75,27 @@ namespace logg {
 #if defined( DEBUG )
 
 template < typename... Arguments >
-inline void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
-                   [[maybe_unused]] Arguments&&... _arguments ) {
+void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
+            [[maybe_unused]] Arguments&&... _arguments ) {
     _debug( _format, std::source_location::current(),
             std::forward< Arguments >( _arguments )... );
 }
 
 template < typename T >
     requires( !std::is_pointer_v< T > )
-inline void _variable( std::string_view _variableName,
-                       const T& _variable,
-                       const std::source_location& _sourceLocation =
-                           std::source_location::current() ) {
+void _variable( std::string_view _variableName,
+                const T& _variable,
+                const std::source_location& _sourceLocation =
+                    std::source_location::current() ) {
     _debug( "{} = '{}'", _sourceLocation, _variableName, _variable );
 }
 
 template < typename T >
     requires( std::is_pointer_v< T > )
-inline void _variable( std::string_view _variableName,
-                       const T _variable,
-                       const std::source_location& _sourceLocation =
-                           std::source_location::current() ) {
+void _variable( std::string_view _variableName,
+                const T _variable,
+                const std::source_location& _sourceLocation =
+                    std::source_location::current() ) {
     _debug( "{} = '0x{:08x}'", _sourceLocation, _variableName,
             std::bit_cast< uintptr_t >( _variable ) );
 }
@@ -114,25 +113,25 @@ inline void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
 #endif
 
 template < typename... Arguments >
-inline void info( std::format_string< Arguments... > _format,
-                  Arguments&&... _arguments ) {
-    std::print( "{}", formatPrefix( "INFO: ", stdfunc::color::g_green ) );
+void info( std::format_string< Arguments... > _format,
+           Arguments&&... _arguments ) {
+    std::print( "{}", formatWithColor( "INFO: ", stdfunc::color::g_green ) );
 
     std::println( _format, std::forward< Arguments >( _arguments )... );
 }
 
 template < typename... Arguments >
-inline void warning( std::format_string< Arguments... > _format,
-                     Arguments&&... _arguments ) {
+void warning( std::format_string< Arguments... > _format,
+              Arguments&&... _arguments ) {
     std::print( std::cerr, "{}",
-                formatPrefix( "WARNING: ", stdfunc::color::g_yellow ) );
+                formatWithColor( "WARNING: ", stdfunc::color::g_yellow ) );
 
     std::println( _format, std::forward< Arguments >( _arguments )... );
 }
 
 template < typename... Arguments >
-inline void error( std::format_string< Arguments... > _format,
-                   Arguments&&... _arguments ) {
+void error( std::format_string< Arguments... > _format,
+            Arguments&&... _arguments ) {
     _error( _format, std::source_location::current(),
             std::forward< Arguments >( _arguments )... );
 }

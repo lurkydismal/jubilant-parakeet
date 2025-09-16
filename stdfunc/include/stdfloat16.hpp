@@ -42,15 +42,15 @@ public:
     static constexpr auto round_error() noexcept -> float16_t { return 0.5f; }
 
     static constexpr auto infinity() noexcept -> float16_t {
-        return ( float16_t( INFINITY ) );
+        return ( float16_t{ INFINITY } );
     }
 
     static constexpr auto quiet_NaN() noexcept -> float16_t {
-        return ( float16_t( NAN ) );
+        return ( float16_t{ NAN } );
     }
 
     static constexpr auto signaling_NaN() noexcept -> float16_t {
-        return ( float16_t( NAN ) );
+        return ( float16_t{ NAN } );
     }
 
     static constexpr auto denorm_min() noexcept -> float16_t {
@@ -85,7 +85,6 @@ struct std::formatter< float16_t, char > {
     }
 
     auto format( float16_t _value, std::format_context& _context ) const {
-        return ( std::format_to( _context.out(), "{{}}",
-                                 static_cast< float >( _value ) ) );
+        return ( std::format_to( _context.out(), "{{}}", _value ) );
     }
 };

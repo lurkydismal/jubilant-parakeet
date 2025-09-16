@@ -7,7 +7,6 @@
 
 #include "camera.hpp"
 #include "input.hpp"
-#include "stdfloat16.hpp"
 #include "window.hpp"
 
 namespace runtime {
@@ -34,7 +33,7 @@ using applicationState_t = struct applicationState {
     } renderContext;
 
     struct metadata {
-        static constexpr float16_t g_version = 0.1;
+        static constexpr float g_version = 0.1;
         static constexpr std::string_view g_identifier =
             window::window_t::g_name;
     };

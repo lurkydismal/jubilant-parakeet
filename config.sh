@@ -60,6 +60,8 @@ BUILD_INCLUDES+=()
 LIBRARIES_TO_LINK+=(
     "mimalloc"
     "zstd"
+    "elf"
+    "unwind"
 )
 
 LIBRARIES_TO_LINK_TESTS+=()

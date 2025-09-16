@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "log.hpp"
+#include "stdfunc.hpp"
 
 namespace asset {
 
