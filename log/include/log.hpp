@@ -126,7 +126,8 @@ void warning( std::format_string< Arguments... > _format,
     std::print( std::cerr, "{}",
                 formatWithColor( "WARNING: ", stdfunc::color::g_yellow ) );
 
-    std::println( _format, std::forward< Arguments >( _arguments )... );
+    std::println( std::cerr, _format,
+                  std::forward< Arguments >( _arguments )... );
 }
 
 template < typename... Arguments >
