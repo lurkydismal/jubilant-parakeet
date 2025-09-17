@@ -78,7 +78,7 @@ private:
     int _targetFd{ -1 };
 };
 
-class LogFixture : public ::testing::Test {
+class LogFixture : public testing::Test {
 protected:
     void TearDown() override {
         // Nothing global to clean in log.hpp itself — but ensure std streams

@@ -1,7 +1,9 @@
 #pragma once
 
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_scancode.h>
-#include <input.hpp>
+
+#include "input.hpp"
 
 namespace control {
 
@@ -23,8 +25,17 @@ using control_t = struct control {
     }
 
     // TODO: Implement
-    operator ::std::string() const {
-        return ( std::to_string( scancode ) + std::string( input ) );
+    operator std::string() const {
+        std::string_view l_keyName = SDL_GetKeyName( scancode );
+
+        if ( l_keyName.empty() ) {
+            l_keyName = "UNKNOWN";
+        }
+
+#if 0
+        return ( std::format( "{} - {}", l_keyName, input ) );
+#endif
+        return ( std::string( l_keyName ) );
     }
 
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
