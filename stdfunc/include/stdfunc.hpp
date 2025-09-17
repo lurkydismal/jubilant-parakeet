@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdarg>
 #include <filesystem>
+#include <functional>
 #include <gsl/pointers>
 #include <random>
 #include <ranges>
@@ -14,7 +15,7 @@
 #include <string_view>
 #include <type_traits>
 
-#if ( defined( DEBUG ) && !defined( TESTS ) )
+#if defined( DEBUG )
 
 #include <iostream>
 #include <print>
@@ -91,7 +92,7 @@ concept is_lambda =
 
 #endif
 
-#if ( defined( DEBUG ) && !defined( TESTS ) )
+#if defined( DEBUG )
 
 namespace {
 
@@ -103,23 +104,22 @@ constexpr std::string_view g_trapColorFunctionName = color::g_purpleLight;
 
 constexpr size_t g_backtraceLimit = 10;
 
+constexpr auto formatWithColor( auto _what, std::string_view _color )
+    -> std::string {
+    return ( std::format( "{}{}{}", _color, _what,
+                          stdfunc::color::g_resetForeground ) );
+}
+
+} // namespace
+
 template < typename... Arguments >
-[[noreturn]] void _trap( std::format_string< Arguments... > _format,
-                         std::source_location _sourceLocation,
-                         Arguments&&... _arguments ) {
-    std::print( std::cerr,
-                "{}[TRAP] {}Thread {}{}{}: File '{}{}{}': line {}{}{} "
-                "in function '{}{}{}' | Message: ",
-                g_trapColorLevel, color::g_resetForeground, g_trapColorThreadId,
-                std::this_thread::get_id(), color::g_resetForeground,
-                g_trapColorFileName,
-                std::filesystem::path( _sourceLocation.file_name() )
-                    .filename()
-                    .string(),
-                color::g_resetForeground, g_trapColorLineNumber,
-                _sourceLocation.line(), color::g_resetForeground,
-                g_trapColorFunctionName, _sourceLocation.function_name(),
-                color::g_resetForeground );
+[[noreturn]] void trap( std::format_string< Arguments... > _format = "",
+                        Arguments&&... _arguments ) {
+    std::print( std::cerr, "{} Thread {}{:#X}{}:",
+                formatWithColor( "[TRAP]", g_trapColorLevel ),
+                g_trapColorThreadId,
+                std::hash< std::thread::id >{}( std::this_thread::get_id() ),
+                color::g_reset );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
 #if 0
@@ -130,22 +130,12 @@ template < typename... Arguments >
     __builtin_trap();
 }
 
-} // namespace
-
-template < typename... Arguments >
-[[noreturn]] void trap( std::format_string< Arguments... > _format = "",
-                        Arguments&&... _arguments ) {
-    _trap( _format, std::source_location::current(),
-           std::forward< Arguments >( _arguments )... );
-}
-
 template < typename... Arguments >
 constexpr void assert( bool _result,
                        std::format_string< Arguments... > _format = "",
                        Arguments&&... _arguments ) {
     if ( !_result ) [[unlikely]] {
-        _trap( _format, std::source_location::current(),
-               std::forward< Arguments >( _arguments )... );
+        trap( _format, std::forward< Arguments >( _arguments )... );
     }
 }
 

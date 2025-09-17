@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <concepts>
 #include <iterator>
 #include <type_traits>
@@ -10,14 +11,13 @@ namespace {
 
 #define requireNonEmpty() ( stdfunc::assert( !this->empty() ) )
 #define requireInRange( _index ) \
-    ( stdfunc::assert( ( _index ) < this->size() ) )
+    ( stdfunc::assert( ( _index ) < ( this->max_size() + 1 ) ) )
 #define ensureCapacity() ( stdfunc::assert( !this->full() ) )
 
 } // namespace
 
 namespace fcb {
 
-// TODO: Implement view
 template < typename T, size_t N >
     requires( N > 0 )
 struct forwardCircularBuffer {
@@ -433,6 +433,11 @@ public:
 
     // Vector operations
     constexpr void clear() {
+        // TODO: Test better
+        for ( auto& _element : *this ) {
+            std::destroy_at( std::addressof( _element ) );
+        }
+
         _currentBufferIndex = 0;
         _previousBufferIndex = 0;
         _elementAmount = 0;
@@ -442,6 +447,8 @@ public:
         ensureCapacity();
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
+        const size_t l_nextBufferIndex =
+            logical_to_physical( l_currentBufferIndex + 1 );
 
         if constexpr ( std::is_assignable_v< T&, T > ) {
             // simple case: assign into existing slot
@@ -453,20 +460,18 @@ public:
                            "use std::array<T,N> storage. "
                            "Use std::optional<T> or raw aligned storage for "
                            "move-only non-default-constructible types." );
-            std::destroy_at(
-                std::addressof( _data.at( l_currentBufferIndex ) ) );
+
+            if ( l_nextBufferIndex < _elementAmount ) {
+                std::destroy_at(
+                    std::addressof( _data.at( l_currentBufferIndex ) ) );
+            }
+
             std::construct_at(
                 std::addressof( _data.at( l_currentBufferIndex ) ), _value );
         }
 
-#if 0
-        _data.at( l_currentBufferIndex ) = _value;
-#endif
-
-        _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
-
+        _currentBufferIndex = l_nextBufferIndex;
         _previousBufferIndex = l_currentBufferIndex;
-
         _elementAmount++;
     }
 
@@ -474,10 +479,9 @@ public:
         ensureCapacity();
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
+        const size_t l_nextBufferIndex =
+            logical_to_physical( l_currentBufferIndex + 1 );
 
-#if 0
-        _data.at( l_currentBufferIndex ) = std::move( _value );
-#endif
         if constexpr ( std::is_assignable_v< T&, T > ) {
             _data.at( l_currentBufferIndex ) = std::move( _value );
         } else {
@@ -486,17 +490,19 @@ public:
                            "use std::array<T,N> storage. "
                            "Use std::optional<T> or raw aligned storage for "
                            "move-only non-default-constructible types." );
-            std::destroy_at(
-                std::addressof( _data.at( l_currentBufferIndex ) ) );
+
+            if ( l_nextBufferIndex < _elementAmount ) {
+                std::destroy_at(
+                    std::addressof( _data.at( l_currentBufferIndex ) ) );
+            }
+
             std::construct_at(
                 std::addressof( _data.at( l_currentBufferIndex ) ),
                 std::move( _value ) );
         }
 
-        _currentBufferIndex = ( ( l_currentBufferIndex + 1 ) % max_size() );
-
+        _currentBufferIndex = l_nextBufferIndex;
         _previousBufferIndex = l_currentBufferIndex;
-
         _elementAmount++;
     }
 
@@ -506,6 +512,8 @@ public:
         ensureCapacity();
 
         const size_t l_currentBufferIndex = _currentBufferIndex;
+        const size_t l_nextBufferIndex =
+            logical_to_physical( l_currentBufferIndex + 1 );
 
         if constexpr ( std::is_assignable_v< T&, T > ) {
             // If T supports assignment from a temporary, build a temporary and
@@ -519,20 +527,21 @@ public:
                 "when using std::array<T,N> storage. "
                 "For move-only non-default-constructible types use "
                 "std::optional<T> or raw aligned storage + placement-new." );
+
             // If T is not assignable but is default-constructible, destroy
             // current and construct in-place
-            std::destroy_at(
-                std::addressof( _data.at( l_currentBufferIndex ) ) );
+            if ( l_nextBufferIndex < _elementAmount ) {
+                std::destroy_at(
+                    std::addressof( _data.at( l_currentBufferIndex ) ) );
+            }
+
             std::construct_at(
                 std::addressof( _data.at( l_currentBufferIndex ) ),
                 std::forward< Arguments >( _arguments )... );
         }
 
-#if 0
-        _data.at( l_currentBufferIndex ) =
-            T(std::forward< Arguments >( _arguments )... );
-#endif
-
+        _currentBufferIndex = l_nextBufferIndex;
+        _previousBufferIndex = l_currentBufferIndex;
         _elementAmount++;
 
         return ( back() );
@@ -551,35 +560,12 @@ public:
 
         const size_t l_removedIndex = _previousBufferIndex;
 
-        if constexpr ( std::is_assignable_v< T&, T > ) {
-            // If T supports assignment from a temporary, build a temporary and
-            // assign
-#if 0
-            l_returnValue = std::move( back() );
-#endif
-        } else {
-            static_assert(
-                std::is_default_constructible_v< T >,
-                "pop_pack: T must be assignable or default-constructible "
-                "when using std::array<T,N> storage. "
-                "For move-only non-default-constructible types use "
-                "std::optional<T> or raw aligned storage + placement-new." );
-            // If T is not assignable but is default-constructible, destroy
-            // current and construct
-            std::destroy_at( std::addressof( _data.at( l_removedIndex ) ) );
-
-            // FIX: Probably needs a fix
-#if 0
-            l_returnValue = std::move( back() );
-#endif
-        }
-
-        // TODO: Call destructor
-
         _currentBufferIndex = l_removedIndex;
         // TODO: Improve
         _previousBufferIndex =
-            ( ( l_removedIndex + max_size() - 1 ) % max_size() );
+            ( ( l_removedIndex > 0 )
+                  ? ( logical_to_physical( l_removedIndex - 1 ) )
+                  : ( 0 ) );
         _elementAmount--;
 
         return ( l_returnValue );
