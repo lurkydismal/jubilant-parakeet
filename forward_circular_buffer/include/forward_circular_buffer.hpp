@@ -18,7 +18,6 @@ namespace {
 
 namespace fcb {
 
-// TODO: Implement view
 template < typename T, size_t N >
     requires( N > 0 )
 struct forwardCircularBuffer {
