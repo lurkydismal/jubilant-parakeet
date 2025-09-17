@@ -116,7 +116,7 @@ export BUILD_C_FLAGS="-pipe -std=gnu99 -march=native -ffunction-sections -fdata-
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-flto=jobserver -fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
-export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp"
+export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp -O0"
 
 export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -fno-rtti -fno-exceptions -fno-threadsafe-statics -Wno-enum-enum-conversion -Wno-c99-designator -Wno-gnu-string-literal-operator-template"
 export BUILD_CPP_FLAGS_DEBUG="$BUILD_C_FLAGS_DEBUG"

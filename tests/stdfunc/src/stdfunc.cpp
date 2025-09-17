@@ -617,8 +617,10 @@ TEST( stdfunc, compress$decompress ) {
         const std::string l_original = "";
         auto l_compressedOpt = compress::text( l_original );
         ASSERT_FALSE( l_compressedOpt.has_value() );
+#if 0
         auto l_decompressedOpt = decompress::text( *l_compressedOpt );
         ASSERT_FALSE( l_decompressedOpt.has_value() );
+#endif
     }
 
     {
@@ -690,9 +692,11 @@ TEST( stdfunc, compress$decompress ) {
         auto l_compressedOpt =
             compress::data( std::span< std::byte >( l_original ) );
         ASSERT_FALSE( l_compressedOpt.has_value() );
+#if 0
         auto l_decompressedOpt =
             decompress::data( std::span< std::byte >( *l_compressedOpt ), 0 );
         ASSERT_FALSE( l_decompressedOpt.has_value() );
+#endif
     }
 
     {
