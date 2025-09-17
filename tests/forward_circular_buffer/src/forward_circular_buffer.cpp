@@ -70,14 +70,16 @@ TEST( ForwardCircularBuffer, FillAndFull ) {
     EXPECT_FALSE( l_buf.empty() );
 
     // All elements should be 7
-    for ( auto l_x : l_buf )
+    for ( auto l_x : l_buf ) {
         EXPECT_EQ( l_x, 7 );
+    }
 
     // rbegin should iterate in reverse order (still all equal)
     auto l_rv = toVector( l_buf.rbegin(), l_buf.rend() );
     EXPECT_EQ( l_rv.size(), l_buf.max_size() );
-    for ( auto l_x : l_rv )
+    for ( auto l_x : l_rv ) {
         EXPECT_EQ( l_x, 7 );
+    }
 }
 
 TEST( ForwardCircularBuffer, IterationOrderAndReverse ) {
@@ -216,6 +218,8 @@ TEST( FcbIntrusive, OutOfRangeAccessTriggersAssertOrThrow ) {
     // If neither is true, just run and ensure behavior is "safe" (i.e., not
     // returning garbage) This will likely be UB if assertion is a no-op, but we
     // keep the test non-fatal.
+    ASSERT_DEATH( ( void )l_buf.at( 5 ), "" );
+#if 0
     EXPECT_ANY_THROW( {
         try {
             volatile auto l_v = l_buf.at( 5 );
@@ -224,6 +228,7 @@ TEST( FcbIntrusive, OutOfRangeAccessTriggersAssertOrThrow ) {
             throw;
         }
     } );
+#endif
 #endif
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include <iterator>
 #include <type_traits>
 
@@ -32,11 +33,11 @@ struct forwardCircularBuffer {
 
     // Iterators (logical order: oldest -> newest)
     struct iterator {
-        using value_type = T;
         using difference_type = std::ptrdiff_t;
+        using iterator_category = std::random_access_iterator_tag;
         using pointer = T*;
         using reference = T&;
-        using iterator_category = std::random_access_iterator_tag;
+        using value_type = T;
 
         constexpr iterator( forwardCircularBuffer* _data, size_t _index )
             : _data( _data ), _index( _index ) {}
@@ -149,11 +150,11 @@ struct forwardCircularBuffer {
     };
 
     struct const_iterator {
-        using value_type = T;
         using difference_type = std::ptrdiff_t;
-        using pointer = T*;
-        using reference = T&;
         using iterator_category = std::random_access_iterator_tag;
+        using pointer = const T*;
+        using reference = const T&;
+        using value_type = const T;
 
         constexpr const_iterator( const forwardCircularBuffer* _data,
                                   size_t _index )
@@ -282,13 +283,16 @@ protected:
 public:
     // DR 776
     constexpr void fill( const T& _value ) {
-        std::fill_n( begin(), size(), _value );
+        std::ranges::fill_n( _data.begin(), max_size(), _value );
 
         _elementAmount = max_size();
     }
 
-    constexpr void swap( forwardCircularBuffer& _buffer ) {
-        std::swap_ranges( begin(), end(), _buffer.begin() );
+    constexpr void swap( forwardCircularBuffer< T, N >& _buffer ) {
+        std::swap( _data, _buffer._data );
+        std::swap( _currentBufferIndex, _buffer._currentBufferIndex );
+        std::swap( _previousBufferIndex, _buffer._previousBufferIndex );
+        std::swap( _elementAmount, _buffer._elementAmount );
     }
 
     // Iterators (logical order)
@@ -508,7 +512,13 @@ public:
             // assign
             _data.at( l_currentBufferIndex ) =
                 T( std::forward< Arguments >( _arguments )... );
-        } else if constexpr ( std::is_default_constructible_v< T > ) {
+        } else {
+            static_assert(
+                std::is_default_constructible_v< T >,
+                "emplace_back: T must be assignable or default-constructible "
+                "when using std::array<T,N> storage. "
+                "For move-only non-default-constructible types use "
+                "std::optional<T> or raw aligned storage + placement-new." );
             // If T is not assignable but is default-constructible, destroy
             // current and construct in-place
             std::destroy_at(
@@ -516,14 +526,6 @@ public:
             std::construct_at(
                 std::addressof( _data.at( l_currentBufferIndex ) ),
                 std::forward< Arguments >( _arguments )... );
-        } else {
-            static_assert(
-                std::is_assignable_v< T&, T > ||
-                    std::is_default_constructible_v< T >,
-                "emplace_back: T must be assignable or default-constructible "
-                "when using std::array<T,N> storage. "
-                "For move-only non-default-constructible types use "
-                "std::optional<T> or raw aligned storage + placement-new." );
         }
 
 #if 0
@@ -545,13 +547,36 @@ public:
         // TODO: Contract instead
         requireNonEmpty();
 
+        T l_returnValue = std::move( back() );
+
         const size_t l_removedIndex = _previousBufferIndex;
 
-        T l_returnValue = std::move( back() );
+        if constexpr ( std::is_assignable_v< T&, T > ) {
+            // If T supports assignment from a temporary, build a temporary and
+            // assign
+#if 0
+            l_returnValue = std::move( back() );
+#endif
+        } else {
+            static_assert(
+                std::is_default_constructible_v< T >,
+                "pop_pack: T must be assignable or default-constructible "
+                "when using std::array<T,N> storage. "
+                "For move-only non-default-constructible types use "
+                "std::optional<T> or raw aligned storage + placement-new." );
+            // If T is not assignable but is default-constructible, destroy
+            // current and construct
+            std::destroy_at( std::addressof( _data.at( l_removedIndex ) ) );
+
+            // FIX: Probably needs a fix
+#if 0
+            l_returnValue = std::move( back() );
+#endif
+        }
 
         // TODO: Call destructor
 
-        _currentBufferIndex--;
+        _currentBufferIndex = l_removedIndex;
         // TODO: Improve
         _previousBufferIndex =
             ( ( l_removedIndex + max_size() - 1 ) % max_size() );
