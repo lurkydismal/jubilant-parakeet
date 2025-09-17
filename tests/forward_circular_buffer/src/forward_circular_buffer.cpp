@@ -211,24 +211,10 @@ TEST( FcbIntrusive, OutOfRangeAccessTriggersAssertOrThrow ) {
     l_buf.push_back( 10 );
     l_buf.push_back( 20 );
 
-#if defined( TEST_ASSERT_ABORT )
+#if defined( GTEST_HAS_DEATH_TEST )
     // If your stdfunc::assert aborts the process we can use death test
-    ASSERT_DEATH( buf.at( 5 ), "" ); // exact message can be left empty
-#else
-    // If neither is true, just run and ensure behavior is "safe" (i.e., not
-    // returning garbage) This will likely be UB if assertion is a no-op, but we
-    // keep the test non-fatal.
-    ASSERT_DEATH( ( void )l_buf.at( 5 ), "" );
-#if 0
-    EXPECT_ANY_THROW( {
-        try {
-            volatile auto l_v = l_buf.at( 5 );
-            ( void )l_v;
-        } catch ( ... ) {
-            throw;
-        }
-    } );
-#endif
+    ASSERT_DEATH( ( void )l_buf.at( 5 ),
+                  "" ); // exact message can be left empty
 #endif
 }
 
@@ -237,11 +223,10 @@ TEST( FcbIntrusive, PushWhenFullTriggersAssertOrDeath ) {
     forwardCircularBuffer< int, 2 > l_buf;
     l_buf.push_back( 1 );
     l_buf.push_back( 2 );
-#if defined( TEST_ASSERT_ABORT )
-    ASSERT_DEATH( buf.push_back( 3 ), "" );
+#if defined( GTEST_HAS_DEATH_TEST )
+    EXPECT_DEATH( l_buf.push_back( 3 ), ".*" );
 #else
-    GTEST_SKIP() << "Push-when-full death test skipped; compile with "
-                    "TEST_ASSERT_ABORT";
+    GTEST_SKIP() << "Push-when-full death test skipped";
 #endif
 }
 
@@ -268,10 +253,13 @@ TEST( FcbIntrusive, EmplaceBackMoveOnlyAndPopDestroys ) {
     l_buf.emplace_back( 20 );
     EXPECT_EQ( l_buf.size(), 2u );
     EXPECT_EQ( lifeTracker::g_constructions, 2 );
+    EXPECT_EQ( lifeTracker::g_destructions, 0 );
 
     // pop should move out and destroy the removed object's storage
-    lifeTracker l_removed = l_buf.pop_back();
-    EXPECT_EQ( l_removed.v, 20 );
+    {
+        lifeTracker l_removed = l_buf.pop_back();
+        EXPECT_EQ( l_removed.v, 20 );
+    }
     // after pop_back, one object was destroyed
     EXPECT_EQ( lifeTracker::g_destructions, 1 );
     EXPECT_EQ( l_buf.size(), 1u );
@@ -282,6 +270,7 @@ TEST( FcbIntrusive, EmplaceBackMoveOnlyAndPopDestroys ) {
     // elements. If you have fixed clear to destroy elements, expect
     // destructions == 2. Otherwise, this test fails or must be updated. We mark
     // as informative:
+    EXPECT_EQ( lifeTracker::g_destructions, 2 );
     if ( lifeTracker::g_destructions != 2 ) {
         GTEST_FAIL() << "clear() did not destroy elements; implement "
                         "destructor calls in clear()";
