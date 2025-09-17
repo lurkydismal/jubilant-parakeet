@@ -19,7 +19,7 @@ export testsToBuild=(
     # "runtime"
     # "control"
     # "input"
-    # "FPS"
+    "FPS"
     # "object_t"
     # "camera"
     # "state_t"
