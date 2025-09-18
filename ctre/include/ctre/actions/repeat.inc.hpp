@@ -1,23 +1,25 @@
-#ifndef CTRE__ACTIONS__REPEAT__HPP
-#define CTRE__ACTIONS__REPEAT__HPP
+#pragma once
+
+#include "ctre/pcre_actions.hpp"
 
 // repeat 1..N
 template < auto V, typename A, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_plus,
+    ctre::pcre::repeat_plus,
     ctll::term< V >,
-    pcre_context< ctll::list< A, Ts... >, Parameters > subject ) {
-    return pcre_context{ ctll::push_front( plus< A >(), ctll::list< Ts... >() ),
-                         subject.parameters };
+    ctre::pcre_context< ctll::list< A, Ts... >, Parameters > subject ) {
+    return ctre::pcre_context{
+        ctll::push_front( plus< A >(), ctll::list< Ts... >() ),
+        subject.parameters };
 }
 // repeat 1..N (sequence)
 template < auto V, typename... Content, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_plus,
+    ctre::pcre::repeat_plus,
     ctll::term< V >,
-    pcre_context< ctll::list< sequence< Content... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::sequence< Content... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( plus< Content... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -25,20 +27,21 @@ static constexpr auto apply(
 // repeat 0..N
 template < auto V, typename A, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_star,
+    ctre::pcre::repeat_star,
     ctll::term< V >,
-    pcre_context< ctll::list< A, Ts... >, Parameters > subject ) {
-    return pcre_context{ ctll::push_front( star< A >(), ctll::list< Ts... >() ),
-                         subject.parameters };
+    ctre::pcre_context< ctll::list< A, Ts... >, Parameters > subject ) {
+    return ctre::pcre_context{
+        ctll::push_front( star< A >(), ctll::list< Ts... >() ),
+        subject.parameters };
 }
 // repeat 0..N (sequence)
 template < auto V, typename... Content, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_star,
+    ctre::pcre::repeat_star,
     ctll::term< V >,
-    pcre_context< ctll::list< sequence< Content... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::sequence< Content... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( star< Content... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -46,10 +49,10 @@ static constexpr auto apply(
 // create_number (seed)
 template < auto V, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::create_number,
+    ctre::pcre::create_number,
     ctll::term< V >,
-    pcre_context< ctll::list< Ts... >, Parameters > subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< Ts... >, Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( number< static_cast< size_t >( V - '0' ) >(),
                           subject.stack ),
         subject.parameters };
@@ -57,11 +60,12 @@ static constexpr auto apply(
 // push_number
 template < auto V, size_t N, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::push_number,
+    ctre::pcre::push_number,
     ctll::term< V >,
-    pcre_context< ctll::list< number< N >, Ts... >, Parameters > subject ) {
+    ctre::pcre_context< ctll::list< ctre::number< N >, Ts... >, Parameters >
+        subject ) {
     constexpr size_t previous = N * 10ull;
-    return pcre_context{
+    return ctre::pcre_context{
         ctll::push_front( number< ( previous + ( V - '0' ) ) >(),
                           ctll::list< Ts... >() ),
         subject.parameters };
@@ -75,11 +79,12 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_ab,
+    ctre::pcre::repeat_ab,
     ctll::term< V >,
-    pcre_context< ctll::list< number< B >, number< A >, Subject, Ts... >,
-                  Parameters > subject ) {
-    return pcre_context{
+    ctre::pcre_context<
+        ctll::list< ctre::number< B >, ctre::number< A >, Subject, Ts... >,
+        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, B, Subject >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -91,12 +96,14 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_ab,
+    ctre::pcre::repeat_ab,
     ctll::term< V >,
-    pcre_context<
-        ctll::list< number< B >, number< A >, sequence< Content... >, Ts... >,
-        Parameters > subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::number< B >,
+                                    ctre::number< A >,
+                                    ctre::sequence< Content... >,
+                                    Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, B, Content... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -108,11 +115,11 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_exactly,
+    ctre::pcre::repeat_exactly,
     ctll::term< V >,
-    pcre_context< ctll::list< number< A >, Subject, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::number< A >, Subject, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, A, Subject >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -123,11 +130,12 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_exactly,
+    ctre::pcre::repeat_exactly,
     ctll::term< V >,
-    pcre_context< ctll::list< number< A >, sequence< Content... >, Ts... >,
-                  Parameters > subject ) {
-    return pcre_context{
+    ctre::pcre_context<
+        ctll::list< ctre::number< A >, ctre::sequence< Content... >, Ts... >,
+        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, A, Content... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -139,11 +147,11 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_at_least,
+    ctre::pcre::repeat_at_least,
     ctll::term< V >,
-    pcre_context< ctll::list< number< A >, Subject, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::number< A >, Subject, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, 0, Subject >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -154,11 +162,12 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::repeat_at_least,
+    ctre::pcre::repeat_at_least,
     ctll::term< V >,
-    pcre_context< ctll::list< number< A >, sequence< Content... >, Ts... >,
-                  Parameters > subject ) {
-    return pcre_context{
+    ctre::pcre_context<
+        ctll::list< ctre::number< A >, ctre::sequence< Content... >, Ts... >,
+        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( repeat< A, 0, Content... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -166,11 +175,11 @@ static constexpr auto apply(
 // make_lazy (plus)
 template < auto V, typename... Subject, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::make_lazy,
+    ctre::pcre::make_lazy,
     ctll::term< V >,
-    pcre_context< ctll::list< plus< Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::plus< Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( lazy_plus< Subject... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -178,11 +187,11 @@ static constexpr auto apply(
 // make_lazy (star)
 template < auto V, typename... Subject, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::make_lazy,
+    ctre::pcre::make_lazy,
     ctll::term< V >,
-    pcre_context< ctll::list< star< Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::star< Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( lazy_star< Subject... >(), ctll::list< Ts... >() ),
         subject.parameters };
 }
@@ -195,37 +204,40 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::make_lazy,
+    ctre::pcre::make_lazy,
     ctll::term< V >,
-    pcre_context< ctll::list< repeat< A, B, Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{ ctll::push_front( lazy_repeat< A, B, Subject... >(),
-                                           ctll::list< Ts... >() ),
-                         subject.parameters };
+    ctre::pcre_context< ctll::list< ctre::repeat< A, B, Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
+        ctll::push_front( lazy_repeat< A, B, Subject... >(),
+                          ctll::list< Ts... >() ),
+        subject.parameters };
 }
 
 // make_possessive (plus)
 template < auto V, typename... Subject, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::make_possessive,
+    ctre::pcre::make_possessive,
     ctll::term< V >,
-    pcre_context< ctll::list< plus< Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{ ctll::push_front( possessive_plus< Subject... >(),
-                                           ctll::list< Ts... >() ),
-                         subject.parameters };
+    ctre::pcre_context< ctll::list< ctre::plus< Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
+        ctll::push_front( possessive_plus< Subject... >(),
+                          ctll::list< Ts... >() ),
+        subject.parameters };
 }
 
 // make_possessive (star)
 template < auto V, typename... Subject, typename... Ts, typename Parameters >
 static constexpr auto apply(
-    pcre::make_possessive,
+    ctre::pcre::make_possessive,
     ctll::term< V >,
-    pcre_context< ctll::list< star< Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{ ctll::push_front( possessive_star< Subject... >(),
-                                           ctll::list< Ts... >() ),
-                         subject.parameters };
+    ctre::pcre_context< ctll::list< ctre::star< Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
+        ctll::push_front( possessive_star< Subject... >(),
+                          ctll::list< Ts... >() ),
+        subject.parameters };
 }
 
 // make_possessive (repeat<A,B>)
@@ -236,14 +248,12 @@ template < auto V,
            typename... Ts,
            typename Parameters >
 static constexpr auto apply(
-    pcre::make_possessive,
+    ctre::pcre::make_possessive,
     ctll::term< V >,
-    pcre_context< ctll::list< repeat< A, B, Subject... >, Ts... >, Parameters >
-        subject ) {
-    return pcre_context{
+    ctre::pcre_context< ctll::list< ctre::repeat< A, B, Subject... >, Ts... >,
+                        Parameters > subject ) {
+    return ctre::pcre_context{
         ctll::push_front( possessive_repeat< A, B, Subject... >(),
                           ctll::list< Ts... >() ),
         subject.parameters };
 }
-
-#endif

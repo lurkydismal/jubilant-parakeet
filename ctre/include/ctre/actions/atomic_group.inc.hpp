@@ -1,36 +1,39 @@
-#ifndef CTRE__ACTIONS__ATOMIC_GROUP__HPP
-#define CTRE__ACTIONS__ATOMIC_GROUP__HPP
+#pragma once
+
+#include "ctre/pcre_actions.hpp"
 
 // atomic start
 template < auto V, typename... Ts, size_t Counter >
 static constexpr auto apply(
-    pcre::start_atomic,
+    ctre::pcre::start_atomic,
     ctll::term< V >,
-    pcre_context< ctll::list< Ts... >, pcre_parameters< Counter > > ) {
-    return pcre_context{ ctll::list< atomic_start, Ts... >(),
-                         pcre_parameters< Counter >() };
+    ctre::pcre_context< ctll::list< Ts... >,
+                        ctre::pcre_parameters< Counter > > ) {
+    return ctre::pcre_context{ ctll::list< ctre::atomic_start, Ts... >(),
+                               pcre_parameters< Counter >() };
 }
 
 // atomic
 template < auto V, typename Atomic, typename... Ts, size_t Counter >
 static constexpr auto apply(
-    pcre::make_atomic,
+    ctre::pcre::make_atomic,
     ctll::term< V >,
-    pcre_context< ctll::list< Atomic, atomic_start, Ts... >,
-                  pcre_parameters< Counter > > ) {
-    return pcre_context{ ctll::list< atomic_group< Atomic >, Ts... >(),
-                         pcre_parameters< Counter >() };
+    ctre::pcre_context< ctll::list< Atomic, ctre::atomic_start, Ts... >,
+                        ctre::pcre_parameters< Counter > > ) {
+    return ctre::pcre_context{
+        ctll::list< ctre::atomic_group< Atomic >, Ts... >(),
+        pcre_parameters< Counter >() };
 }
 
 // atomic sequence
 template < auto V, typename... Atomic, typename... Ts, size_t Counter >
 static constexpr auto apply(
-    pcre::make_atomic,
+    ctre::pcre::make_atomic,
     ctll::term< V >,
-    pcre_context< ctll::list< sequence< Atomic... >, atomic_start, Ts... >,
-                  pcre_parameters< Counter > > ) {
-    return pcre_context{ ctll::list< atomic_group< Atomic... >, Ts... >(),
-                         pcre_parameters< Counter >() };
+    ctre::pcre_context<
+        ctll::list< ctre::sequence< Atomic... >, ctre::atomic_start, Ts... >,
+        ctre::pcre_parameters< Counter > > ) {
+    return ctre::pcre_context{
+        ctll::list< ctre::atomic_group< Atomic... >, Ts... >(),
+        pcre_parameters< Counter >() };
 }
-
-#endif

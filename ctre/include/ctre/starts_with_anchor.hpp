@@ -4,7 +4,7 @@
 #include "flags_and_modes.hpp"
 
 #ifndef CTRE_IN_A_MODULE
-#include <optional>
+#include <cstddef>
 #endif
 
 namespace ctre {
