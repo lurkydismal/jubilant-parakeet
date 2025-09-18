@@ -1,9 +1,11 @@
 #pragma once
 
+#include "ctll/list.hpp"
 #include "id.hpp"
-#include "list.hpp"
 #include "utf8.hpp"
+
 #ifndef CTRE_IN_A_MODULE
+
 #include <iosfwd>
 #include <iterator>
 #include <optional>
@@ -11,12 +13,15 @@
 #include <string_view>
 #include <tuple>
 #include <type_traits>
+
 #if __has_include( <charconv>)
 #include <charconv>
 #endif
+
 #if defined( __cpp_concepts ) && __cpp_concepts >= 202002L
 #include <concepts>
 #endif
+
 #endif
 
 namespace ctre {
