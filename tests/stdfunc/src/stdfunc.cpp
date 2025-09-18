@@ -1,5 +1,7 @@
 #include "stdfunc.hpp"
 
+#include <gtest/gtest.h>
+
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
@@ -9,7 +11,7 @@
 // TODO: Add isSpace,
 // random$numberMinMax, random$value, random$view, random$fillMinMax,
 // random$fill, makeVariantContainer, compress$text, compress$data,
-// decompress$text, decompress$data, meta$iterateStructUnionTopMostFields
+// decompress$text, decompress$data, meta$iterateStructTopMostFields
 namespace stdfunc {
 
 TEST( stdfunc, STRINGIFY ) {
@@ -373,8 +375,8 @@ TEST( stdfunc, random$fill ) {
     std::vector< int > l_vec2( 10 );
     random::fill( l_vec2 );
     // Values will depend on default distribution, just check they changed
-    bool l_allZero =
-        std::ranges::all_of( l_vec2, []( int _v ) { return ( _v == 0 ); } );
+    bool l_allZero = std::ranges::all_of(
+        l_vec2, []( int _v ) -> bool { return ( _v == 0 ); } );
     EXPECT_FALSE( l_allZero )
         << "Default fill should not leave all elements as 0";
 
@@ -498,9 +500,10 @@ TEST( stdfunc, generateHash ) {
         std::vector< unsigned char > l_tmp( l_large.size() );
         std::ranges::iota( l_tmp, 0u );
 
-        std::ranges::transform( l_tmp, l_large.begin(), []( unsigned char _c ) {
-            return ( static_cast< std::byte >( _c ) );
-        } );
+        std::ranges::transform( l_tmp, l_large.begin(),
+                                []( unsigned char _c ) -> std::byte {
+                                    return ( static_cast< std::byte >( _c ) );
+                                } );
 #if 0
         std::iota(
             std::bit_cast< unsigned char* >( l_large.data() ),
@@ -766,6 +769,141 @@ TEST( stdfunc, compress$decompress ) {
         // equal compressed size
         EXPECT_LE( l_c9->size(), l_c1->size() );
     }
+}
+
+struct person {
+    int id{};
+    double salary{};
+    std::string name{};
+};
+
+#if 0
+enum class Color : int { Red = 1, Green = 2, Blue = 10 };
+#endif
+
+// -----------------------------
+// Compile-time checks
+// -----------------------------
+static_assert( meta::reflect_t< person >::size == 3,
+               "Person size should be 3 (mock)" );
+static_assert( meta::reflect_t< person >::keys[ 0 ] == "id", "mock key check" );
+static_assert( meta::hasMemberWithName< person >( "id" ) );
+static_assert( !meta::hasMemberWithName< person >( "not_a_field" ) );
+#if 0
+static_assert( meta::hasMemberWithName< Color >( "Green" ) );
+#endif
+
+// -----------------------------
+// GoogleTest cases
+// -----------------------------
+
+TEST( MetaReflectTests, IterateInstance_Person ) {
+    person l_p{};
+    l_p.id = 42;
+    l_p.salary = 1234.56;
+    l_p.name = "alice";
+
+    std::vector< std::string > l_seen;
+    meta::iterateStructTopMostFields(
+        l_p, [ &l_seen ]( auto&& _field ) -> auto {
+            using t_t = std::decay_t< decltype( _field ) >;
+            if constexpr ( std::is_same_v< t_t, int > ) {
+                l_seen.push_back( "int:" + std::to_string( _field ) );
+            } else if constexpr ( std::is_same_v< t_t, double > ) {
+                l_seen.emplace_back( "double" );
+            } else if constexpr ( std::is_same_v< t_t, std::string > ) {
+                l_seen.push_back( std::string( "string:" ) + _field );
+            } else {
+                l_seen.emplace_back( "other" );
+            }
+        } );
+
+    ASSERT_EQ( l_seen.size(), 3u );
+    EXPECT_EQ( l_seen[ 0 ], "int:42" );
+    EXPECT_EQ( l_seen[ 1 ], "double" );
+    EXPECT_EQ( l_seen[ 2 ], "string:alice" );
+}
+
+TEST( MetaReflectTests, IterateType_Person ) {
+    std::vector< std::string > l_seen;
+    meta::iterateStructTopMostFields< person >(
+        [ &l_seen ]( auto&& _field ) -> void {
+            using t_t = std::decay_t< decltype( _field ) >;
+            if constexpr ( std::is_same_v< t_t, int > ) {
+                l_seen.emplace_back( "int" );
+            } else if constexpr ( std::is_same_v< t_t, double > ) {
+                l_seen.emplace_back( "double" );
+            } else if constexpr ( std::is_same_v< t_t, std::string > ) {
+                l_seen.emplace_back( "string" );
+            } else {
+                l_seen.emplace_back( "other" );
+            }
+        } );
+
+    ASSERT_EQ( l_seen.size(), 3u );
+    EXPECT_EQ( l_seen[ 0 ], "int" );
+    EXPECT_EQ( l_seen[ 1 ], "double" );
+    EXPECT_EQ( l_seen[ 2 ], "string" );
+}
+
+#if 0
+TEST( MetaReflectTests, IterateUnion_TopLevel ) {
+    union MyUnion {
+        int i;
+        float f;
+    };
+
+    MyUnion l_u;
+    l_u.i = 7;
+    std::vector< std::string > l_seen;
+    meta::iterateStructTopMostFields(
+        l_u, [ &l_seen ]( auto&& _field ) -> auto {
+            using t_t = std::decay_t< decltype( _field ) >;
+            if constexpr ( std::is_same_v< t_t, int > ) {
+                l_seen.emplace_back( "int" );
+            } else if constexpr ( std::is_same_v< t_t, float > ) {
+                l_seen.emplace_back( "float" );
+            } else {
+                l_seen.emplace_back( "other" );
+            }
+        } );
+    ASSERT_EQ( l_seen.size(), 2u );
+    EXPECT_EQ( l_seen[ 0 ], "int" );
+    EXPECT_EQ( l_seen[ 1 ], "float" );
+}
+#endif
+
+#if 0
+TEST( MetaReflectTests, EnumIteration_TypeAndInstance ) {
+    // Type-based
+    std::vector< int > l_ids;
+    meta::iterateStructTopMostFields< Color >( [ &l_ids ]( auto&& _e ) -> auto {
+        l_ids.push_back( static_cast< int >( _e ) );
+    } );
+    ASSERT_EQ( l_ids.size(), 3u );
+    EXPECT_EQ( l_ids[ 0 ], 1 );
+    EXPECT_EQ( l_ids[ 1 ], 2 );
+    EXPECT_EQ( l_ids[ 2 ], 10 );
+
+    // Instance-based: our mock also iterates enumerators
+    Color l_c = Color::Green;
+    std::vector< int > l_ids2;
+    meta::iterateStructTopMostFields( l_c, [ &l_ids2 ]( auto&& _e ) -> auto {
+        l_ids2.push_back( static_cast< int >( _e ) );
+    } );
+    ASSERT_EQ( l_ids2.size(), 3u );
+    EXPECT_EQ( l_ids2[ 0 ], 1 );
+    EXPECT_EQ( l_ids2[ 1 ], 2 );
+    EXPECT_EQ( l_ids2[ 2 ], 10 );
+}
+#endif
+
+TEST( MetaReflectTests, reflect_t_and_getName ) {
+    using r_t = meta::reflect_t< person >;
+    static_assert( r_t::size == 3u );
+    static_assert( r_t::keys[ 0 ] == std::string_view( "id" ) );
+
+    SUCCEED();
 }
 
 } // namespace stdfunc

@@ -33,13 +33,21 @@ void logger( const std::stop_token& _stopToken,
                 l_FPS = ( l_framesCount / l_frameDurationInSeconds.count() );
             }
 
+#if !defined( TESTS )
+
             logg::info( "FPS: {:.2f}", l_FPS );
+
+#endif
         }
 
         l_timeLast = l_timeNow;
     }
 
+#if !defined( TESTS )
+
     logg::info( "FPS logger stopped." );
+
+#endif
 }
 
 } // namespace

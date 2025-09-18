@@ -1,8 +1,6 @@
 #pragma once
 
-#include <glaze/core/reflect.hpp>
 #include <glaze/glaze.hpp>
-#include <glaze/reflection/get_name.hpp>
 #include <xxhash.h>
 
 #include <algorithm>
@@ -333,7 +331,7 @@ constexpr void fill( Container& _container ) {
 } // namespace random
 
 [[nodiscard]] constexpr auto generateHash( std::span< std::byte > _data,
-                                           size_t _seed = 0x9e3779b1 )
+                                           size_t _seed = random::g_engine() )
     -> size_t {
     size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
 
@@ -577,12 +575,12 @@ namespace decompress {
 namespace meta {
 
 template < typename T >
-concept reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
+concept is_reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
 
 /**
  * @brief Convert type into struct with metadata
  *
- * If T is struct or enum, then fields are
+ * If T is struct or class, then fields are
  * struct reflect< T > {
  *       static constexpr auto size = 0;
  *       static constexpr auto values = tuple{};
@@ -595,109 +593,34 @@ concept reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
 template < typename T >
 using reflect_t = glz::reflect< T >;
 
-template < typename T >
-    requires reflectable< T >
-consteval auto hasMemberWithName( std::string_view _name ) -> bool {
-    return ( std::ranges::contains( reflect_t< T >::keys, _name ) );
-}
-
-#if 0
-template < typename T >
-    requires( std::is_enum_v< std::decay_t< T > > )
-constexpr auto getEnumName( T&& _value ) -> std::string_view {
-    return ( glz::get_enum_name( std::forward< T >( _value ) ) );
-}
-#endif
+// If you want to make an empty struct or a struct with constructors work with
+// reflection, add the folllwing constructor to your type:
+// myStruct( stdfunc::make_reflectable ) {}
+using makeReflectable_t = glz::make_reflectable;
 
 // Functions that take instance
-template < typename Callback, typename T >
-    requires reflectable< T >
-constexpr void iterateStructUnionTopMostFields( T&& _instance,
-                                                Callback&& _callback ) {
+template < typename T, typename Callback >
+    requires is_reflectable< T >
+constexpr void iterateStructTopMostFields( T&& _instance,
+                                           Callback&& _callback ) {
     glz::for_each_field( std::forward< T >( _instance ),
                          std::forward< Callback >( _callback ) );
 }
 
 // Functions that take type
-template < typename T >
-constexpr auto getName() -> std::string_view {
-    return ( glz::get_name< T >() );
-}
-
-template < typename Callback, typename T >
-    requires reflectable< T >
-constexpr void iterateStructUnionTopMostFields( Callback&& _callback ) {
+template < typename T, typename Callback >
+    requires is_reflectable< T >
+constexpr void iterateStructTopMostFields( Callback&& _callback ) {
     T l_instance{};
 
     glz::for_each_field( l_instance, std::forward< Callback >( _callback ) );
 }
 
-#if 0
-// Utility Compiler specific functions ( side-effects )
-// format - "%s%s %s = %p'
-SENTINEL
-inline void dumpCallback( void* _callback,
-                          void* _context,
-                          const char* _format,
-                          ... )
-    __attribute__( ( format( printf,
-                             3, // Format index
-                             4  // First format argument index
-                             ) ) ) {
-    thread_local static size_t l_depth = 0;
-
-    va_list l_arguments;
-
-    va_start( l_arguments, _format );
-
-    do {
-        std::string_view l_format = _format;
-
-        // Skip nested structs
-        if ( l_format.contains( '{' ) ) {
-            l_depth++;
-        }
-
-        // Only act on top-level fields
-        if ( ( l_depth == 1 ) && ( l_format.contains( '=' ) ) ) {
-            // Skip indentation
-            va_arg( l_arguments, char* );
-
-            // Skip type
-            va_arg( l_arguments, char* );
-
-            // Field name
-            std::string_view l_fieldName = va_arg( l_arguments, char* );
-
-            using callback_t =
-                bool ( * )( std::string_view _fieldName, void* _context );
-
-            const auto l_callback = std::bit_cast< callback_t >( _callback );
-
-            bool l_result = l_callback( l_fieldName, _context );
-
-            if ( !l_result ) [[unlikely]] {
-                break;
-            }
-        }
-
-        if ( l_format.contains( '}' ) ) {
-            l_depth--;
-        }
-    } while ( false );
-
-    va_end( l_arguments );
-}
-
 template < typename T >
-    requires is_struct< T >
-void iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
-                                      gsl::not_null< void* > _context ) {
-    T l_structSample{};
-
-    __builtin_dump_struct( &l_structSample, dumpCallback, _callback, _context );
+    requires is_reflectable< T >
+consteval auto hasMemberWithName( std::string_view _name ) -> bool {
+    return ( std::ranges::contains( reflect_t< T >::keys, _name ) );
 }
-#endif
 
 } // namespace meta
 

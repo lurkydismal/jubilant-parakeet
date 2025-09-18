@@ -17,13 +17,21 @@ timespec g_sleepTime, g_startTime, g_endTime;
 } // namespace
 
 auto init( const vsync_t _vsyncType, const float16_t _desiredFPS ) -> bool {
+#if !defined( TESTS )
+
     logg::variable( _desiredFPS );
+
+#endif
 
     bool l_returnValue = false;
 
     do {
         if ( g_desiredFPS ) [[unlikely]] {
+#if !defined( TESTS )
+
             logg::error( "Already initialized" );
+
+#endif
 
             break;
         }
@@ -42,10 +50,14 @@ auto init( const vsync_t _vsyncType, const float16_t _desiredFPS ) -> bool {
                             .count() };
             }
 
+#if !defined( TESTS )
+
             logg::info( "Setting vsync to {} FPS", _desiredFPS );
 
             logg::debug( "Vsync sleep time set to {} nanoseconds",
                          g_sleepTime.tv_nsec );
+
+#endif
         }
 
         l_returnValue = true;
