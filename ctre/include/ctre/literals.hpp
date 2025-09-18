@@ -1,5 +1,4 @@
-#ifndef CTRE_V2__CTRE__LITERALS__HPP
-#define CTRE_V2__CTRE__LITERALS__HPP
+#pragma once
 
 #include "ctll.hpp"
 #include "evaluation.hpp"
@@ -60,15 +59,9 @@ namespace literals {
 // requires ctll::parser<ctre::pcre, _fixed_string_reference<CharT,
 // charpack...>, ctre::pcre_actions>::template correct_with<pcre_context<>>
 
-#if !CTRE_CNTTP_COMPILER_CHECK
-template < typename CharT, CharT... charpack >
-CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre() noexcept {
-    constexpr auto& _input = _fixed_string_reference< CharT, charpack... >;
-#else
 template < ctll::fixed_string input >
 CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre() noexcept {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
-#endif
     using tmp =
         typename ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
             template output< pcre_context<> >;
@@ -97,27 +90,15 @@ namespace test_literals {
 
 #ifdef CTRE_ENABLE_LITERALS
 
-#if !CTRE_CNTTP_COMPILER_CHECK
-template < typename CharT, CharT... charpack >
-CTRE_FLATTEN constexpr inline auto operator""_ctre_test() noexcept {
-    constexpr auto& _input = _fixed_string_reference< CharT, charpack... >;
-#else
 template < ctll::fixed_string input >
 CTRE_FLATTEN constexpr inline auto operator""_ctre_test() noexcept {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
-#endif
     return ctll::parser< ctre::pcre, _input >::template correct_with<>;
 }
 
-#if !CTRE_CNTTP_COMPILER_CHECK
-template < typename CharT, CharT... charpack >
-CTRE_FLATTEN constexpr inline auto operator""_ctre_gen() noexcept {
-    constexpr auto& _input = _fixed_string_reference< CharT, charpack... >;
-#else
 template < ctll::fixed_string input >
 CTRE_FLATTEN constexpr inline auto operator""_ctre_gen() noexcept {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
-#endif
     using tmp =
         typename ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
             template output< pcre_context<> >;
@@ -125,17 +106,10 @@ CTRE_FLATTEN constexpr inline auto operator""_ctre_gen() noexcept {
     return typename tmp::output_type::stack_type();
 }
 
-#if !CTRE_CNTTP_COMPILER_CHECK
-template < typename CharT, CharT... charpack >
-CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto
-operator""_ctre_syntax() noexcept {
-    constexpr auto& _input = _fixed_string_reference< CharT, charpack... >;
-#else
 template < ctll::fixed_string input >
 CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto
 operator""_ctre_syntax() noexcept {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
-#endif
     return ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
         template correct_with< pcre_context<> >;
 }
@@ -149,7 +123,5 @@ operator""_ctre_syntax() noexcept {
 } // namespace test_literals
 
 } // namespace ctre
-
-#endif
 
 #endif

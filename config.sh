@@ -31,6 +31,9 @@ export testsToBuild=(
     # "asset"
     # "watch_t"
 
+    # "plthook"
+    # "ctre"
+
     # "slickdl"
     # "arhodigp"
     "log"

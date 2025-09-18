@@ -1,6 +1,7 @@
 #pragma once
 
 #ifndef UNICODE_DB_IN_A_MODULE
+#include <cstdint>
 #include <string_view>
 #endif
 
