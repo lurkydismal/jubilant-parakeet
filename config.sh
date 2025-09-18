@@ -41,6 +41,8 @@ export testsToBuild=(
 )
 export staticParts=(
     "plthook"
+    "ctre"
+
     "slickdl"
     "arhodigp"
     "log"
