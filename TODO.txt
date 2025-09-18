@@ -3,9 +3,6 @@ Change pthread() to fork() in asset_t async save
 
 Implement hot reload callbacks in modules
 Move to available C++ 26
-Implement compile-time introspection in stdfunc for iterateStructUnionTopMostFields
-Fix ctre
-Fix ctre/actions
 Move ctre to C++ 26
 Move plthook to C++ 26
 Implement slickdl

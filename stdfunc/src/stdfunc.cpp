@@ -7,9 +7,20 @@ namespace stdfunc {
 
 namespace random {
 
-thread_local engine_t g_engine{ std::random_device{}() };
+thread_local engine_t g_engine{
+#if defined( STDFUNC_RANDOM_CONSTEXPR )
 
-}
+    // Golden ratio
+    0x9E3779B97F4A7C15
+
+#else
+
+    std::random_device{}()
+
+#endif
+};
+
+} // namespace random
 
 namespace compress {
 

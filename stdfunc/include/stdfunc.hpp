@@ -1,9 +1,11 @@
 #pragma once
 
+#include <glaze/core/reflect.hpp>
+#include <glaze/glaze.hpp>
+#include <glaze/reflection/get_name.hpp>
 #include <xxhash.h>
 
 #include <algorithm>
-#include <cstdarg>
 #include <filesystem>
 #include <functional>
 #include <gsl/pointers>
@@ -12,6 +14,7 @@
 #include <regex>
 #include <string_view>
 #include <type_traits>
+#include <utility>
 
 #include "ctll.hpp"
 #include "ctre.hpp"
@@ -20,7 +23,6 @@
 
 #include <iostream>
 #include <print>
-#include <source_location>
 // #include <stacktrace>
 #include <thread>
 
@@ -214,7 +216,7 @@ template < typename T >
 
 [[nodiscard]] constexpr auto sanitizeString( std::string_view _string ) {
     return ( _string | std::views::drop_while( isSpace ) |
-             std::views::take_while( []( char _symbol ) {
+             std::views::take_while( []( char _symbol ) constexpr -> bool {
                  return ( _symbol != g_commentSymbol );
              } ) |
              std::views::reverse | std::views::drop_while( isSpace ) |
@@ -231,7 +233,7 @@ extern thread_local engine_t g_engine;
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-auto number( T _min, T _max ) -> T {
+constexpr auto number( T _min, T _max ) -> T {
     using distribution_t =
         std::conditional_t< std::is_integral_v< T >,
                             std::uniform_int_distribution< T >,
@@ -242,7 +244,7 @@ auto number( T _min, T _max ) -> T {
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-auto number() -> T {
+constexpr auto number() -> T {
     using numericLimit_t = std::numeric_limits< T >;
 
     const auto l_max = numericLimit_t::max();
@@ -259,15 +261,7 @@ auto number() -> T {
 
 template < typename Container >
     requires is_container< Container >
-auto value( Container& _container ) -> typename Container::value_type& {
-    assert( !_container.empty() );
-
-    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
-}
-
-template < typename Container >
-    requires is_container< Container >
-auto value( const Container& _container ) -> const
+constexpr auto value( Container& _container ) ->
     typename Container::value_type& {
     assert( !_container.empty() );
 
@@ -276,49 +270,62 @@ auto value( const Container& _container ) -> const
 
 template < typename Container >
     requires is_container< Container >
-auto view( Container& _container ) {
+constexpr auto value( const Container& _container ) -> const
+    typename Container::value_type& {
     assert( !_container.empty() );
 
-    return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
-                 return ( random::value( _container ) );
+    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
+}
+
+template < typename Container >
+    requires is_container< Container >
+constexpr auto view( Container& _container ) {
+    assert( !_container.empty() );
+
+    return ( std::views::iota( 0 ) |
+             std::views::transform( [ & ]( auto ) constexpr -> auto {
+                 return ( value( _container ) );
              } ) );
 }
 
 template < typename Container >
     requires is_container< Container >
-auto view( const Container& _container ) {
+constexpr auto view( const Container& _container ) {
     assert( !_container.empty() );
 
-    return ( std::views::iota( 0 ) | std::views::transform( [ & ]( auto ) {
-                 return ( random::value( _container ) );
+    return ( std::views::iota( 0 ) |
+             std::views::transform( [ & ]( auto ) constexpr -> auto {
+                 return ( value( _container ) );
              } ) );
 }
 
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_arithmetic_v< T >
-void fill( Container& _container, T _min, T _max ) {
-    std::ranges::generate( _container,
-                           [ & ] { return ( number< T >( _min, _max ) ); } );
+constexpr void fill( Container& _container, T _min, T _max ) {
+    std::ranges::generate( _container, [ & ] constexpr -> auto {
+        return ( number< T >( _min, _max ) );
+    } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_same_v< T, std::byte >
-void fill( Container& _container, uint8_t _min, uint8_t _max ) {
-    std::ranges::generate( _container, [ & ] {
+constexpr void fill( Container& _container, uint8_t _min, uint8_t _max ) {
+    std::ranges::generate( _container, [ & ] constexpr -> auto {
         return ( static_cast< std::byte >( number< uint8_t >( _min, _max ) ) );
     } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_arithmetic_v< T >
-void fill( Container& _container ) {
-    std::ranges::generate( _container, [ & ] { return ( number< T >() ); } );
+constexpr void fill( Container& _container ) {
+    std::ranges::generate(
+        _container, [ & ] constexpr -> auto { return ( number< T >() ); } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
     requires is_container< Container > && std::is_same_v< T, std::byte >
-void fill( Container& _container ) {
-    std::ranges::generate( _container, [ & ] {
+constexpr void fill( Container& _container ) {
+    std::ranges::generate( _container, [ & ] constexpr -> auto {
         return ( static_cast< std::byte >( number< uint8_t >() ) );
     } );
 }
@@ -389,8 +396,8 @@ template < typename Matcher >
     -> std::vector< std::filesystem::path > {
     std::regex l_matcher( _regexp );
 
-    return (
-        _getPathsByRegexp( _directory, [ & ]( const std::string& _fileName ) {
+    return ( _getPathsByRegexp(
+        _directory, [ & ]( const std::string& _fileName ) -> bool {
             return ( std::regex_match( _fileName, l_matcher ) );
         } ) );
 }
@@ -403,10 +410,10 @@ template < size_t N >
     -> std::vector< std::filesystem::path > {
     auto l_matcher = ctre::match< _regexp >;
 
-    return (
-        _getPathsByRegexp( _directory, [ & ]( const std::string& _fileName ) {
-            return ( l_matcher( _fileName ) );
-        } ) );
+    return ( _getPathsByRegexp( _directory,
+                                [ & ]( const std::string& _fileName ) -> auto {
+                                    return ( l_matcher( _fileName ) );
+                                } ) );
 }
 
 } // namespace filesystem
@@ -569,6 +576,63 @@ namespace decompress {
 
 namespace meta {
 
+template < typename T >
+concept reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
+
+/**
+ * @brief Convert type into struct with metadata
+ *
+ * If T is struct or enum, then fields are
+ * struct reflect< T > {
+ *       static constexpr auto size = 0;
+ *       static constexpr auto values = tuple{};
+ *       static constexpr std::array<sv, 0> keys{};
+ *
+ *       template <size_t I>
+ *       using type = std::nullptr_t;
+ * }
+ */
+template < typename T >
+using reflect_t = glz::reflect< T >;
+
+template < typename T >
+    requires reflectable< T >
+consteval auto hasMemberWithName( std::string_view _name ) -> bool {
+    return ( std::ranges::contains( reflect_t< T >::keys, _name ) );
+}
+
+#if 0
+template < typename T >
+    requires( std::is_enum_v< std::decay_t< T > > )
+constexpr auto getEnumName( T&& _value ) -> std::string_view {
+    return ( glz::get_enum_name( std::forward< T >( _value ) ) );
+}
+#endif
+
+// Functions that take instance
+template < typename Callback, typename T >
+    requires reflectable< T >
+constexpr void iterateStructUnionTopMostFields( T&& _instance,
+                                                Callback&& _callback ) {
+    glz::for_each_field( std::forward< T >( _instance ),
+                         std::forward< Callback >( _callback ) );
+}
+
+// Functions that take type
+template < typename T >
+constexpr auto getName() -> std::string_view {
+    return ( glz::get_name< T >() );
+}
+
+template < typename Callback, typename T >
+    requires reflectable< T >
+constexpr void iterateStructUnionTopMostFields( Callback&& _callback ) {
+    T l_instance{};
+
+    glz::for_each_field( l_instance, std::forward< Callback >( _callback ) );
+}
+
+#if 0
 // Utility Compiler specific functions ( side-effects )
 // format - "%s%s %s = %p'
 SENTINEL
@@ -629,10 +693,11 @@ template < typename T >
     requires is_struct< T >
 void iterateStructUnionTopMostFields( gsl::not_null< void* > _callback,
                                       gsl::not_null< void* > _context ) {
-    T l_structSample;
+    T l_structSample{};
 
     __builtin_dump_struct( &l_structSample, dumpCallback, _callback, _context );
 }
+#endif
 
 } // namespace meta
 
