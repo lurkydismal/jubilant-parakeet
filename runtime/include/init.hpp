@@ -2,6 +2,8 @@
 
 #include <SDL3/SDL_init.h>
 
+#include <map>
+
 #include "FPS.hpp"
 #include "arhodigp.hpp"
 #include "log.hpp"
@@ -16,12 +18,17 @@ auto init( applicationState_t& _applicationState,
 
     do {
         // Parse arguments
-        if ( !arhodigp::parseArguments(
-                 "", _arguments, applicationState_t::metadata::g_identifier,
-                 applicationState_t::metadata::g_description,
-                 applicationState_t::metadata::g_version,
-                 applicationState_t::metadata::g_contactAddress ) ) {
-            break;
+        {
+            // TODO :Implement
+            std::map< size_t, std::function< int( int, int ) > > l_options;
+
+            if ( !arhodigp::parseArguments(
+                     "", _arguments, applicationState_t::metadata::g_identifier,
+                     applicationState_t::metadata::g_description,
+                     applicationState_t::metadata::g_version,
+                     applicationState_t::metadata::g_contactAddress ) ) {
+                break;
+            }
         }
 
         // Generate application state
