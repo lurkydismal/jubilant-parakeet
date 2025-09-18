@@ -1,7 +1,5 @@
 #pragma once
 
-#include <ctll.hpp>
-#include <ctre.hpp>
 #include <xxhash.h>
 
 #include <algorithm>
@@ -14,6 +12,9 @@
 #include <regex>
 #include <string_view>
 #include <type_traits>
+
+#include "ctll.hpp"
+#include "ctre.hpp"
 
 #if defined( DEBUG )
 
