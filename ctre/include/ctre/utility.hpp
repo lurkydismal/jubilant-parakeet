@@ -1,5 +1,4 @@
-#ifndef CTRE__UTILITY__HPP
-#define CTRE__UTILITY__HPP
+#pragma once
 
 #include "ctll/utilities.hpp"
 
@@ -28,18 +27,5 @@
 #define CTRE_UNLIKELY
 #endif
 
-#ifdef _MSC_VER
-#define CTRE_FORCE_INLINE __forceinline
-#if __has_cpp_attribute( msvc::flatten )
-#define CTRE_FLATTEN [[msvc::flatten]]
-#elif _MSC_VER >= 1930 && !defined( __clang__ )
-#define CTRE_FLATTEN [[msvc::flatten]]
-#else
-#define CTRE_FLATTEN
-#endif
-#else
 #define CTRE_FORCE_INLINE inline __attribute__( ( always_inline ) )
 #define CTRE_FLATTEN __attribute__( ( flatten ) )
-#endif
-
-#endif

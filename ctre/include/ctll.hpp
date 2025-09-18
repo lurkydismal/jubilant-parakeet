@@ -1,6 +1,3 @@
-#ifndef CTRE_V2__CTLL__HPP
-#define CTRE_V2__CTLL__HPP
+#pragma once
 
 #include "ctll/parser.hpp"
-
-#endif

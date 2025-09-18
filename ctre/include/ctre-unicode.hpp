@@ -1,7 +1,4 @@
-#ifndef CTRE_V2__CTRE_UNICODE__HPP
-#define CTRE_V2__CTRE_UNICODE__HPP
+#pragma once
 
 #include "ctre.hpp"
 #include "unicode-db.hpp"
-
-#endif

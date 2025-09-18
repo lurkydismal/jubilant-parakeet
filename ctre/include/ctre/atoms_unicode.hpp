@@ -1,5 +1,4 @@
-#ifndef CTRE__ATOMS_UNICODE__HPP
-#define CTRE__ATOMS_UNICODE__HPP
+#pragma once
 
 // master branch is not including unicode db (for now)
 #include "flags_and_modes.hpp"
@@ -90,8 +89,8 @@ struct binary_property< uni::block, Block > {
 
 template < typename = void > // Make it always a template as propnamecomp isn't
                              // defined yet
-                             constexpr property_type property_type_from_name(
-                                 std::string_view str ) noexcept {
+constexpr property_type property_type_from_name(
+    std::string_view str ) noexcept {
     using namespace std::string_view_literals;
     if ( uni::detail::propnamecomp( str, "script"sv ) == 0 ||
          uni::detail::propnamecomp( str, "sc"sv ) == 0 ) {
@@ -198,5 +197,3 @@ struct property_type_builder< property_type::block > {
 };
 
 } // namespace ctre
-
-#endif
