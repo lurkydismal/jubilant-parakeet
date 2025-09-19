@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glaze/core/reflect.hpp>
 #include <glaze/glaze.hpp>
 #include <xxhash.h>
 
@@ -331,7 +332,7 @@ constexpr void fill( Container& _container ) {
 } // namespace random
 
 [[nodiscard]] constexpr auto generateHash( std::span< std::byte > _data,
-                                           size_t _seed = random::g_engine() )
+                                           size_t _seed = 0x9E3779B1 )
     -> size_t {
     size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
 

@@ -32,7 +32,7 @@ export testsToBuild=(
     # "watch_t"
 
     # "plthook"
-    # "ctre"
+    "ctre"
 
     # "slickdl"
     # "arhodigp"

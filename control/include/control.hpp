@@ -4,6 +4,7 @@
 #include <SDL3/SDL_scancode.h>
 
 #include "input.hpp"
+#include "stdfunc.hpp"
 
 namespace control {
 
@@ -14,6 +15,7 @@ using control_t = struct control {
     control() = default;
     control( const control& ) = default;
     control( control&& ) = default;
+    control( stdfunc::meta::makeReflectable_t ) {}
     ~control() = default;
     auto operator=( const control& ) -> control& = default;
     auto operator=( control&& ) -> control& = default;

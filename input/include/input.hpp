@@ -1,8 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <format>
 #include <string>
+
+#include "stdfunc.hpp"
 
 namespace input {
 
@@ -64,6 +65,7 @@ using input_t = struct input {
     input() = default;
     input( const input& ) = default;
     input( input&& ) = default;
+    input( stdfunc::meta::makeReflectable_t ) {}
     ~input() = default;
     auto operator=( const input& ) -> input& = default;
     auto operator=( input&& ) -> input& = default;

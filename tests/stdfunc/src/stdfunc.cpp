@@ -1,17 +1,11 @@
 #include "stdfunc.hpp"
 
-#include <gtest/gtest.h>
-
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
 
 #include "test.hpp"
 
-// TODO: Add isSpace,
-// random$numberMinMax, random$value, random$view, random$fillMinMax,
-// random$fill, makeVariantContainer, compress$text, compress$data,
-// decompress$text, decompress$data, meta$iterateStructTopMostFields
 namespace stdfunc {
 
 TEST( stdfunc, STRINGIFY ) {
