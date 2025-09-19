@@ -771,9 +771,7 @@ struct person {
     std::string name{};
 };
 
-#if 0
 enum class Color : int { Red = 1, Green = 2, Blue = 10 };
-#endif
 
 // -----------------------------
 // Compile-time checks

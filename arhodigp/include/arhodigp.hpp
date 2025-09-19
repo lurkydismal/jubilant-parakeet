@@ -19,7 +19,7 @@ using callback_t =
 //     .name = "input",
 //     .key = 'i',
 //     .arg = "[FILE...]",
-//     .flags = flat_t::optional,
+//     .flags = option_t::flag_t::optional,
 //     .doc = "Input files",
 //     .group = 5,
 // },

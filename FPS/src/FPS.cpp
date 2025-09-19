@@ -20,6 +20,7 @@ void logger( const std::stop_token& _stopToken,
 
         const auto l_timeNow = clock::now();
 
+#if !defined( TESTS )
         {
             const auto l_framesCount = _frameCount.exchange( 0 );
 
@@ -33,12 +34,9 @@ void logger( const std::stop_token& _stopToken,
                 l_FPS = ( l_framesCount / l_frameDurationInSeconds.count() );
             }
 
-#if !defined( TESTS )
-
             logg::info( "FPS: {:.2f}", l_FPS );
-
-#endif
         }
+#endif
 
         l_timeLast = l_timeNow;
     }

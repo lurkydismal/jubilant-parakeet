@@ -20,7 +20,8 @@ auto init( applicationState_t& _applicationState,
                 { 'v', arhodigp::option_t{ []( int, std::string_view,
                                                arhodigp::state_t ) -> bool {
                       logg::debug( "TEST" );
-                      return ( true );
+                      logg::error( "{}", "TESTE" );
+                      return ( false );
                   } } } };
 
             if ( !arhodigp::parseArguments(

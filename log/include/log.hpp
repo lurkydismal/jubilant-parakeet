@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <print>
+#include <ranges>
 #include <source_location>
 #include <string_view>
 #include <thread>
@@ -24,6 +25,18 @@ constexpr auto formatWithColor( auto _what, std::string_view _color )
 inline auto formatLocation( const std::source_location& _sourceLocation =
                                 std::source_location::current() )
     -> std::string {
+    std::string_view l_functionNameMangled = _sourceLocation.function_name();
+
+    std::string l_functionName =
+        l_functionNameMangled |
+        std::views::drop_while( []( char _symbol ) -> bool {
+            return ( !stdfunc::isSpace( _symbol ) );
+        } ) |
+        std::views::drop( 1 ) |
+        std::views::take_while(
+            []( char _symbol ) -> bool { return ( _symbol != '(' ); } ) |
+        std::ranges::to< std::string >();
+
     return ( std::format(
         "Thread {}: '{}:{}' "
         "in '{}'",
@@ -33,39 +46,7 @@ inline auto formatLocation( const std::source_location& _sourceLocation =
                              .string(),
                          g_colorFileName ),
         formatWithColor( _sourceLocation.line(), g_colorLineNumber ),
-        formatWithColor( _sourceLocation.function_name(),
-                         g_colorFunctionName ) ) );
-}
-
-#if defined( DEBUG )
-
-template < typename... Arguments >
-void _debug( [[maybe_unused]] std::format_string< Arguments... > _format,
-             [[maybe_unused]] const std::source_location& _sourceLocation,
-             [[maybe_unused]] Arguments&&... _arguments ) {
-    std::print( "{}{} | Message: ",
-                formatWithColor( "DEBUG: ", stdfunc::color::g_cyanLight ),
-                formatLocation( _sourceLocation ) );
-
-    std::print( _format, std::forward< Arguments >( _arguments )... );
-
-    std::println( "{}", stdfunc::color::g_reset );
-}
-
-#endif
-
-template < typename... Arguments >
-void _error( std::format_string< Arguments... > _format,
-             const std::source_location& _sourceLocation,
-             Arguments&&... _arguments ) {
-    std::print( std::cerr, "{}{} | Message: ",
-                formatWithColor( "ERROR: ", stdfunc::color::g_red ),
-                formatLocation( _sourceLocation ) );
-
-    std::println( std::cerr, _format,
-                  std::forward< Arguments >( _arguments )... );
-
-    std::println( "{}", stdfunc::color::g_reset );
+        formatWithColor( l_functionName, g_colorFunctionName ) ) );
 }
 
 } // namespace
@@ -74,12 +55,17 @@ namespace logg {
 
 #if defined( DEBUG )
 
-template < typename... Arguments >
-void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
-            [[maybe_unused]] Arguments&&... _arguments ) {
-    _debug( _format, std::source_location::current(),
-            std::forward< Arguments >( _arguments )... );
+[[maybe_unused]] inline void _debug(
+    std::string_view _message,
+    const std::source_location& _sourceLocation =
+        std::source_location::current() ) {
+    std::println( "{}{} | Message: {}{}",
+                  formatWithColor( "DEBUG: ", stdfunc::color::g_cyanLight ),
+                  formatLocation( _sourceLocation ), _message,
+                  stdfunc::color::g_reset );
 }
+
+#define debug( _format, ... ) _debug( std::format( _format, ##__VA_ARGS__ ) )
 
 template < typename T >
     requires( !std::is_pointer_v< T > )
@@ -87,7 +73,8 @@ void _variable( std::string_view _variableName,
                 const T& _variable,
                 const std::source_location& _sourceLocation =
                     std::source_location::current() ) {
-    _debug( "{} = '{}'", _sourceLocation, _variableName, _variable );
+    _debug( std::format( "{} = '{}'", _variableName, _variable ),
+            _sourceLocation );
 }
 
 template < typename T >
@@ -96,8 +83,9 @@ void _variable( std::string_view _variableName,
                 const T _variable,
                 const std::source_location& _sourceLocation =
                     std::source_location::current() ) {
-    _debug( "{} = '0x{:08x}'", _sourceLocation, _variableName,
-            std::bit_cast< uintptr_t >( _variable ) );
+    _debug( std::format( "{} = '0x{:08x}'", _variableName,
+                         std::bit_cast< uintptr_t >( _variable ) ),
+            _sourceLocation );
 }
 
 #define variable( _variableToLog ) _variable( #_variableToLog, _variableToLog )
@@ -108,7 +96,7 @@ template < typename... Arguments >
 void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
             [[maybe_unused]] Arguments&&... _arguments ) {}
 
-#define variable( _variableToLog ) ( ( void )_variableToLog )
+void variable( [[maybe_unused]] auto&& _variableToLog ) {}
 
 #endif
 
@@ -130,11 +118,16 @@ void warning( std::format_string< Arguments... > _format,
                   std::forward< Arguments >( _arguments )... );
 }
 
-template < typename... Arguments >
-void error( std::format_string< Arguments... > _format,
-            Arguments&&... _arguments ) {
-    _error( _format, std::source_location::current(),
-            std::forward< Arguments >( _arguments )... );
+[[maybe_unused]] inline void _error(
+    std::string_view _message,
+    const std::source_location& _sourceLocation =
+        std::source_location::current() ) {
+    std::println( std::cerr, "{}{} | Message: {}{}",
+                  formatWithColor( "ERROR: ", stdfunc::color::g_red ),
+                  formatLocation( _sourceLocation ), _message,
+                  stdfunc::color::g_reset );
 }
+
+#define error( _format, ... ) _error( std::format( _format, ##__VA_ARGS__ ) )
 
 } // namespace logg

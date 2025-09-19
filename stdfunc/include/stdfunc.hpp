@@ -1,7 +1,7 @@
 #pragma once
 
+#include <glaze/core/common.hpp>
 #include <glaze/core/reflect.hpp>
-#include <glaze/glaze.hpp>
 #include <xxhash.h>
 
 #include <algorithm>

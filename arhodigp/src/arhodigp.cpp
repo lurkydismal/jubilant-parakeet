@@ -2,7 +2,6 @@
 
 #include <argp.h>
 
-#include <print>
 #include <ranges>
 #include <string>
 #include <vector>
@@ -25,12 +24,6 @@ inline auto parserForOption( int _key, char* _value, argp_state* _state )
 
     gsl::not_null< options_t* > l_options =
         std::bit_cast< options_t* >( _state->input );
-
-    for ( const auto& [ _key, _value ] : *l_options.get() ) {
-        std::println( "{} : {{ {}, {}, {}, {} }}", _key, _value.name,
-                      _value.argument, _value.documentation,
-                      ( bool )( _value.callback ) );
-    }
 
     switch ( _key ) {
         // Not flag/ option
@@ -63,8 +56,10 @@ inline auto parserForOption( int _key, char* _value, argp_state* _state )
 
                 state_t l_state = _state;
 
-                // TODO: Implement _value
-                if ( !l_callback( _key, "", l_state ) ) [[likely]] {
+                const std::string_view l_value =
+                    ( ( _value ) ? ( _value ) : ( "" ) );
+
+                if ( !l_callback( _key, l_value, l_state ) ) [[likely]] {
                     error( l_state );
                 }
 
