@@ -471,7 +471,7 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
             }
         }
 
-        auto l_onExit = std::experimental::scope_exit( [ & ] {
+        auto l_onExit = std::experimental::scope_exit( [ & ] -> void {
             runtime::quit( g_applicationState );
 
 #if defined( __SANITIZE_LEAK__ )
@@ -501,7 +501,7 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
         for ( ;; ) {
             vsync::begin();
 
-            const auto l_handleEvents = [ & ] {
+            const auto l_handleEvents = [ & ] -> bool {
                 // Poll events
                 {
                     l_events.clear();
@@ -517,7 +517,7 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
 
                 return ( std::ranges::all_of(
                              l_events,
-                             [ & ]( const runtime::event_t& _event ) {
+                             [ & ]( const runtime::event_t& _event ) -> bool {
                                  return ( runtime::event( g_applicationState,
                                                           _event ) );
                              } ) &&
