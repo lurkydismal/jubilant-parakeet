@@ -97,17 +97,18 @@ auto parseArguments( std::string& _format,
             };
 
             // TODO: Improve
-            const auto l_x = _arguments |
-                             std::views::transform( []( auto _argument ) {
-                                 return ( std::string( _argument ) );
-                             } ) |
-                             std::ranges::to< std::vector >();
+            const auto l_x =
+                _arguments |
+                std::views::transform( []( auto _argument ) -> auto {
+                    return ( std::string( _argument ) );
+                } ) |
+                std::ranges::to< std::vector >();
 
-            const auto l_y = l_x |
-                             std::views::transform( []( auto& _argument ) {
-                                 return ( _argument.c_str() );
-                             } ) |
-                             std::ranges::to< std::vector >();
+            const auto l_y =
+                l_x | std::views::transform( []( auto& _argument ) -> auto {
+                    return ( _argument.c_str() );
+                } ) |
+                std::ranges::to< std::vector >();
 
             if ( argp_parse( &l_argumentParser, _arguments.size(),
                              std::bit_cast< char** >( l_y.data() ), 0, nullptr,
