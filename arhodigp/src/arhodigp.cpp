@@ -6,15 +6,15 @@
 #include <string>
 #include <vector>
 
+static std::string g_version;
+const char* argp_program_version;
+
+static std::string g_contactAddress;
+const char* argp_program_bug_address;
+
 namespace arhodigp {
 
 namespace {
-
-std::string g_version;
-const char* argp_program_version;
-
-std::string g_contactAddress;
-const char* argp_program_bug_address;
 
 inline auto parserForOption( int _key, char* _value, argp_state* _state )
     -> error_t {
@@ -84,7 +84,7 @@ auto parseArguments( std::string& _format,
     bool l_returnValue = false;
 
     do {
-        g_version = _applicationVersion;
+        g_version = std::format( "{}", _applicationVersion );
         argp_program_version = g_version.c_str();
 
         g_contactAddress = std::format( "<{}>", _contactAddress );

@@ -16,19 +16,14 @@ auto init( applicationState_t& _applicationState,
     do {
         // Parse arguments
         {
-            std::map< int, arhodigp::option_t > l_x{
-                { 'v', arhodigp::option_t{ []( int, std::string_view,
-                                               arhodigp::state_t ) -> bool {
-                      logg::debug( "TEST" );
-                      logg::error( "{}", "TESTE" );
-                      return ( false );
-                  } } } };
+            std::map< int, arhodigp::option_t > l_options{};
 
             if ( !arhodigp::parseArguments(
                      "", _arguments, applicationState_t::metadata::g_identifier,
                      applicationState_t::metadata::g_description,
                      applicationState_t::metadata::g_version,
-                     applicationState_t::metadata::g_contactAddress, l_x ) ) {
+                     applicationState_t::metadata::g_contactAddress,
+                     l_options ) ) {
                 break;
             }
         }
