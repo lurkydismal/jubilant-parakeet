@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "stdfunc.hpp"
+
 static std::string g_version;
 const char* argp_program_version;
 
