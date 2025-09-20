@@ -8,4 +8,4 @@ Move plthook to C++ 26
 Implement slickdl
 Implement PCH support in build system
 Fix build system return fail exit code on fail
-Fix log source locations
+Add seed from gtest to test.hpp

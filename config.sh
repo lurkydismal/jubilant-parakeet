@@ -35,7 +35,7 @@ export testsToBuild=(
     "ctre"
 
     # "slickdl"
-    # "arhodigp"
+    "arhodigp"
     "log"
     "forward_circular_buffer"
     "stdfunc"
