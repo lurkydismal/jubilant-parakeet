@@ -13,9 +13,9 @@ export FAIL_COLOR="$RED_LIGHT_COLOR"
 
 # Helper functions
 exit_failure() {
-    local message=$1
+    local message="${1:-}"
 
-    echo -e "$FAIL_COLOR""$message""$RESET_COLOR"
+    [[ $message ]] && echo -e "$FAIL_COLOR""$message""$RESET_COLOR"
 
     # trap 'echo "Line $LINENO: $BASH_COMMAND";echo; exit 1' ERR
 
@@ -431,7 +431,7 @@ source './config.sh' && {
         BUILD_STATUS=$?
 
         if [ $BUILD_STATUS -ne 0 ]; then
-            exit
+            exit_failure
         fi
     done
 
@@ -482,7 +482,7 @@ source './config.sh' && {
             BUILD_STATUS=$?
 
             if [ $BUILD_STATUS -ne 0 ]; then
-                exit
+                exit_failure
             fi
         done
     }
@@ -507,7 +507,7 @@ source './config.sh' && {
     processStatuses=()
 
     if [ "$BUILD_STATUS" -ne 0 ]; then
-        exit
+        exit_failure
     fi
 
     # Debug
@@ -550,7 +550,7 @@ source './config.sh' && {
         done
 
         if [ "$BUILD_STATUS" -ne 0 ]; then
-            exit
+            exit_failure
         fi
 
         processIDs=()
@@ -563,11 +563,11 @@ source './config.sh' && {
             if [ ! -f "$BUILD_DIRECTORY/$outputFile" ] || [ "$($HASH_FUNCTION "$BUILD_DIRECTORY/$processedFile" | cut -d ' ' -f1)" != "${processedFilesHashes["$processedFile"]}" ]; then
                 echo "Linking $outputFile"
 
-                cd "$BUILD_DIRECTORY" || exit
+                cd "$BUILD_DIRECTORY" || exit_failure
 
                 $COMPILER -shared -nostdlib $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$processedFile" '-Wl,--no-whole-archive' -o "$BUILD_DIRECTORY/""$outputFile" &
 
-                cd - >'/dev/null' || exit
+                cd - >'/dev/null' || exit_failure
 
                 export NEED_HOT_RELOAD
 
@@ -592,7 +592,7 @@ source './config.sh' && {
         done
 
         if [ "$BUILD_STATUS" -ne 0 ]; then
-            exit
+            exit_failure
         fi
 
         processIDs=()
@@ -617,16 +617,16 @@ source './config.sh' && {
 
                 echo "Linking $outputFile"
 
-                cd "$BUILD_DIRECTORY" || exit
+                cd "$BUILD_DIRECTORY" || exit_failure
 
                 $COMPILER -shared $LINK_FLAGS '-Wl,--whole-archive' "$BUILD_DIRECTORY/$OUTPUT_FILE" '-Wl,--no-whole-archive' ${processedFiles[@]/%.a/.so} -o "$BUILD_DIRECTORY/$outputFile"
 
                 BUILD_STATUS=$?
 
-                cd - >'/dev/null' || exit
+                cd - >'/dev/null' || exit_failure
 
                 if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
+                    exit_failure
                 fi
             }
         fi
@@ -634,7 +634,7 @@ source './config.sh' && {
         BUILD_STATUS=$?
 
         if [ $BUILD_STATUS -ne 0 ]; then
-            exit
+            exit_failure
         fi
     fi
 
@@ -663,7 +663,7 @@ source './config.sh' && {
                 BUILD_STATUS=$?
 
                 if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
+                    exit_failure
                 fi
             }
 
@@ -672,7 +672,7 @@ source './config.sh' && {
             BUILD_STATUS=$?
 
             if [ $BUILD_STATUS -ne 0 ]; then
-                exit
+                exit_failure
             fi
         }
 
@@ -686,13 +686,13 @@ source './config.sh' && {
             if [ -z "${SCAN_BUILD+x}" ]; then
                 # Debug
                 if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[DEBUG]}" ] && [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
-                    cd "$BUILD_DIRECTORY" || exit
+                    cd "$BUILD_DIRECTORY" || exit_failure
 
                     $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' ${processedFilesStatic[@]/%.a/.so} ${processedFiles[@]/%.a/.so} $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
 
                     BUILD_STATUS=$?
 
-                    cd - >'/dev/null' || exit
+                    cd - >'/dev/null' || exit_failure
 
                 else
                     $COMPILER $LINK_FLAGS "$BUILD_DIRECTORY/"'lib'"$executableMainPackage"'.a' $staticPartsAsString $partsToBuildAsString $librariesToLinkAsString $externalLibrariesLinkFlagsAsString -o "$BUILD_DIRECTORY/$EXECUTABLE_NAME"
@@ -701,7 +701,7 @@ source './config.sh' && {
                 fi
 
                 if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
+                    exit_failure
                 fi
 
                 echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME""$RESET_COLOR"
@@ -773,7 +773,7 @@ source './config.sh' && {
             BUILD_STATUS=$?
 
             if [ $BUILD_STATUS -ne 0 ]; then
-                exit
+                exit_failure
             fi
         done
 
@@ -794,7 +794,7 @@ source './config.sh' && {
         done
 
         if [ "$BUILD_STATUS" -ne 0 ]; then
-            exit
+            exit_failure
         fi
 
         processIDs=()
@@ -819,7 +819,7 @@ source './config.sh' && {
                 BUILD_STATUS=$?
 
                 if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
+                    exit_failure
                 fi
             }
 
@@ -828,7 +828,7 @@ source './config.sh' && {
             BUILD_STATUS=$?
 
             if [ $BUILD_STATUS -ne 0 ]; then
-                exit
+                exit_failure
             fi
         }
 
@@ -851,7 +851,7 @@ source './config.sh' && {
                 BUILD_STATUS=$?
 
                 if [ $BUILD_STATUS -ne 0 ]; then
-                    exit
+                    exit_failure
                 fi
 
                 echo -e "$BUILT_EXECUTABLE_COLOR""$EXECUTABLE_NAME_TESTS""$RESET_COLOR"
@@ -872,4 +872,4 @@ source './config.sh' && {
 
 }
 
-cd - >'/dev/null' || exit
+cd - >'/dev/null' || exit_failure
