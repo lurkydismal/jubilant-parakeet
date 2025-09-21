@@ -1,39 +1,30 @@
 #pragma once
 
+#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 
 #include <algorithm>
+#include <gsl/pointers>
 #include <ranges>
 
+#include "color.hpp"
 #include "log.hpp"
 #include "stdfunc.hpp"
-
-#define BOXES_FILE_EXTENSION "boxes"
 
 namespace boxes {
 
 using box_t = struct box {
-    box( float _x,
-         float _y,
-         float _width,
-         float _height,
-         size_t _startIndex,
-         size_t _endIndex )
-        : x( _x ),
-          y( _y ),
-          width( _width ),
-          height( _height ),
-          startIndex( _startIndex ),
-          endIndex( _endIndex ) {
-        stdfunc::assert( !_startIndex );
-        stdfunc::assert( !_endIndex );
-        stdfunc::assert( _startIndex > _endIndex );
+    box( float _x, float _y, float _width, float _height )
+        : x( _x ), y( _y ), width( _width ), height( _height ) {
+#if !defined( TESTS )
 
         logg::debug(
             "Box properties: X = {}, Y = {}, Width = {}"
-            ", Heigth = {}, Start = {}, End = {}",
-            _x, _y, _width, _height, _startIndex, _endIndex );
+            ", Heigth = {}",
+            _x, _y, _width, _height );
+
+#endif
     }
 
     box() = delete;
@@ -47,8 +38,6 @@ using box_t = struct box {
     float y;
     float width;
     float height;
-    size_t startIndex;
-    size_t endIndex;
 };
 
 using boxes_t = struct boxes {
@@ -58,64 +47,29 @@ using boxes_t = struct boxes {
     ~boxes() = default;
 
     boxes( std::span< std::span< const box_t > > _boxesKeyFrames ) {
-        _keyFrames = _boxesKeyFrames |
-                     std::ranges::to< std::vector< std::vector< box_t > > >();
+        stdfunc::assert( !_boxesKeyFrames.empty() );
+        stdfunc::assert( std::ranges::none_of(
+            _boxesKeyFrames,
+            []( std::span< const box_t > _boxKeyFrames ) -> bool {
+                return ( _boxKeyFrames.empty() );
+            } ) );
 
-        // Generate frames
-        {
-            size_t l_latestFrameIndex = 0;
-
-            for ( std::span< const box_t > _boxes : _boxesKeyFrames ) {
-                for ( const box_t& _box : _boxes ) {
-                    const size_t l_endIndex = _box.endIndex;
-
-                    if ( l_endIndex > l_latestFrameIndex ) {
-                        l_latestFrameIndex = l_endIndex;
-                    }
-                }
-            }
-        }
-
-        // Fill key frame index in frames
-        {
-            // Preallocate frames
-            const auto l_x = [ & ]( const box_t& _box ) -> void {
-                const size_t l_framesAmount = _frames.size();
-
-                if ( _box.endIndex >= l_framesAmount ) [[likely]] {
-                    int64_t l_preallocationAmount =
-                        ( _box.endIndex - l_framesAmount );
-
-                    _frames.reserve( l_preallocationAmount );
-
-                    for ( size_t _frameToCreate : _frames[ l_framesAmount ] ) {
-                        *_frameToCreate = createArray( size_t );
-                    }
-                }
-            };
-
-            // Fill key frame index in frames
-            for ( size_t _index :
-                  std::views::iota( _box.startIndex, ( _box.endIndex + 1 ) ) ) {
-                _frames[ _index - 1 ] = l_keyFrameIndex;
-            }
-        }
+        _frames = _boxesKeyFrames |
+                  std::ranges::to< std::vector< std::vector< box_t > > >();
     }
 
     auto operator=( const boxes& ) -> boxes& = default;
     auto operator=( boxes&& ) -> boxes& = default;
 
-    constexpr auto color() -> auto& { return ( _color ); }
+    [[nodiscard]] constexpr auto color() -> auto& { return ( _color ); }
 
-    constexpr auto currentKeyFrame() {
-        return ( _frames[ _currentFrame ] |
-                 std::views::transform(
-                     [ & ]( size_t _index ) -> std::vector< box_t > {
-                         return ( _keyFrames[ _index ] );
-                     } ) );
+    [[nodiscard]] constexpr auto currentKeyFrame() -> std::span< const box_t > {
+        return ( _frames.at( _currentFrame ) );
     }
 
     constexpr void step( bool _canLoop ) {
+        stdfunc::assert( !_frames.empty() );
+
         if ( _currentFrame < ( _frames.size() - 1 ) ) {
             _currentFrame++;
 
@@ -126,21 +80,80 @@ using boxes_t = struct boxes {
         }
     }
 
-    constexpr auto render( SDL_Renderer* _renderer,
+    constexpr void render( gsl::not_null< SDL_Renderer* > _renderer,
                            const box_t& _screenSpaceTarget,
-                           bool _doFill ) -> bool;
+                           bool _doFill ) {
+        color::color_t l_colorBefore;
+
+        // Store current draw color
+        {
+            uint8_t l_red = 0;
+            uint8_t l_green = 0;
+            uint8_t l_blue = 0;
+            uint8_t l_alpha = 0;
+
+            const bool l_result = SDL_GetRenderDrawColor(
+                _renderer, &l_red, &l_green, &l_blue, &l_alpha );
+
+            stdfunc::assert( l_result, "Getting renderer draw color: '{}'",
+                             SDL_GetError() );
+
+            l_colorBefore = color::color_t( l_red, l_green, l_blue, l_alpha );
+        }
+
+        // Set current draw color
+        {
+            const bool l_result =
+                SDL_SetRenderDrawColor( _renderer, _color.red, _color.green,
+                                        _color.blue, _color.alpha );
+
+            stdfunc::assert( l_result, "Setting renderer draw color: '{}'",
+                             SDL_GetError() );
+        }
+
+        const auto l_currentFrame = currentKeyFrame();
+
+        for ( const auto& _box : l_currentFrame ) {
+            const SDL_FRect l_targetRectangle = {
+                .x = ( _screenSpaceTarget.x + _box.x ),
+                .y = ( _screenSpaceTarget.y + _box.y ),
+                .w = _box.width,
+                .h = _box.height,
+            };
+
+            if ( _doFill ) {
+                const bool l_result =
+                    SDL_RenderFillRect( _renderer, &l_targetRectangle );
+
+                stdfunc::assert( l_result, "Render filled rectangle: '{}'",
+                                 SDL_GetError() );
+
+            } else {
+                const bool l_result =
+                    SDL_RenderRect( _renderer, &l_targetRectangle );
+
+                stdfunc::assert( l_result, "Render rectangle: '{}'",
+                                 SDL_GetError() );
+            }
+        }
+
+        // Load current draw color
+        {
+            const bool l_result = SDL_SetRenderDrawColor(
+                _renderer, l_colorBefore.red, l_colorBefore.green,
+                l_colorBefore.blue, l_colorBefore.alpha );
+
+            stdfunc::assert( l_result );
+        }
+    }
 
 private:
-    // Key frame is a list of boxes
-    using keyFrame_t = std::vector< box_t >;
+    // Frame is a list of boxes
+    using frame_t = std::vector< box_t >;
 
-    // Frame is a list of indexes in key frames
-    using frame_t = std::vector< size_t >;
-
-    std::vector< keyFrame_t > _keyFrames;
     std::vector< frame_t > _frames;
     size_t _currentFrame{};
-    uint32_t _color{};
+    color::color_t _color{};
 };
 
 } // namespace boxes

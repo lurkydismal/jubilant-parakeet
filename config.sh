@@ -24,7 +24,7 @@ export testsToBuild=(
     # "camera"
     # "state_t"
     # "animation_t"
-    # "boxes"
+    "boxes"
     # "window"
     "vsync"
     # "font_t"
@@ -38,6 +38,7 @@ export testsToBuild=(
     "arhodigp"
     "log"
     "forward_circular_buffer"
+    "color"
     "stdfunc"
 
     "test"
@@ -50,6 +51,7 @@ export staticParts=(
     "arhodigp"
     "log"
     "forward_circular_buffer"
+    "color"
     "stdfunc"
 )
 export rootSharedObjectName="root"

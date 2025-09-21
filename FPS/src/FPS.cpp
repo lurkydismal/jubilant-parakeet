@@ -9,7 +9,7 @@ namespace {
 std::jthread g_loggerThread;
 
 void logger( const std::stop_token& _stopToken,
-             std::atomic< size_t >& _frameCount ) {
+             [[maybe_unused]] std::atomic< size_t >& _frameCount ) {
     using clock = std::chrono::steady_clock;
     using namespace std::chrono_literals;
 
