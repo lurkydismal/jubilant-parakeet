@@ -21,8 +21,7 @@ using float16x32_t = float16_t __attribute__( (
 namespace std {
 
 template <>
-class numeric_limits< float16_t > {
-public:
+struct numeric_limits< float16_t > {
     static constexpr bool is_specialized = true;
 
     static constexpr auto min() noexcept -> float16_t {

@@ -3,82 +3,144 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 
-#include "asset_t.h"
-#include "log.h"
-#include "stdfunc.h"
+#include <algorithm>
+#include <ranges>
+
+#include "log.hpp"
+#include "stdfunc.hpp"
 
 #define BOXES_FILE_EXTENSION "boxes"
 
-#define DEFAULT_BOXES      \
-    {                      \
-        .keyFrames = NULL, \
-        .frames = NULL,    \
-        .currentFrame = 0, \
-        .color = 0,        \
+namespace boxes {
+
+using box_t = struct box {
+    box( float _x,
+         float _y,
+         float _width,
+         float _height,
+         size_t _startIndex,
+         size_t _endIndex )
+        : x( _x ),
+          y( _y ),
+          width( _width ),
+          height( _height ),
+          startIndex( _startIndex ),
+          endIndex( _endIndex ) {
+        stdfunc::assert( !_startIndex );
+        stdfunc::assert( !_endIndex );
+        stdfunc::assert( _startIndex > _endIndex );
+
+        logg::debug(
+            "Box properties: X = {}, Y = {}, Width = {}"
+            ", Heigth = {}, Start = {}, End = {}",
+            _x, _y, _width, _height, _startIndex, _endIndex );
     }
 
-typedef struct {
-    SDL_FRect** keyFrames;
-    size_t** frames;
-    size_t currentFrame;
-    uint32_t color;
-} boxes_t;
+    box() = delete;
+    box( const box& ) = default;
+    box( box&& ) = default;
+    ~box() = default;
+    auto operator=( const box& ) -> box& = default;
+    auto operator=( box&& ) -> box& = default;
 
-static FORCE_INLINE SDL_FRect** boxes_t$currentKeyFrames$get(
-    const boxes_t* _boxes ) {
-    SDL_FRect** l_returnValue = NULL;
+    float x;
+    float y;
+    float width;
+    float height;
+    size_t startIndex;
+    size_t endIndex;
+};
 
-    if ( UNLIKELY( !_boxes ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
+using boxes_t = struct boxes {
+    boxes() = delete;
+    boxes( const boxes& ) = default;
+    boxes( boxes&& ) = default;
+    ~boxes() = default;
 
-        goto EXIT;
-    }
+    boxes( std::span< std::span< const box_t > > _boxesKeyFrames ) {
+        _keyFrames = _boxesKeyFrames |
+                     std::ranges::to< std::vector< std::vector< box_t > > >();
 
-    {
-        l_returnValue = createArray( SDL_FRect* );
+        // Generate frames
+        {
+            size_t l_latestFrameIndex = 0;
 
-        if ( UNLIKELY( _boxes->currentFrame >=
-                       arrayLength( _boxes->frames ) ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Invalid boxex current frame" );
+            for ( std::span< const box_t > _boxes : _boxesKeyFrames ) {
+                for ( const box_t& _box : _boxes ) {
+                    const size_t l_endIndex = _box.endIndex;
 
-            goto EXIT;
+                    if ( l_endIndex > l_latestFrameIndex ) {
+                        l_latestFrameIndex = l_endIndex;
+                    }
+                }
+            }
         }
 
-        const size_t* l_boxesIndexes =
-            ( _boxes->frames[ _boxes->currentFrame ] );
+        // Fill key frame index in frames
+        {
+            // Preallocate frames
+            const auto l_x = [ & ]( const box_t& _box ) -> void {
+                const size_t l_framesAmount = _frames.size();
 
-        FOR_ARRAY( const size_t*, l_boxesIndexes ) {
-            insertIntoArray( &l_returnValue,
-                             ( _boxes->keyFrames[ *_element ] ) );
+                if ( _box.endIndex >= l_framesAmount ) [[likely]] {
+                    int64_t l_preallocationAmount =
+                        ( _box.endIndex - l_framesAmount );
+
+                    _frames.reserve( l_preallocationAmount );
+
+                    for ( size_t _frameToCreate : _frames[ l_framesAmount ] ) {
+                        *_frameToCreate = createArray( size_t );
+                    }
+                }
+            };
+
+            // Fill key frame index in frames
+            for ( size_t _index :
+                  std::views::iota( _box.startIndex, ( _box.endIndex + 1 ) ) ) {
+                _frames[ _index - 1 ] = l_keyFrameIndex;
+            }
         }
     }
 
-EXIT:
-    return ( l_returnValue );
-}
+    auto operator=( const boxes& ) -> boxes& = default;
+    auto operator=( boxes&& ) -> boxes& = default;
 
-boxes_t boxes_t$create( void );
-bool boxes_t$destroy( boxes_t* restrict _boxes );
+    constexpr auto color() -> auto& { return ( _color ); }
 
-bool boxes_t$load$one( boxes_t* restrict _boxes,
-                       const SDL_FRect* restrict _targetRectangle,
-                       size_t _startIndex,
-                       size_t _endIndex );
+    constexpr auto currentKeyFrame() {
+        return ( _frames[ _currentFrame ] |
+                 std::views::transform(
+                     [ & ]( size_t _index ) -> std::vector< box_t > {
+                         return ( _keyFrames[ _index ] );
+                     } ) );
+    }
 
-// X Y Width Height StartIndex-EndIndex
-bool boxes_t$load$one$fromString( boxes_t* restrict _boxes,
-                                  char* restrict _string );
-bool boxes_t$load$fromAsset( boxes_t* restrict _boxes,
-                             const asset_t* restrict _asset );
-bool boxes_t$load$fromPaths( boxes_t* restrict _boxes,
-                             char* const* restrict _paths );
-bool boxes_t$load$fromGlob( boxes_t* restrict _boxes,
-                            const char* restrict _glob );
-bool boxes_t$unload( boxes_t* restrict _boxes );
+    constexpr void step( bool _canLoop ) {
+        if ( _currentFrame < ( _frames.size() - 1 ) ) {
+            _currentFrame++;
 
-bool boxes_t$step( boxes_t* restrict _boxes, bool _canLoop );
-bool boxes_t$render( const boxes_t* restrict _boxes,
-                     SDL_Renderer* _renderer,
-                     const SDL_FRect* restrict _targetRectanble,
-                     bool _doFill );
+        } else {
+            if ( _canLoop ) {
+                _currentFrame = 0;
+            }
+        }
+    }
+
+    constexpr auto render( SDL_Renderer* _renderer,
+                           const box_t& _screenSpaceTarget,
+                           bool _doFill ) -> bool;
+
+private:
+    // Key frame is a list of boxes
+    using keyFrame_t = std::vector< box_t >;
+
+    // Frame is a list of indexes in key frames
+    using frame_t = std::vector< size_t >;
+
+    std::vector< keyFrame_t > _keyFrames;
+    std::vector< frame_t > _frames;
+    size_t _currentFrame{};
+    uint32_t _color{};
+};
+
+} // namespace boxes
