@@ -1,46 +1,9 @@
-#include "object_t.h"
+#include "object.hpp"
 
 #include <SDL3/SDL_rect.h>
 
-#include "log.h"
-#include "stdfunc.h"
-
-object_t object_t$create( void ) {
-    object_t l_returnValue = DEFAULT_OBJECT;
-
-    {
-        l_returnValue.stateNames = createArray( char* );
-        l_returnValue.states = createArray( state_t* );
-    }
-
-    return ( l_returnValue );
-}
-
-bool object_t$destroy( object_t* restrict _object ) {
-    bool l_returnValue = false;
-
-    if ( UNLIKELY( !_object ) ) {
-        log$transaction$query( ( logLevel_t )error, "Invalid argument" );
-
-        goto EXIT;
-    }
-
-    {
-        FREE_ARRAY( _object->stateNames );
-        FREE_ARRAY( _object->states );
-
-        _object->states = NULL;
-
-        _object->currentState = NULL;
-        _object->worldX = 0;
-        _object->worldY = 0;
-
-        l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
+#include "log.hpp"
+#include "stdfunc.hpp"
 
 bool object_t$state$add$fromPaths( object_t* restrict _object,
                                    SDL_Renderer* _renderer,

@@ -9,3 +9,4 @@ Implement slickdl
 Implement PCH support in build system
 Maybe fold animation, boxes, object into state
 Add seed from gtest to test.hpp
+Text stdfunc meta makeReflectable_t

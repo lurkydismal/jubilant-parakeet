@@ -38,9 +38,11 @@ inline auto formatLocation( const std::source_location& _sourceLocation =
         std::ranges::to< std::string >();
 
     return ( std::format(
-        "Thread {}: '{}:{}' "
+        "Thread {}{:#X}{}: '{}:{}' "
         "in '{}'",
-        formatWithColor( std::this_thread::get_id(), g_colorThreadId ),
+        g_colorThreadId,
+        std::hash< std::thread::id >{}( std::this_thread::get_id() ),
+        stdfunc::color::g_resetForeground,
         formatWithColor( std::filesystem::path( _sourceLocation.file_name() )
                              .filename()
                              .string(),
