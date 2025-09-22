@@ -23,7 +23,7 @@ export testsToBuild=(
     # "object"
     # "camera"
     # "state"
-    # "animation"
+    "animation"
     "boxes"
     # "window"
     "vsync"

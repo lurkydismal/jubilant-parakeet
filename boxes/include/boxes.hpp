@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <gsl/pointers>
+#include <initializer_list>
 #include <ranges>
 
 #include "color.hpp"
@@ -51,6 +52,16 @@ using boxes_t = struct boxes {
         stdfunc::assert( !_frames.empty() );
         stdfunc::assert( std::ranges::none_of(
             _frames, []( std::span< const box_t > _frame ) -> bool {
+                return ( _frame.empty() );
+            } ) );
+    }
+
+    boxes(
+        std::initializer_list< std::initializer_list< const box_t > > _frames )
+        : _frames( _frames | std::ranges::to< std::vector< frame_t > >() ) {
+        stdfunc::assert( !this->_frames.empty() );
+        stdfunc::assert( std::ranges::none_of(
+            this->_frames, []( const frame_t& _frame ) -> bool {
                 return ( _frame.empty() );
             } ) );
     }

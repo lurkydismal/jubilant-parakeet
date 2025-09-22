@@ -26,9 +26,21 @@ using animation_t = struct animation {
                boxes::boxes_t _targetBoxes )
         : _keyFrames( _keyFrames |
                       std::ranges::to< std::vector< texture_t > >() ),
+          _frames( _frames | std::ranges::to< std::vector >() ),
           _targetBoxes( std::move( _targetBoxes ) ) {
-        stdfunc::assert( !_keyFrames.empty() );
-        stdfunc::assert( !_frames.empty() );
+        stdfunc::assert( !this->_keyFrames.empty() );
+        stdfunc::assert( !this->_frames.empty() );
+    }
+
+    animation( std::initializer_list< const texture_t > _keyFrames,
+               std::initializer_list< size_t > _frames,
+               boxes::boxes_t _targetBoxes )
+        : _keyFrames( _keyFrames |
+                      std::ranges::to< std::vector< texture_t > >() ),
+          _frames( _frames | std::ranges::to< std::vector >() ),
+          _targetBoxes( std::move( _targetBoxes ) ) {
+        stdfunc::assert( !this->_keyFrames.empty() );
+        stdfunc::assert( !this->_frames.empty() );
     }
 
     auto operator=( const animation& ) -> animation& = default;
