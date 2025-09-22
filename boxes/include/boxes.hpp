@@ -46,24 +46,26 @@ using boxes_t = struct boxes {
     boxes( boxes&& ) = default;
     ~boxes() = default;
 
-    boxes( std::span< std::span< const box_t > > _boxesKeyFrames ) {
-        stdfunc::assert( !_boxesKeyFrames.empty() );
+    boxes( std::span< std::span< const box_t > > _frames ) {
+        stdfunc::assert( !_frames.empty() );
         stdfunc::assert( std::ranges::none_of(
-            _boxesKeyFrames,
-            []( std::span< const box_t > _boxKeyFrames ) -> bool {
+            _frames, []( std::span< const box_t > _boxKeyFrames ) -> bool {
                 return ( _boxKeyFrames.empty() );
             } ) );
 
-        _frames = _boxesKeyFrames |
-                  std::ranges::to< std::vector< std::vector< box_t > > >();
+        this->_frames =
+            _frames | std::ranges::to< std::vector< std::vector< box_t > > >();
     }
 
     auto operator=( const boxes& ) -> boxes& = default;
     auto operator=( boxes&& ) -> boxes& = default;
 
-    [[nodiscard]] constexpr auto color() -> auto& { return ( _color ); }
+    [[nodiscard]] constexpr auto color() const -> auto& { return ( _color ); }
 
-    [[nodiscard]] constexpr auto currentKeyFrame() -> std::span< const box_t > {
+    [[nodiscard]] constexpr auto currentFrame() const
+        -> std::span< const box_t > {
+        stdfunc::assert( !_frames.empty() );
+
         return ( _frames.at( _currentFrame ) );
     }
 
@@ -80,9 +82,9 @@ using boxes_t = struct boxes {
         }
     }
 
-    constexpr void render( gsl::not_null< SDL_Renderer* > _renderer,
-                           const box_t& _screenSpaceTarget,
-                           bool _doFill ) {
+    void render( gsl::not_null< SDL_Renderer* > _renderer,
+                 const box_t& _screenSpaceTarget,
+                 bool _doFill ) const {
         color::color_t l_colorBefore;
 
         // Store current draw color
@@ -111,7 +113,7 @@ using boxes_t = struct boxes {
                              SDL_GetError() );
         }
 
-        const auto l_currentFrame = currentKeyFrame();
+        const auto l_currentFrame = currentFrame();
 
         for ( const auto& _box : l_currentFrame ) {
             const SDL_FRect l_targetRectangle = {

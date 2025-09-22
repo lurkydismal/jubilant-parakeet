@@ -7,5 +7,5 @@ Move ctre to C++ 26
 Move plthook to C++ 26
 Implement slickdl
 Implement PCH support in build system
-Fix build system return fail exit code on fail
+Maybe fold animation, boxes, object into state
 Add seed from gtest to test.hpp
