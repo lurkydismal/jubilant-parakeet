@@ -46,15 +46,13 @@ using boxes_t = struct boxes {
     boxes( boxes&& ) = default;
     ~boxes() = default;
 
-    boxes( std::span< std::span< const box_t > > _frames ) {
+    boxes( std::span< std::span< const box_t > > _frames )
+        : _frames( _frames | std::ranges::to< std::vector< frame_t > >() ) {
         stdfunc::assert( !_frames.empty() );
         stdfunc::assert( std::ranges::none_of(
-            _frames, []( std::span< const box_t > _boxKeyFrames ) -> bool {
-                return ( _boxKeyFrames.empty() );
+            _frames, []( std::span< const box_t > _frame ) -> bool {
+                return ( _frame.empty() );
             } ) );
-
-        this->_frames =
-            _frames | std::ranges::to< std::vector< std::vector< box_t > > >();
     }
 
     auto operator=( const boxes& ) -> boxes& = default;
@@ -89,29 +87,25 @@ using boxes_t = struct boxes {
 
         // Store current draw color
         {
-            uint8_t l_red = 0;
-            uint8_t l_green = 0;
-            uint8_t l_blue = 0;
-            uint8_t l_alpha = 0;
-
             const bool l_result = SDL_GetRenderDrawColor(
-                _renderer, &l_red, &l_green, &l_blue, &l_alpha );
+                _renderer, &l_colorBefore.red, &l_colorBefore.green,
+                &l_colorBefore.blue, &l_colorBefore.alpha );
 
             stdfunc::assert( l_result, "Getting renderer draw color: '{}'",
                              SDL_GetError() );
-
-            l_colorBefore = color::color_t( l_red, l_green, l_blue, l_alpha );
         }
 
-        // Set current draw color
-        {
+        const auto l_setRenderDrawColor =
+            [ & ]( auto _function, const color::color_t& _color ) -> void {
             const bool l_result =
-                SDL_SetRenderDrawColor( _renderer, _color.red, _color.green,
-                                        _color.blue, _color.alpha );
+                _function( _renderer, _color.red, _color.green, _color.blue,
+                           _color.alpha );
 
             stdfunc::assert( l_result, "Setting renderer draw color: '{}'",
                              SDL_GetError() );
-        }
+        };
+
+        l_setRenderDrawColor( SDL_SetRenderDrawColor, _color );
 
         const auto l_currentFrame = currentFrame();
 
@@ -123,30 +117,19 @@ using boxes_t = struct boxes {
                 .h = _box.height,
             };
 
-            if ( _doFill ) {
+            const auto l_render = [ & ]( auto _renderFunction ) -> void {
                 const bool l_result =
-                    SDL_RenderFillRect( _renderer, &l_targetRectangle );
-
-                stdfunc::assert( l_result, "Render filled rectangle: '{}'",
-                                 SDL_GetError() );
-
-            } else {
-                const bool l_result =
-                    SDL_RenderRect( _renderer, &l_targetRectangle );
+                    _renderFunction( _renderer, &l_targetRectangle );
 
                 stdfunc::assert( l_result, "Render rectangle: '{}'",
                                  SDL_GetError() );
-            }
+            };
+
+            l_render( ( _doFill ) ? ( SDL_RenderFillRect )
+                                  : ( SDL_RenderRect ) );
         }
 
-        // Load current draw color
-        {
-            const bool l_result = SDL_SetRenderDrawColor(
-                _renderer, l_colorBefore.red, l_colorBefore.green,
-                l_colorBefore.blue, l_colorBefore.alpha );
-
-            stdfunc::assert( l_result );
-        }
+        l_setRenderDrawColor( SDL_SetRenderDrawColor, l_colorBefore );
     }
 
 private:

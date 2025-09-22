@@ -16,9 +16,10 @@ constexpr std::string_view g_colorFileName = stdfunc::color::g_purpleLight;
 constexpr std::string_view g_colorLineNumber = stdfunc::color::g_purpleLight;
 constexpr std::string_view g_colorFunctionName = stdfunc::color::g_purpleLight;
 
-constexpr auto formatWithColor( auto _what, std::string_view _color )
+template < typename T >
+constexpr auto formatWithColor( T&& _what, std::string_view _color )
     -> std::string {
-    return ( std::format( "{}{}{}", _color, _what,
+    return ( std::format( "{}{}{}", _color, std::forward< T >( _what ),
                           stdfunc::color::g_resetForeground ) );
 }
 

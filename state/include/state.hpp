@@ -2,45 +2,82 @@
 
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_video.h>
-#include <stdbool.h>
 
-#include "animation_t.h"
-#include "boxes_t.h"
+#include <gsl/pointers>
+#include <utility>
 
-#define DEFAULT_STATE                   \
-    {                                   \
-        .animation = DEFAULT_ANIMATION, \
-        .boxes = DEFAULT_BOXES,         \
-        .isActionable = true,           \
-        .canLoop = false,               \
-        .renderer = NULL,               \
+#include "animation.hpp"
+#include "boxes.hpp"
+
+namespace state {
+
+using state_t = struct state {
+    state() = delete;
+    state( const state& ) = default;
+    state( state&& ) = default;
+    ~state() = default;
+
+    state( animation::animation_t _animation,
+           boxes::boxes_t _boxes,
+           bool _isActionable,
+           gsl::not_null< SDL_Renderer* > _renderer )
+        : _animation( std::move( _animation ) ),
+          _boxes( std::move( _boxes ) ),
+          _isActionable( _isActionable ),
+          _renderer( _renderer ) {}
+
+    auto operator=( const state& ) -> state& = default;
+    auto operator=( state&& ) -> state& = default;
+
+    [[nodiscard]] constexpr auto isActionable() const -> bool {
+        return ( _isActionable );
     }
 
-typedef struct {
-    animation_t animation;
-    boxes_t boxes;
-    bool isActionable;
-    bool canLoop;
-    SDL_Renderer* renderer;
-} state_t;
+    constexpr void step() {
+        _animation.step( _canLoop );
+        _boxes.step( _canLoop );
+    }
 
-state_t state_t$create( void );
-bool state_t$destroy( state_t* restrict _state );
+    void render( const boxes::box_t& _cameraBoxCoordinates,
+                 bool _doDrawBoxes,
+                 bool _doFillBoxes ) const {
+        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes );
+    }
 
-bool state_t$load$fromPaths( state_t* restrict _state,
-                             char* restrict _boxesPath,
-                             char* const* restrict _animationPath );
-bool state_t$load$fromGlob( state_t* restrict _state,
-                            const char* restrict _boxesGlob,
-                            const char* restrict _animationGlob );
-bool state_t$unload( state_t* restrict _state );
+    void render( const boxes::box_t& _cameraBoxCoordinates,
+                 bool _doDrawBoxes,
+                 bool _doFillBoxes,
+                 double _angle,
+                 SDL_FlipMode _flipMode ) const {
+        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes, _angle,
+                 _flipMode );
+    }
 
-bool state_t$step( state_t* restrict _state );
-bool state_t$render$rotated( const state_t* restrict _state,
-                             const double _angle,
-                             SDL_FlipMode _flipMode,
-                             const SDL_FRect* restrict _targetRectanble,
-                             bool _doDrawBoxes );
-bool state_t$render( const state_t* restrict _state,
-                     const SDL_FRect* restrict _targetRectanble,
-                     bool _doDrawBoxes );
+    // Helpers
+private:
+    void _render( const boxes::box_t& _cameraBoxCoordinates,
+                  bool _doDrawBoxes,
+                  bool _doFillBoxes,
+                  auto... _arguments ) const {
+        boxes::box_t l_targetBox = _animation.currentTargetBox();
+
+        l_targetBox.x += _cameraBoxCoordinates.x;
+        l_targetBox.y += _cameraBoxCoordinates.y;
+
+        _animation.render( _renderer, l_targetBox, _arguments... );
+
+        if ( _doDrawBoxes ) {
+            _boxes.render( _renderer, l_targetBox, _doFillBoxes );
+        }
+    }
+
+    // Variables
+private:
+    animation::animation_t _animation;
+    boxes::boxes_t _boxes;
+    bool _isActionable;
+    bool _canLoop{};
+    gsl::not_null< SDL_Renderer* > _renderer;
+};
+
+} // namespace state

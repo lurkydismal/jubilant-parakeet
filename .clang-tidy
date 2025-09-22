@@ -94,6 +94,10 @@ CheckOptions:
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix
     value: _
+  - key: readability-identifier-naming.PrivateMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.PrivateMethodPrefix
+    value: _
 
   - key: readability-identifier-naming.TypeAliasCase
     value: camelBack

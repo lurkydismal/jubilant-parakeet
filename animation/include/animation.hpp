@@ -12,6 +12,9 @@
 
 namespace animation {
 
+// FIX: Move to slickdl
+using texture_t = gsl::not_null< SDL_Texture* >;
+
 using animation_t = struct animation {
     animation() = delete;
     animation( const animation& ) = default;
@@ -19,9 +22,6 @@ using animation_t = struct animation {
     ~animation() = default;
     auto operator=( const animation& ) -> animation& = default;
     auto operator=( animation&& ) -> animation& = default;
-
-    // FIX: Move to slickdl
-    using texture_t = gsl::not_null< SDL_Texture* >;
 
     animation( std::span< const texture_t > _keyFrames,
                std::span< size_t > _frames,
@@ -33,7 +33,7 @@ using animation_t = struct animation {
         stdfunc::assert( !_frames.empty() );
     }
 
-    [[nodiscard]] constexpr auto currentKeyFrame() -> texture_t {
+    [[nodiscard]] constexpr auto currentKeyFrame() const -> texture_t {
         stdfunc::assert( !_keyFrames.empty() );
         stdfunc::assert( !_frames.empty() );
 
@@ -60,30 +60,26 @@ using animation_t = struct animation {
         _targetBoxes.step( _canLoop );
     }
 
-    void render( SDL_Renderer* _renderer,
-                 const boxes::box_t& _targetBoxCoordinates ) {
-        const boxes::box_t& l_targetBoxSizes = currentTargetBox();
-
-        const SDL_FRect l_resolvedTargetRectangle = {
-            _targetBoxCoordinates.x, _targetBoxCoordinates.y,
-            l_targetBoxSizes.width, l_targetBoxSizes.height };
-
-        const texture_t l_keyFrame = currentKeyFrame();
-
-        // Render
-        {
-            const bool l_result = SDL_RenderTexture(
-                _renderer, l_keyFrame, nullptr, &l_resolvedTargetRectangle );
-
-            stdfunc::assert( l_result, "Rendering texture: '{}'",
-                             SDL_GetError() );
-        }
+    void render( gsl::not_null< SDL_Renderer* > _renderer,
+                 const boxes::box_t& _targetBoxCoordinates ) const {
+        _render( _renderer, _targetBoxCoordinates, SDL_RenderTexture );
     }
 
     void render( gsl::not_null< SDL_Renderer* > _renderer,
+                 const boxes::box_t& _targetBoxCoordinates,
                  double _angle,
-                 SDL_FlipMode _flipMode,
-                 const boxes::box_t& _targetBoxCoordinates ) {
+                 SDL_FlipMode _flipMode ) const {
+        _render( _renderer, _targetBoxCoordinates, SDL_RenderTextureRotated,
+                 _angle, nullptr, _flipMode );
+    }
+
+    // Helpers
+private:
+    template < typename... Arguments >
+    void _render( gsl::not_null< SDL_Renderer* > _renderer,
+                  const boxes::box_t& _targetBoxCoordinates,
+                  auto _renderFunction,
+                  Arguments&&... _arguments ) const {
         const boxes::box_t& l_targetBoxSizes = currentTargetBox();
 
         const SDL_FRect l_resolvedTargetRectangle = {
@@ -94,15 +90,16 @@ using animation_t = struct animation {
 
         // Render
         {
-            const bool l_result = SDL_RenderTextureRotated(
+            const bool l_result = _renderFunction(
                 _renderer, l_keyFrame, nullptr, &l_resolvedTargetRectangle,
-                _angle, nullptr, _flipMode );
+                std::forward< Arguments >( _arguments )... );
 
             stdfunc::assert( l_result, "Rendering texture: '{}'",
                              SDL_GetError() );
         }
     }
 
+    // Variables
 private:
     std::vector< texture_t > _keyFrames;
 

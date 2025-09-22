@@ -47,8 +47,8 @@ TEST( BoxesLogic, ConstructorAcceptsNonEmptyFrames_CurrentKeyFrameContents ) {
     // Construct (should not die)
     boxes_t l_b{ std::span( l_frames ) };
 
-    // currentKeyFrame() initially returns frame 0
-    auto l_k = l_b.currentKeyFrame();
+    // currentFrame() initially returns frame 0
+    auto l_k = l_b.currentFrame();
     ASSERT_EQ( l_k.size(), 1u );
     EXPECT_FLOAT_EQ( l_k[ 0 ].x, 1.0f );
     EXPECT_FLOAT_EQ( l_k[ 0 ].y, 2.0f );
@@ -68,19 +68,19 @@ TEST( BoxesLogic, StepAdvancesAndStopsWhenNoLoop ) {
 
     // Advance to frame 1
     l_b.step( false );
-    auto l_k1 = l_b.currentKeyFrame();
+    auto l_k1 = l_b.currentFrame();
     EXPECT_EQ( l_k1.size(), 1u );
     EXPECT_FLOAT_EQ( l_k1[ 0 ].x, 1.0f );
 
     // Advance to frame 2
     l_b.step( false );
-    auto l_k2 = l_b.currentKeyFrame();
+    auto l_k2 = l_b.currentFrame();
     EXPECT_FLOAT_EQ( l_k2[ 0 ].x, 2.0f );
 
     // At last frame; step(false) should not wrap or overflow - should stay on
     // last frame
     l_b.step( false );
-    auto l_kLast = l_b.currentKeyFrame();
+    auto l_kLast = l_b.currentFrame();
     EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 2.0f );
 }
 
@@ -95,12 +95,12 @@ TEST( BoxesLogic, StepWrapsWhenLoopTrue ) {
 
     // Move to last frame
     l_b.step( false );
-    auto l_kLast = l_b.currentKeyFrame();
+    auto l_kLast = l_b.currentFrame();
     EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 1.0f );
 
     // Now step with looping enabled -> should wrap to frame 0
     l_b.step( true );
-    auto l_k0 = l_b.currentKeyFrame();
+    auto l_k0 = l_b.currentFrame();
     EXPECT_FLOAT_EQ( l_k0[ 0 ].x, 0.0f );
 }
 
@@ -111,8 +111,8 @@ TEST( BoxesLogic, SingleFrameStepNoChangeRegardlessOfLoopFlag ) {
     boxes_t l_b{ std::span( l_frames ) };
 
     l_b.step( false );
-    EXPECT_FLOAT_EQ( l_b.currentKeyFrame()[ 0 ].x, 7.0f );
+    EXPECT_FLOAT_EQ( l_b.currentFrame()[ 0 ].x, 7.0f );
 
     l_b.step( true );
-    EXPECT_FLOAT_EQ( l_b.currentKeyFrame()[ 0 ].x, 7.0f );
+    EXPECT_FLOAT_EQ( l_b.currentFrame()[ 0 ].x, 7.0f );
 }
