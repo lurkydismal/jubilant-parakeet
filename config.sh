@@ -4,7 +4,7 @@ export partsToBuild=(
     "control"
     "input"
     "FPS"
-    # "object"
+    "object"
     "camera"
     "state"
     "animation"

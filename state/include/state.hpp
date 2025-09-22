@@ -55,16 +55,18 @@ using state_t = struct state {
 
     // Helpers
 private:
+    template < typename... Arguments >
     void _render( const boxes::box_t& _cameraBoxCoordinates,
                   bool _doDrawBoxes,
                   bool _doFillBoxes,
-                  auto... _arguments ) const {
+                  Arguments&&... _arguments ) const {
         boxes::box_t l_targetBox = _animation.currentTargetBox();
 
         l_targetBox.x += _cameraBoxCoordinates.x;
         l_targetBox.y += _cameraBoxCoordinates.y;
 
-        _animation.render( _renderer, l_targetBox, _arguments... );
+        _animation.render( _renderer, l_targetBox,
+                           std::forward< Arguments >( _arguments )... );
 
         if ( _doDrawBoxes ) {
             _boxes.render( _renderer, l_targetBox, _doFillBoxes );

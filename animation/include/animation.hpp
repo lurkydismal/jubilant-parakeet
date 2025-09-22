@@ -20,8 +20,6 @@ using animation_t = struct animation {
     animation( const animation& ) = default;
     animation( animation&& ) = default;
     ~animation() = default;
-    auto operator=( const animation& ) -> animation& = default;
-    auto operator=( animation&& ) -> animation& = default;
 
     animation( std::span< const texture_t > _keyFrames,
                std::span< size_t > _frames,
@@ -32,6 +30,9 @@ using animation_t = struct animation {
         stdfunc::assert( !_keyFrames.empty() );
         stdfunc::assert( !_frames.empty() );
     }
+
+    auto operator=( const animation& ) -> animation& = default;
+    auto operator=( animation&& ) -> animation& = default;
 
     [[nodiscard]] constexpr auto currentKeyFrame() const -> texture_t {
         stdfunc::assert( !_keyFrames.empty() );

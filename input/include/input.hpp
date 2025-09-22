@@ -62,6 +62,7 @@ using input_t = struct input {
     constexpr input( button_t _button,
                      direction_t _direction = direction_t::none )
         : direction( _direction ), button( _button ) {}
+
     input() = default;
     input( const input& ) = default;
     input( input&& ) = default;

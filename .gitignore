@@ -13,7 +13,9 @@
 # Binary
 **/*.o
 **/*.tmp
-**/**out**
+**/*.a
+**/*.so
+**/**out
 **/*vgcore*
 **/*.data
 **/compile_commands*.json
