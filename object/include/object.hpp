@@ -3,6 +3,7 @@
 #include <SDL3/SDL_render.h>
 
 #include <algorithm>
+#include <initializer_list>
 
 #include "state.hpp"
 
@@ -15,6 +16,17 @@ using object_t = struct object {
     ~object() = default;
 
     object( std::span< std::pair< std::string, state::state_t > > _states ) {
+        _stateNames.reserve( _states.size() );
+        this->_states.reserve( _states.size() );
+
+        for ( const auto& [ l_name, l_state ] : _states ) {
+            _stateNames.emplace_back( l_name );
+            this->_states.emplace_back( l_state );
+        }
+    }
+
+    object( std::initializer_list< std::pair< std::string, state::state_t > >
+                _states ) {
         _stateNames.reserve( _states.size() );
         this->_states.reserve( _states.size() );
 

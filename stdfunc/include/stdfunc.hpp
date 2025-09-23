@@ -334,9 +334,7 @@ constexpr void fill( Container& _container ) {
 [[nodiscard]] constexpr auto generateHash( std::span< std::byte > _data,
                                            size_t _seed = 0x9E3779B1 )
     -> size_t {
-    size_t l_returnValue = XXH32( _data.data(), _data.size(), _seed );
-
-    return ( l_returnValue );
+    return ( XXH32( _data.data(), _data.size(), _seed ) );
 }
 
 template < template < typename > typename Container, typename... Arguments >
@@ -576,7 +574,7 @@ namespace decompress {
 namespace meta {
 
 template < typename T >
-concept is_reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
+concept is_reflectable = glz::has_reflect< T >;
 
 /**
  * @brief Convert type into struct with metadata
@@ -593,11 +591,6 @@ concept is_reflectable = ( glz::reflectable< T > || glz::glaze_object_t< T > );
  */
 template < typename T >
 using reflect_t = glz::reflect< T >;
-
-// If you want to make an empty struct or a struct with constructors work with
-// reflection, add the folllwing constructor to your type:
-// myStruct( stdfunc::make_reflectable ) {}
-using makeReflectable_t = glz::make_reflectable;
 
 // Functions that take instance
 template < typename T, typename Callback >

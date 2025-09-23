@@ -1,12 +1,14 @@
 #include "stdfunc.hpp"
 
+#include <glaze/glaze.hpp>
+
 #include <algorithm>
 #include <numeric>
 #include <unordered_set>
 
 #include "test.hpp"
 
-namespace stdfunc {
+using namespace stdfunc;
 
 TEST( stdfunc, STRINGIFY ) {
     EXPECT_EQ( STRINGIFY( Tessst ), "Tessst" );
@@ -771,16 +773,23 @@ struct person {
     std::string name{};
 };
 
-enum class Color : int { Red = 1, Green = 2, Blue = 10 };
+struct empty {};
+
+enum class color : int8_t { red = 1, green = 2, blue = 10 };
 
 // -----------------------------
 // Compile-time checks
 // -----------------------------
+static_assert( meta::is_reflectable< person > );
 static_assert( meta::reflect_t< person >::size == 3,
-               "Person size should be 3 (mock)" );
-static_assert( meta::reflect_t< person >::keys[ 0 ] == "id", "mock key check" );
+               "Person size should be 3" );
+static_assert( meta::reflect_t< person >::keys[ 0 ] == "id" );
 static_assert( meta::hasMemberWithName< person >( "id" ) );
 static_assert( !meta::hasMemberWithName< person >( "not_a_field" ) );
+static_assert( meta::is_reflectable< empty > );
+static_assert( meta::reflect_t< empty >::size == 0, "Empty size should be 0" );
+static_assert( !meta::hasMemberWithName< empty >( "id" ) );
+static_assert( !meta::hasMemberWithName< empty >( "not_a_field" ) );
 #if 0
 static_assert( meta::hasMemberWithName< Color >( "Green" ) );
 #endif
@@ -897,5 +906,3 @@ TEST( MetaReflectTests, reflect_t_and_getName ) {
 
     SUCCEED();
 }
-
-} // namespace stdfunc

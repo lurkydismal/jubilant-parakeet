@@ -5,6 +5,8 @@
 #include <gmock/gmock.h> // ElementsAre, HasSubstr, MatchesRegex ...
 #include <gtest/gtest.h>
 
-using namespace ::testing;
+using namespace testing;
+
+extern size_t g_seed;
 
 #endif

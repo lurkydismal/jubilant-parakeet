@@ -8,6 +8,8 @@
 
 #include "stdfunc.hpp"
 
+size_t g_seed;
+
 class CustomPrinter : public testing::TestEventListener {
 public:
     // Forward events you don't care about to a default listener if you want.
@@ -23,6 +25,8 @@ public:
                                int _iteration ) override {
         const size_t l_suiteAmount = _unitTest.test_suite_to_run_count();
 
+        g_seed = _unitTest.random_seed();
+
         const std::string l_iteration =
             ( ( _iteration > 0 ) ? ( std::format( " #{}", _iteration ) )
                                  : ( "" ) );
@@ -31,8 +35,8 @@ public:
             "{}--- Running {} tests from {} {} with seed [{}]{} ---{}",
             stdfunc::color::g_yellow, _unitTest.test_to_run_count(),
             l_suiteAmount,
-            ( ( l_suiteAmount > 1 ) ? ( "suites" ) : ( "suite" ) ),
-            _unitTest.random_seed(), l_iteration, stdfunc::color::g_reset );
+            ( ( l_suiteAmount > 1 ) ? ( "suites" ) : ( "suite" ) ), g_seed,
+            l_iteration, stdfunc::color::g_reset );
     }
 
     void OnEnvironmentsSetUpStart(
@@ -147,12 +151,12 @@ public:
             std::string l_failedTests;
             l_failedTests.reserve( 100 );
 
-            const auto l_iterateTestSuites = [ & ]( auto _callback ) {
+            const auto l_iterateTestSuites = [ & ]( auto _callback ) -> auto {
                 for ( const gsl::not_null _testSuite :
                       std::views::iota(
                           size_t{}, static_cast< size_t >(
                                         _unitTest.total_test_suite_count() ) ) |
-                          std::views::transform( [ & ]( auto _index ) {
+                          std::views::transform( [ & ]( auto _index ) -> auto {
                               return ( _unitTest.GetTestSuite( _index ) );
                           } ) ) {
                     _callback( _testSuite );
@@ -161,31 +165,32 @@ public:
 
             const auto l_iterateTestInfos =
                 [ & ]( gsl::not_null< const testing::TestSuite* > _testSuite,
-                       auto _callback ) {
-                    for ( const gsl::not_null _testInfo :
-                          std::views::iota(
-                              size_t{}, static_cast< size_t >(
+                       auto _callback ) -> auto {
+                for ( const gsl::not_null _testInfo :
+                      std::views::iota( size_t{},
+                                        static_cast< size_t >(
                                             _testSuite->total_test_count() ) ) |
-                              std::views::transform( [ & ]( auto _index ) {
-                                  return ( _testSuite->GetTestInfo( _index ) );
-                              } ) ) {
-                        _callback( _testInfo );
-                    }
-                };
+                          std::views::transform( [ & ]( auto _index ) -> auto {
+                              return ( _testSuite->GetTestInfo( _index ) );
+                          } ) ) {
+                    _callback( _testInfo );
+                }
+            };
 
-            l_iterateTestSuites( [ & ]( auto _testSuite ) {
-                l_iterateTestInfos( _testSuite, [ & ]( auto _testInfo ) {
-                    if ( _testInfo->result()->Failed() ) {
-                        const std::string l_where =
-                            std::format( "{}{}:{}{}", stdfunc::color::g_reset,
-                                         _testInfo->file(), _testInfo->line(),
-                                         stdfunc::color::g_red );
+            l_iterateTestSuites( [ & ]( auto _testSuite ) -> auto {
+                l_iterateTestInfos(
+                    _testSuite, [ & ]( auto _testInfo ) -> auto {
+                        if ( _testInfo->result()->Failed() ) {
+                            const std::string l_where = std::format(
+                                "{}{}:{}{}", stdfunc::color::g_reset,
+                                _testInfo->file(), _testInfo->line(),
+                                stdfunc::color::g_red );
 
-                        std::format_to( std::back_inserter( l_failedTests ),
-                                        "\t{}.{} {}\n", _testSuite->name(),
-                                        _testInfo->name(), l_where );
-                    }
-                } );
+                            std::format_to( std::back_inserter( l_failedTests ),
+                                            "\t{}.{} {}\n", _testSuite->name(),
+                                            _testInfo->name(), l_where );
+                        }
+                    } );
             } );
 
             std::println( "{}{}{}", stdfunc::color::g_red, l_failedTests,

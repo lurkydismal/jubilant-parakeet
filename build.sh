@@ -424,7 +424,7 @@ source './config.sh' && {
                 "module" &
 
             processIDs+=($!)
-        }
+        } || exit_failure
 
         unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
@@ -475,7 +475,7 @@ source './config.sh' && {
                     "static" &
 
                 processIDs+=($!)
-            }
+            } || exit_failure
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
@@ -628,7 +628,7 @@ source './config.sh' && {
                 if [ $BUILD_STATUS -ne 0 ]; then
                     exit_failure
                 fi
-            }
+            } || exit_failure
         fi
 
         BUILD_STATUS=$?
@@ -665,7 +665,7 @@ source './config.sh' && {
                 if [ $BUILD_STATUS -ne 0 ]; then
                     exit_failure
                 fi
-            }
+            } || exit_failure
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
@@ -766,7 +766,7 @@ source './config.sh' && {
                     "module" &
 
                 processIDs+=($!)
-            }
+            } || exit_failure
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
@@ -821,7 +821,7 @@ source './config.sh' && {
                 if [ $BUILD_STATUS -ne 0 ]; then
                     exit_failure
                 fi
-            }
+            } || exit_failure
 
             unset FILES_TO_INCLUDE FILES_TO_COMPILE
 
@@ -870,6 +870,6 @@ source './config.sh' && {
         }
     fi
 
-}
+} || exit_failure
 
 cd - >'/dev/null' || exit_failure
