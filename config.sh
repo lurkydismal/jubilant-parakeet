@@ -13,7 +13,7 @@ export partsToBuild=(
     "vsync"
     # "font_t"
     "asset"
-    # "watch_t"
+    "watch"
 )
 export testsToBuild=(
     # "runtime"
@@ -29,7 +29,7 @@ export testsToBuild=(
     "vsync"
     # "font_t"
     # "asset"
-    # "watch_t"
+    # "watch"
 
     # "plthook"
     "ctre"

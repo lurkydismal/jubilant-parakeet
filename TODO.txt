@@ -6,7 +6,4 @@ Move to available C++ 26
 Move ctre to C++ 26
 Move plthook to C++ 26
 Implement slickdl
-Implement PCH support in build system
-Test stdfunc meta makeReflectable_t
-Probably Optimize animation, boxes and state by moving render functions from headers
 Test state, object, animation
