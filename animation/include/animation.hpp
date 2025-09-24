@@ -21,9 +21,9 @@ using animation_t = struct animation {
     animation( animation&& ) = default;
     ~animation() = default;
 
-    animation( std::span< const texture_t > _keyFrames,
-               std::span< size_t > _frames,
-               boxes::boxes_t _targetBoxes )
+    constexpr animation( std::span< const texture_t > _keyFrames,
+                         std::span< size_t > _frames,
+                         boxes::boxes_t _targetBoxes )
         : _keyFrames( _keyFrames |
                       std::ranges::to< std::vector< texture_t > >() ),
           _frames( _frames | std::ranges::to< std::vector >() ),
@@ -32,9 +32,9 @@ using animation_t = struct animation {
         stdfunc::assert( !this->_frames.empty() );
     }
 
-    animation( std::initializer_list< const texture_t > _keyFrames,
-               std::initializer_list< size_t > _frames,
-               boxes::boxes_t _targetBoxes )
+    constexpr animation( std::initializer_list< const texture_t > _keyFrames,
+                         std::initializer_list< size_t > _frames,
+                         boxes::boxes_t _targetBoxes )
         : _keyFrames( _keyFrames |
                       std::ranges::to< std::vector< texture_t > >() ),
           _frames( _frames | std::ranges::to< std::vector >() ),

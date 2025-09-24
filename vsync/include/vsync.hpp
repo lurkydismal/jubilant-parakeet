@@ -7,12 +7,12 @@
 // Software vsync implementation
 namespace vsync {
 
-enum class vsync_t : uint8_t {
+using vsync_t = enum class vsync : uint8_t {
     off,
-    unknownVsync,
+    software,
 };
 
-auto init( const vsync_t _vsyncType, const float16_t _desiredFPS ) -> bool;
+void init( vsync_t _vsyncType, float16_t _desiredFPS );
 void quit();
 
 void begin();

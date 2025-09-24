@@ -15,7 +15,8 @@ using object_t = struct object {
     object( object&& ) = default;
     ~object() = default;
 
-    object( std::span< std::pair< std::string, state::state_t > > _states ) {
+    constexpr object(
+        std::span< std::pair< std::string, state::state_t > > _states ) {
         _stateNames.reserve( _states.size() );
         this->_states.reserve( _states.size() );
 
@@ -25,8 +26,9 @@ using object_t = struct object {
         }
     }
 
-    object( std::initializer_list< std::pair< std::string, state::state_t > >
-                _states ) {
+    constexpr object(
+        std::initializer_list< std::pair< std::string, state::state_t > >
+            _states ) {
         _stateNames.reserve( _states.size() );
         this->_states.reserve( _states.size() );
 

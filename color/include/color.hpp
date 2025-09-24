@@ -7,7 +7,10 @@
 namespace color {
 
 using color_t = struct color {
-    color( uint8_t _red, uint8_t _green, uint8_t _blue, uint8_t _alpha )
+    constexpr color( uint8_t _red,
+                     uint8_t _green,
+                     uint8_t _blue,
+                     uint8_t _alpha )
         : red( _red ), green( _green ), blue( _blue ), alpha( _alpha ) {}
 
     color() = default;
@@ -15,7 +18,7 @@ using color_t = struct color {
     color( color&& ) = default;
     ~color() = default;
 
-    color( uint32_t _colorPacked ) { unpack( _colorPacked ); }
+    constexpr color( uint32_t _colorPacked ) { unpack( _colorPacked ); }
 
     auto operator=( const color& ) -> color& = default;
     auto operator=( color&& ) -> color& = default;

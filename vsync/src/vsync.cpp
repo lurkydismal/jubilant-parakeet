@@ -2,86 +2,54 @@
 
 #include <sys/time.h>
 
+#include <bit>
 #include <chrono>
-
-#include "log.hpp"
 
 namespace vsync {
 
 namespace {
 
-vsync_t g_vsyncType = vsync_t::unknownVsync;
+vsync_t g_vsyncType = vsync_t::off;
 float g_desiredFPS = 0;
 timespec g_sleepTime, g_startTime, g_endTime;
 
 } // namespace
 
-auto init( const vsync_t _vsyncType, const float16_t _desiredFPS ) -> bool {
-#if !defined( TESTS )
+void init( vsync_t _vsyncType, float16_t _desiredFPS ) {
+    stdfunc::assert( g_desiredFPS );
 
-    logg::variable( _desiredFPS );
+    g_desiredFPS = _desiredFPS;
+    g_vsyncType = _vsyncType;
 
-#endif
-
-    bool l_returnValue = false;
-
-    do {
-        if ( g_desiredFPS ) [[unlikely]] {
-#if !defined( TESTS )
-
-            logg::error( "Already initialized" );
-
-#endif
-
-            break;
-        }
-
-        {
-            g_desiredFPS = _desiredFPS;
-            g_vsyncType = _vsyncType;
-
-            if ( _vsyncType == vsync_t::off ) {
-                g_sleepTime = {
-                    .tv_sec = 0,
-                    .tv_nsec =
-                        std::chrono::duration_cast< std::chrono::nanoseconds >(
-                            std::chrono::duration< double >( 1.0 ) /
-                            _desiredFPS )
-                            .count() };
-            }
-
-#if !defined( TESTS )
-
-            logg::info( "Setting vsync to {} FPS", _desiredFPS );
-
-            logg::debug( "Vsync sleep time set to {} nanoseconds",
-                         g_sleepTime.tv_nsec );
-
-#endif
-        }
-
-        l_returnValue = true;
-    } while ( false );
-
-    return ( l_returnValue );
+    if ( _vsyncType == vsync_t::software ) {
+        g_sleepTime = {
+            .tv_sec = 0,
+            .tv_nsec =
+                std::chrono::duration_cast< std::chrono::nanoseconds >(
+                    std::chrono::duration< double >( 1.0 ) / _desiredFPS )
+                    .count() };
+    }
 }
 
 void quit() {
     g_desiredFPS = 0;
 
-    if ( g_vsyncType == vsync_t::off ) {
-        g_sleepTime.tv_nsec = 0;
-    }
+    __builtin_memset( std::bit_cast< void* >( &g_sleepTime ), 0,
+                      sizeof( g_sleepTime ) );
+    __builtin_memset( std::bit_cast< void* >( &g_startTime ), 0,
+                      sizeof( g_startTime ) );
+    __builtin_memset( std::bit_cast< void* >( &g_endTime ), 0,
+                      sizeof( g_endTime ) );
 }
 
 void begin() {
-    if ( g_vsyncType == vsync_t::off ) {
+    if ( g_vsyncType == vsync_t::software ) {
         clock_gettime( CLOCK_MONOTONIC, &g_startTime );
     }
 }
 
 void end() {
-    if ( g_vsyncType == vsync_t::off ) {
+    if ( g_vsyncType == vsync_t::software ) {
         clock_gettime( CLOCK_MONOTONIC, &g_endTime );
 
         timespec l_adjustedSleepTime{};

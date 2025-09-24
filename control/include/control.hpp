@@ -4,7 +4,6 @@
 #include <SDL3/SDL_scancode.h>
 
 #include "input.hpp"
-#include "stdfunc.hpp"
 
 namespace control {
 

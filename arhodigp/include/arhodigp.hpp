@@ -24,8 +24,6 @@ using callback_t =
 //     .group = 5,
 // },
 using option_t = struct option {
-    option( callback_t _callback ) : callback( std::move( _callback ) ) {}
-
     option() = default;
     option( const option& ) = default;
     option( option&& ) = default;

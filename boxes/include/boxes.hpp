@@ -16,8 +16,13 @@
 namespace boxes {
 
 using box_t = struct box {
-    box( float _x, float _y, float _width, float _height )
+    constexpr box( float _x, float _y, float _width, float _height )
         : x( _x ), y( _y ), width( _width ), height( _height ) {
+        stdfunc::assert( !_x );
+        stdfunc::assert( !_y );
+        stdfunc::assert( !_width );
+        stdfunc::assert( !_height );
+
 #if !defined( TESTS )
 
         logg::debug(
@@ -47,7 +52,7 @@ using boxes_t = struct boxes {
     boxes( boxes&& ) = default;
     ~boxes() = default;
 
-    boxes( std::span< std::span< const box_t > > _frames )
+    constexpr boxes( std::span< std::span< const box_t > > _frames )
         : _frames( _frames | std::ranges::to< std::vector< frame_t > >() ) {
         stdfunc::assert( !_frames.empty() );
         stdfunc::assert( std::ranges::none_of(
@@ -56,7 +61,7 @@ using boxes_t = struct boxes {
             } ) );
     }
 
-    boxes(
+    constexpr boxes(
         std::initializer_list< std::initializer_list< const box_t > > _frames )
         : _frames( _frames | std::ranges::to< std::vector< frame_t > >() ) {
         stdfunc::assert( !this->_frames.empty() );

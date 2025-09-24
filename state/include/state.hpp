@@ -17,10 +17,10 @@ using state_t = struct state {
     state( state&& ) = default;
     ~state() = default;
 
-    state( animation::animation_t _animation,
-           boxes::boxes_t _boxes,
-           bool _isActionable,
-           gsl::not_null< SDL_Renderer* > _renderer )
+    constexpr state( animation::animation_t _animation,
+                     boxes::boxes_t _boxes,
+                     bool _isActionable,
+                     gsl::not_null< SDL_Renderer* > _renderer )
         : _animation( std::move( _animation ) ),
           _boxes( std::move( _boxes ) ),
           _isActionable( _isActionable ),

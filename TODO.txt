@@ -7,3 +7,5 @@ Move ctre to C++ 26
 Move plthook to C++ 26
 Implement slickdl
 Test state, object, animation
+Move to multi-window system
+Improve vsync, window, FPS
