@@ -132,13 +132,8 @@ auto init( applicationState_t& _applicationState,
         }
 
         // Vsync
-        if ( !vsync::init(
-                 _applicationState.renderContext.window.vsync,
-                 _applicationState.renderContext.window.desiredFPS ) ) {
-            logg::error( "Initializing Vsync" );
-
-            break;
-        }
+        vsync::init( _applicationState.renderContext.window.vsync,
+                     _applicationState.renderContext.window.desiredFPS );
 
         // FPS
         FPS::init( _applicationState.renderContext.totalFramesRendered );

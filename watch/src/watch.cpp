@@ -1,233 +1,224 @@
 #include "watch.hpp"
 
+#include <linux/limits.h>
+#include <sys/epoll.h>
+#include <sys/inotify.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include <array>
+#include <span>
+
+#include "stdfunc.hpp"
+
 namespace watch {
 
 namespace {
 
 constexpr size_t g_maxEventAmount = 8;
 constexpr size_t g_maxSingleEventSize =
-    ( sizeof( struct inotify_event ) + NAME_MAX + 1 );
+    ( sizeof( inotify_event ) + NAME_MAX + 1 );
 
 } // namespace
 
+watch::~watch() {
 #if 0
-watch_t watch_t$create( void ) {
-    watch_t l_returnValue = DEFAULT_wATCH;
-
+    // FIX: Maybe reduntant
+    // Remove watches
     {
-        l_returnValue._fileDescriptor = inotify_init1( IN_NONBLOCK );
+        for ( int _descriptor : _watchDescriptors ) {
+            const bool l_result =
+                ( inotify_rm_watch( _inotifyDescriptor, _descriptor ) !=
+                -1 );
 
-        // epoll
-        {
-            l_returnValue._epollDescriptor = epoll_create1( 0 );
-
-            struct epoll_event l_event = {
-                .events = EPOLLIN,
-                .data.fd = l_returnValue._fileDescriptor,
-            };
-
-            epoll_ctl( l_returnValue._epollDescriptor, EPOLL_CTL_ADD,
-                       l_returnValue._fileDescriptor, &l_event );
+            stdfunc::assert( l_result );
         }
 
-        l_returnValue.watchDescriptors = createArray( int );
-        l_returnValue.watchCallbacks = createArray( watchCallback_t );
-        l_returnValue.callbackContexts = createArray( void* );
+        _watchDescriptors.clear();
     }
+#endif
 
-    return ( l_returnValue );
-}
+    const auto l_closeDescriptor = []( int _descriptor ) -> auto {
+        const bool l_result = ( close( _descriptor ) != -1 );
 
-bool watch_t$add$toPath( watch_t* _watch,
-                         const char* _path,
-                         watchCallback_t _callback,
-                         void* _context,
-                         bool _isDirectory ) {
-    uint32_t l_flags = IN_CLOSE_WRITE;
+        stdfunc::assert( l_result );
+    };
 
-    // Set flags
-    if ( _isDirectory ) {
-        l_flags |= ( IN_MOVED_FROM | IN_MOVED_TO );
-        l_flags |= IN_DELETE;
+    l_closeDescriptor( _inotifyDescriptor );
+    l_closeDescriptor( _epollDescriptor );
+};
 
-    } else {
-        l_flags |= IN_DELETE_SELF;
-    }
+watch::watch( std::string_view _path, callback_t _callback, event_t _event )
+    : _inotifyDescriptor( inotify_init1( IN_NONBLOCK | IN_ONLYDIR ) ),
+      _epollDescriptor( epoll_create1( 0 ) ),
+      _callback( std::move( _callback ) ) {
+    stdfunc::assert( _inotifyDescriptor != -1 );
+    stdfunc::assert( _epollDescriptor != -1 );
 
-    int l_watchDescriptor = -1;
-
+    // Epoll
     {
-        char* l_path = duplicateString( _path );
+        epoll_event l_event = {
+            .events = EPOLLIN,
+            .data.fd = _inotifyDescriptor,
+        };
 
-        concatBeforeAndAfterString(
-            &l_path, asset_t$loader$assetsDirectory$get(), NULL );
+        const bool l_result =
+            ( epoll_ctl( _epollDescriptor, EPOLL_CTL_ADD, _inotifyDescriptor,
+                         &l_event ) == -1 );
 
-        l_watchDescriptor =
-            inotify_add_watch( _watch->fileDescriptor, l_path, l_flags );
-
-        l_returnValue = ( l_watchDescriptor != -1 );
-
-        free( l_path );
+        stdfunc::assert( l_result );
     }
 
-    if ( UNLIKELY( !l_returnValue ) ) {
-        log$transaction$query$format( ( logLevel_t )error,
-                                      "Adding watch to path: '%s'", _path );
+    // Inotify
+    {
+        // TODO: Improve _path
+        int l_watchDescriptor =
+            inotify_add_watch( _inotifyDescriptor, std::string( _path ).c_str(),
+                               static_cast< uint32_t >( _event ) );
 
-        goto EXIT;
-    }
+        const bool l_result = ( l_watchDescriptor != -1 );
 
-    insertIntoArray( &( _watch->watchDescriptors ), l_watchDescriptor );
-    insertIntoArray( &( _watch->watchCallbacks ),
-                     ( watchCallback_t )_callback );
-    insertIntoArray( &( _watch->callbackContexts ), _context );
-}
+        stdfunc::assert( l_result, "Adding watch to path: '{}'", _path );
 
-bool watch_t$add$toGlob( watch_t* _watch,
-                         const char* _glob,
-                         watchCallback_t _callback,
-                         void* _context,
-                         bool _needDirectories ) {
-    char** l_paths = getPathsByGlob( _glob, NULL, false );
-
-    FOR_ARRAY( char* const*, l_paths ) {
-        const bool l_isDirectory =
-            ( ( _needDirectories ) ? ( isPathDirectory( *_element ) )
-                                   : ( false ) );
-
-        l_returnValue = watch_t$add$toPath( _watch, *_element, _callback,
-                                            _context, l_isDirectory );
-
-        if ( UNLIKELY( !l_returnValue ) ) {
-            log$transaction$query( ( logLevel_t )error,
-                                   "Adding watch to path" );
-
-            break;
-        }
-    }
-
-    FREE_ARRAY_ELEMENTS( l_paths );
-    FREE_ARRAY( l_paths );
-
-    if ( UNLIKELY( !l_returnValue ) ) {
-        goto EXIT;
+        _watchDescriptors.emplace_back( l_watchDescriptor );
     }
 }
 
-bool watch_t$remove( watch_t* _watch ) {
-    l_returnValue =
-        ( inotify_rm_watch( _watch->fileDescriptor,
-                            arrayLastElement( _watch->watchDescriptors ) ) !=
-          -1 );
+watch::watch( std::string_view _path,
+              callbackDirectory_t _callback,
+              event_t _event )
+    : _inotifyDescriptor( inotify_init1( IN_NONBLOCK | IN_ONLYDIR ) ),
+      _epollDescriptor( epoll_create1( 0 ) ),
+      _callback( std::move( _callback ) ) {
+    stdfunc::assert( _inotifyDescriptor != -1 );
+    stdfunc::assert( _epollDescriptor != -1 );
 
-    if ( UNLIKELY( !l_returnValue ) ) {
-        log$transaction$query( ( logLevel_t )error,
-                               "Removing watch from path" );
+    // Epoll
+    {
+        epoll_event l_event = {
+            .events = EPOLLIN,
+            .data.fd = _inotifyDescriptor,
+        };
 
-        goto EXIT;
+        const bool l_result =
+            ( epoll_ctl( _epollDescriptor, EPOLL_CTL_ADD, _inotifyDescriptor,
+                         &l_event ) == -1 );
+
+        stdfunc::assert( l_result );
     }
 
-    removeLastElementArray( &( _watch->watchDescriptors ) );
-    removeLastElementArray( &( _watch->watchCallbacks ) );
-    removeLastElementArray( &( _watch->callbackContexts ) );
+    // Inotify
+    {
+        int l_watchDescriptor =
+            inotify_add_watch( _inotifyDescriptor, std::string( _path ).c_str(),
+                               static_cast< uint32_t >( _event ) );
+
+        const bool l_result = ( l_watchDescriptor != -1 );
+
+        stdfunc::assert( l_result, "Adding watch to path: '{}'", _path );
+
+        _watchDescriptors.emplace_back( l_watchDescriptor );
+    }
 }
 
-bool watch_t$check( watch_t* _watch, bool _isBlocking ) {
-    struct epoll_event l_events[ MAX_EVENT_AMOUNT ];
+void watch::check( bool _isBlocking ) {
+    std::array< epoll_event, g_maxEventAmount > l_events{};
+
+    // Infinite or no timeout
     const int l_timeout = ( ( _isBlocking ) ? ( -1 ) : ( 0 ) );
 
-    int l_eventAmount = epoll_wait( _watch->epollDescriptor, l_events,
-                                    MAX_EVENT_AMOUNT, l_timeout );
+    int l_eventAmount = epoll_wait( _epollDescriptor, l_events.data(),
+                                    l_events.size(), l_timeout );
 
-    l_returnValue = ( l_eventAmount != -1 );
+    stdfunc::assert( l_eventAmount != -1 );
 
-    if ( UNLIKELY( !l_returnValue ) ) {
-        log$transaction$query( ( logLevel_t )error, "Pulling epoll" );
-
-        goto EXIT;
-    }
-
-    while ( l_eventAmount ) {
-        l_eventAmount--;
-
-        if ( l_events[ l_eventAmount ].data.fd == _watch->fileDescriptor ) {
-            char l_eventsBuffer[ MAX_SINGLE_EVENT_SIZE * MAX_EVENT_AMOUNT ]
-                __attribute__( (
-                    aligned( __alignof__( struct inotify_event ) ) ) );
+    for ( const epoll_event& _event :
+          std::span( l_events.data(), l_eventAmount ) ) {
+        if ( _event.data.fd == _inotifyDescriptor ) {
+            std::vector< char > l_eventsBuffer( g_maxSingleEventSize *
+                                                g_maxEventAmount );
 
             const ssize_t l_readAmount =
-                read( _watch->fileDescriptor, l_eventsBuffer,
-                      sizeof( l_eventsBuffer ) );
+                read( _inotifyDescriptor, l_eventsBuffer.data(),
+                      l_eventsBuffer.size() );
 
             if ( !l_readAmount ) {
                 continue;
             }
 
             {
-                char* l_eventPointer = l_eventsBuffer;
+                char* l_eventPointer = l_eventsBuffer.data();
 
-                while ( l_eventPointer < ( l_eventsBuffer + l_readAmount ) ) {
-                    const struct inotify_event* l_event =
-                        ( struct inotify_event* )l_eventPointer;
+                while ( l_eventPointer <
+                        ( l_eventsBuffer.data() + l_readAmount ) ) {
+                    const auto l_event =
+                        reinterpret_cast< inotify_event* >( l_eventPointer );
 
-                    if ( !isEventWrite( l_event->mask ) &&
-                         !isEventDelete( l_event->mask ) &&
-                         !isEventRename( l_event->mask ) ) {
-                        goto LOOP_CONTINUE;
+                    event_t l_eventType = event_t::none;
+
+                    const auto l_isEventRemove =
+                        []( uint32_t _eventMask ) -> bool {
+                        return (
+                            ( _eventMask & ( IN_DELETE | IN_DELETE_SELF |
+                                             IN_MOVED_FROM | IN_MOVE_SELF ) ) );
+                    };
+
+                    const auto l_isEventWrite =
+                        [ & ]( uint32_t _eventMask ) -> bool {
+                        return (
+                            ( _eventMask & ( IN_MODIFY | IN_CLOSE_WRITE ) ) &&
+                            !l_isEventRemove( _eventMask ) );
+                    };
+
+                    const auto l_isEventRename =
+                        []( uint32_t _eventMask ) -> bool {
+                        return ( _eventMask & ( IN_MOVE | IN_MOVE_SELF ) );
+                    };
+
+                    if ( l_isEventRemove( l_event->mask ) ) {
+                        l_eventType = event_t::remove;
+
+                    } else if ( l_isEventWrite( l_event->mask ) ) {
+                        l_eventType = event_t::write;
+
+                    } else if ( l_isEventRename( l_event->mask ) ) {
+                        l_eventType = event_t::rename;
                     }
 
-                    {
-                        watchCallback_t l_callback = NULL;
-                        void* l_context = NULL;
+                    if ( l_eventType != event_t::none ) {
+                        auto l_eventName =
+                            static_cast< const char* >( l_event->name );
 
-                        FOR_RANGE( arrayLength_t, 0,
-                                   arrayLength( _watch->watchDescriptors ) ) {
-                            const int l_watchDescriptor =
-                                _watch->watchDescriptors[ _index ];
+                        const bool l_result = std::visit(
+                            [ & ]< typename T >( T& _function ) -> bool {
+                                if constexpr ( std::is_same_v< T,
+                                                               callback_t > ) {
+                                    return (
+                                        _function( l_eventName, l_eventType ) );
 
-                            if ( l_watchDescriptor == l_event->wd ) {
-                                l_callback = _watch->watchCallbacks[ _index ];
-                                l_context = _watch->callbackContexts[ _index ];
+                                } else if constexpr (
+                                    std::is_same_v< T, callbackDirectory_t > ) {
+                                    return ( _function( l_eventName,
+                                                        l_eventType,
+                                                        l_event->cookie ) );
 
-                                break;
-                            }
-                        }
+                                } else {
+                                    return false;
+                                }
+                            },
+                            _callback );
 
-                        l_returnValue = !!( l_callback );
-
-                        if ( UNLIKELY( !l_returnValue ) ) {
-                            log$transaction$query( ( logLevel_t )error,
-                                                   "Corrupted callback" );
-
-                            trap();
-
-                            goto EXIT;
-                        }
-
-                        l_returnValue =
-                            l_callback( l_context, l_event->name, l_event->mask,
-                                        l_event->cookie );
-
-                        if ( UNLIKELY( !l_returnValue ) ) {
-                            log$transaction$query( ( logLevel_t )error,
-                                                   "Watch callback" );
-
-                            goto EXIT;
-                        }
+                        stdfunc::assert( l_result );
                     }
 
-                LOOP_CONTINUE:
                     const size_t l_eventSize =
-                        ( sizeof( struct inotify_event ) + l_event->len );
+                        ( sizeof( inotify_event ) + l_event->len );
 
                     l_eventPointer += l_eventSize;
                 }
             }
-
-            break;
         }
     }
 }
-#endif
 
 } // namespace watch
