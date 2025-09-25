@@ -4,16 +4,13 @@
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
 
-#include <gsl/pointers>
 #include <utility>
 
 #include "boxes.hpp"
+#include "slickdl.hpp"
 #include "stdfunc.hpp"
 
 namespace animation {
-
-// FIX: Move to slickdl
-using texture_t = gsl::not_null< SDL_Texture* >;
 
 using animation_t = struct animation {
     animation() = delete;
@@ -21,32 +18,28 @@ using animation_t = struct animation {
     animation( animation&& ) = default;
     ~animation() = default;
 
-    constexpr animation( std::span< const texture_t > _keyFrames,
-                         std::span< size_t > _frames,
+    constexpr animation( std::span< const slickdl::texture_t > _keyFrames,
+                         std::span< const size_t > _frames,
                          boxes::boxes_t _targetBoxes )
         : _keyFrames( _keyFrames |
-                      std::ranges::to< std::vector< texture_t > >() ),
+                      std::ranges::to< std::vector< slickdl::texture_t > >() ),
           _frames( _frames | std::ranges::to< std::vector >() ),
           _targetBoxes( std::move( _targetBoxes ) ) {
         stdfunc::assert( !this->_keyFrames.empty() );
         stdfunc::assert( !this->_frames.empty() );
     }
 
-    constexpr animation( std::initializer_list< const texture_t > _keyFrames,
+    constexpr animation( std::initializer_list< slickdl::texture_t > _keyFrames,
                          std::initializer_list< size_t > _frames,
-                         boxes::boxes_t _targetBoxes )
-        : _keyFrames( _keyFrames |
-                      std::ranges::to< std::vector< texture_t > >() ),
-          _frames( _frames | std::ranges::to< std::vector >() ),
-          _targetBoxes( std::move( _targetBoxes ) ) {
-        stdfunc::assert( !this->_keyFrames.empty() );
-        stdfunc::assert( !this->_frames.empty() );
-    }
+                         const boxes::boxes_t& _targetBoxes )
+        : animation( std::span( _keyFrames ),
+                     std::span< const size_t >( _frames ),
+                     _targetBoxes ) {}
 
     auto operator=( const animation& ) -> animation& = default;
     auto operator=( animation&& ) -> animation& = default;
 
-    [[nodiscard]] constexpr auto currentKeyFrame() const -> texture_t {
+    [[nodiscard]] constexpr auto currentKeyFrame() const -> slickdl::texture_t {
         stdfunc::assert( !_keyFrames.empty() );
         stdfunc::assert( !_frames.empty() );
 
@@ -73,48 +66,17 @@ using animation_t = struct animation {
         _targetBoxes.step( _canLoop );
     }
 
-    void render( gsl::not_null< SDL_Renderer* > _renderer,
-                 const boxes::box_t& _targetBoxCoordinates ) const {
-        _render( _renderer, _targetBoxCoordinates, SDL_RenderTexture );
-    }
+    void render( const slickdl::renderer_t& _renderer,
+                 const boxes::box_t& _targetBoxCoordinates ) const;
 
-    void render( gsl::not_null< SDL_Renderer* > _renderer,
+    void render( const slickdl::renderer_t& _renderer,
                  const boxes::box_t& _targetBoxCoordinates,
                  double _angle,
-                 SDL_FlipMode _flipMode ) const {
-        _render( _renderer, _targetBoxCoordinates, SDL_RenderTextureRotated,
-                 _angle, nullptr, _flipMode );
-    }
-
-    // Helpers
-private:
-    template < typename... Arguments >
-    void _render( gsl::not_null< SDL_Renderer* > _renderer,
-                  const boxes::box_t& _targetBoxCoordinates,
-                  auto _renderFunction,
-                  Arguments&&... _arguments ) const {
-        const boxes::box_t& l_targetBoxSizes = currentTargetBox();
-
-        const SDL_FRect l_resolvedTargetRectangle = {
-            _targetBoxCoordinates.x, _targetBoxCoordinates.y,
-            l_targetBoxSizes.width, l_targetBoxSizes.height };
-
-        const texture_t l_keyFrame = currentKeyFrame();
-
-        // Render
-        {
-            const bool l_result = _renderFunction(
-                _renderer, l_keyFrame, nullptr, &l_resolvedTargetRectangle,
-                std::forward< Arguments >( _arguments )... );
-
-            stdfunc::assert( l_result, "Rendering texture: '{}'",
-                             SDL_GetError() );
-        }
-    }
+                 SDL_FlipMode _flipMode ) const;
 
     // Variables
 private:
-    std::vector< texture_t > _keyFrames;
+    std::vector< slickdl::texture_t > _keyFrames;
 
     // Indexes to key frames
     std::vector< size_t > _frames;

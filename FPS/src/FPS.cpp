@@ -2,7 +2,11 @@
 
 #include <thread>
 
+#if !defined( TESTS )
+
 #include "log.hpp"
+
+#endif
 
 namespace {
 
@@ -10,15 +14,15 @@ std::jthread g_loggerThread;
 
 void logger( const std::stop_token& _stopToken,
              [[maybe_unused]] std::atomic< size_t >& _frameCount ) {
-    using clock = std::chrono::steady_clock;
+    using clock_t = std::chrono::steady_clock;
     using namespace std::chrono_literals;
 
-    auto l_timeLast = clock::now();
+    auto l_timeLast = clock_t::now();
 
     while ( !_stopToken.stop_requested() ) [[likely]] {
         std::this_thread::sleep_for( 1s );
 
-        const auto l_timeNow = clock::now();
+        const auto l_timeNow = clock_t::now();
 
 #if !defined( TESTS )
         {

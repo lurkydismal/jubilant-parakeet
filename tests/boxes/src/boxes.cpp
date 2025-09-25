@@ -57,9 +57,9 @@ TEST( BoxesLogic, ConstructorAcceptsNonEmptyFrames_CurrentKeyFrameContents ) {
 }
 
 TEST( BoxesLogic, StepAdvancesAndStopsWhenNoLoop ) {
-    std::vector< box_t > l_f0{ box_t( 0, 0, 1, 1 ) };
-    std::vector< box_t > l_f1{ box_t( 1, 1, 2, 2 ) };
-    std::vector< box_t > l_f2{ box_t( 2, 2, 3, 3 ) };
+    std::vector< box_t > l_f0{ box_t( 1, 1, 2, 2 ) };
+    std::vector< box_t > l_f1{ box_t( 2, 2, 3, 3 ) };
+    std::vector< box_t > l_f2{ box_t( 3, 3, 4, 4 ) };
 
     std::vector< std::span< const box_t > > l_frames{
         spanOfVec( l_f0 ), spanOfVec( l_f1 ), spanOfVec( l_f2 ) };
@@ -70,23 +70,23 @@ TEST( BoxesLogic, StepAdvancesAndStopsWhenNoLoop ) {
     l_b.step( false );
     auto l_k1 = l_b.currentFrame();
     EXPECT_EQ( l_k1.size(), 1u );
-    EXPECT_FLOAT_EQ( l_k1[ 0 ].x, 1.0f );
+    EXPECT_FLOAT_EQ( l_k1[ 0 ].x, 2.0f );
 
     // Advance to frame 2
     l_b.step( false );
     auto l_k2 = l_b.currentFrame();
-    EXPECT_FLOAT_EQ( l_k2[ 0 ].x, 2.0f );
+    EXPECT_FLOAT_EQ( l_k2[ 0 ].x, 3.0f );
 
     // At last frame; step(false) should not wrap or overflow - should stay on
     // last frame
     l_b.step( false );
     auto l_kLast = l_b.currentFrame();
-    EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 2.0f );
+    EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 3.0f );
 }
 
 TEST( BoxesLogic, StepWrapsWhenLoopTrue ) {
-    std::vector< box_t > l_f0{ box_t( 0, 0, 1, 1 ) };
-    std::vector< box_t > l_f1{ box_t( 1, 1, 2, 2 ) };
+    std::vector< box_t > l_f0{ box_t( 1, 1, 2, 2 ) };
+    std::vector< box_t > l_f1{ box_t( 2, 2, 3, 3 ) };
 
     std::vector< std::span< const box_t > > l_frames{ spanOfVec( l_f0 ),
                                                       spanOfVec( l_f1 ) };
@@ -96,12 +96,12 @@ TEST( BoxesLogic, StepWrapsWhenLoopTrue ) {
     // Move to last frame
     l_b.step( false );
     auto l_kLast = l_b.currentFrame();
-    EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 1.0f );
+    EXPECT_FLOAT_EQ( l_kLast[ 0 ].x, 2.0f );
 
     // Now step with looping enabled -> should wrap to frame 0
     l_b.step( true );
     auto l_k0 = l_b.currentFrame();
-    EXPECT_FLOAT_EQ( l_k0[ 0 ].x, 0.0f );
+    EXPECT_FLOAT_EQ( l_k0[ 0 ].x, 1.0f );
 }
 
 TEST( BoxesLogic, SingleFrameStepNoChangeRegardlessOfLoopFlag ) {

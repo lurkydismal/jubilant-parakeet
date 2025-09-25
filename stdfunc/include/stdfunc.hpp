@@ -144,8 +144,9 @@ constexpr void assert( bool _result,
 #else
 
 template < typename... Arguments >
-void trap( [[maybe_unused]] std::format_string< Arguments... > _format = "",
-           [[maybe_unused]] Arguments&&... _arguments ) {}
+constexpr void trap(
+    [[maybe_unused]] std::format_string< Arguments... > _format = "",
+    [[maybe_unused]] Arguments&&... _arguments ) {}
 
 template < typename... Arguments >
 constexpr void assert(
@@ -331,7 +332,7 @@ constexpr void fill( Container& _container ) {
 
 } // namespace random
 
-[[nodiscard]] constexpr auto generateHash( std::span< std::byte > _data,
+[[nodiscard]] constexpr auto generateHash( std::span< const std::byte > _data,
                                            size_t _seed = 0x9E3779B1 )
     -> size_t {
     return ( XXH32( _data.data(), _data.size(), _seed ) );
@@ -495,7 +496,7 @@ namespace compress {
  * if (outOpt) { write outOpt->data() to disk/network  }
  */
 // TODO: Make constexpr
-[[nodiscard]] auto data( std::span< std::byte > _data, size_t _level = 3 )
+[[nodiscard]] auto data( std::span< const std::byte > _data, size_t _level = 3 )
     -> std::optional< std::vector< std::byte > >;
 
 } // namespace compress
@@ -566,7 +567,8 @@ namespace decompress {
  * }
  */
 // TODO: Make constexpr
-[[nodiscard]] auto data( std::span< std::byte > _data, size_t _originalSize )
+[[nodiscard]] auto data( std::span< const std::byte > _data,
+                         size_t _originalSize )
     -> std::optional< std::vector< std::byte > >;
 
 } // namespace decompress

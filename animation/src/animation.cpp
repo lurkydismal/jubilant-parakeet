@@ -1,5 +1,49 @@
 #include "animation.hpp"
 
+namespace animation {
+
+namespace {
+
+template < typename... Arguments >
+void _render( const boxes::box_t& _targetBoxSizes,
+              const slickdl::texture_t& _keyFrame,
+              const slickdl::renderer_t& _renderer,
+              const boxes::box_t& _targetBoxCoordinates,
+              auto _renderFunction,
+              Arguments&&... _arguments ) {
+    const SDL_FRect l_resolvedTargetRectangle = {
+        _targetBoxCoordinates.x, _targetBoxCoordinates.y, _targetBoxSizes.width,
+        _targetBoxSizes.height };
+
+    // Render
+    {
+        const bool l_result = _renderFunction(
+            _renderer, _keyFrame, nullptr, &l_resolvedTargetRectangle,
+            std::forward< Arguments >( _arguments )... );
+
+        stdfunc::assert( l_result, "Rendering texture: '{}'", SDL_GetError() );
+    }
+}
+
+} // namespace
+
+void animation_t::render( const slickdl::renderer_t& _renderer,
+                          const boxes::box_t& _targetBoxCoordinates ) const {
+    _render( currentTargetBox(), currentKeyFrame(), _renderer,
+             _targetBoxCoordinates, SDL_RenderTexture );
+}
+
+void animation_t::render( const slickdl::renderer_t& _renderer,
+                          const boxes::box_t& _targetBoxCoordinates,
+                          double _angle,
+                          SDL_FlipMode _flipMode ) const {
+    _render( currentTargetBox(), currentKeyFrame(), _renderer,
+             _targetBoxCoordinates, SDL_RenderTextureRotated, _angle, nullptr,
+             _flipMode );
+}
+
+} // namespace animation
+
 #if 0
 #include <SDL3_image/SDL_image.h>
 

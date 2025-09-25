@@ -51,7 +51,7 @@ auto text( std::string_view _text, size_t _level )
     return ( l_returnValue );
 }
 
-auto data( std::span< std::byte > _data, size_t _level )
+auto data( std::span< const std::byte > _data, size_t _level )
     -> std::optional< std::vector< std::byte > > {
     std::optional< std::vector< std::byte > > l_returnValue = std::nullopt;
 
@@ -109,7 +109,7 @@ auto text( std::string_view _data ) -> std::optional< std::string > {
     return ( l_returnValue );
 }
 
-auto data( std::span< std::byte > _data, size_t _originalSize )
+auto data( std::span< const std::byte > _data, size_t _originalSize )
     -> std::optional< std::vector< std::byte > > {
     std::optional< std::vector< std::byte > > l_returnValue = std::nullopt;
 

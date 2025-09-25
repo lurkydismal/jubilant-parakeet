@@ -20,7 +20,7 @@ TEST( AnimationBasic, CurrentKeyFrameAndIndexing ) {
     boxes::box_t l_b{ 10.0f, 20.0f, 32.0f, 32.0f };
     boxes::boxes_t l_targetBoxes( { { l_b }, { l_b }, { l_b } } );
 
-    animation_t l_anim( std::span< const texture_t >( l_keyFrames ),
+    animation_t l_anim( std::span< const slickdl::texture_t >( l_keyFrames ),
                         std::span< size_t >( l_frames ),
                         std::move( l_targetBoxes ) );
 
@@ -44,7 +44,7 @@ TEST( AnimationBasic, CurrentKeyFrameAndIndexing ) {
 
     // now construct again and test looping behavior
     boxes::boxes_t l_tb2( { { l_b }, { l_b }, { l_b } } );
-    animation_t l_anim2( std::span< const texture_t >( l_keyFrames ),
+    animation_t l_anim2( std::span< const slickdl::texture_t >( l_keyFrames ),
                          std::span< size_t >( l_frames ), std::move( l_tb2 ) );
 
     // advance to last frame
@@ -72,7 +72,7 @@ TEST( AnimationTargetBox, CurrentTargetBoxAndBoxesStep ) {
 
     boxes::boxes_t l_targetBoxes( { { l_b1 }, { l_b2 }, { l_b3 } } );
 
-    animation_t l_anim( std::span< const texture_t >( l_keyFrames ),
+    animation_t l_anim( std::span< const slickdl::texture_t >( l_keyFrames ),
                         std::span< size_t >( l_frames ),
                         std::move( l_targetBoxes ) );
 

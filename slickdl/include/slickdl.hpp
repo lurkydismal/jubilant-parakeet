@@ -1,10 +1,12 @@
 #pragma once
 
-using slickdl_t = struct slickdl {
-    slickdl() = default;
-    slickdl( const slickdl& ) = default;
-    slickdl( slickdl&& ) = default;
-    ~slickdl() = default;
-    auto operator=( const slickdl& ) -> slickdl& = default;
-    auto operator=( slickdl&& ) -> slickdl& = default;
-};
+#include <SDL3/SDL_render.h>
+
+#include <gsl/pointers>
+
+namespace slickdl {
+
+using renderer_t = gsl::not_null< SDL_Renderer* >;
+using texture_t = gsl::not_null< SDL_Texture* >;
+
+} // namespace slickdl

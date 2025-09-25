@@ -21,8 +21,6 @@ TEST( ParseArguments, LongAndShortOptionCallsCallback ) {
                                           "-i", "file2.bin" };
     auto l_argsSpan = makeSpanFromArgv( l_argv );
 
-    std::map< int, option_t > l_options;
-
     // Capture calls
     std::vector< std::pair< int, std::string > > l_calls;
     callback_t l_cb = [ & ]( int _key, std::string_view _value,
@@ -31,13 +29,12 @@ TEST( ParseArguments, LongAndShortOptionCallsCallback ) {
         return ( true ); // important: don't trigger error()
     };
 
-    option_t l_opt( l_cb );
-    l_opt.name = "input";
-    l_opt.argument = "FILE";
-    l_opt.documentation = "Input files";
+    option_t l_opt( "input", l_cb, "FILE", "Input files" );
 
     // put the option in the map under the short key 'i'
-    l_options[ static_cast< int >( 'i' ) ] = l_opt;
+    std::map< int, option_t > l_options{
+        { static_cast< int >( 'i' ), l_opt },
+    };
 
     // Act
     std::string l_formatDoc = "--input FILE";
@@ -83,7 +80,6 @@ TEST( ParseArguments, StringViewOverloadWorks ) {
     std::vector< std::string > l_argv = { "program", "--flag" };
     auto l_argsSpan = makeSpanFromArgv( l_argv );
 
-    std::map< int, option_t > l_options;
     bool l_called = false;
     callback_t l_cb = [ & ]( [[maybe_unused]] int _key,
                              [[maybe_unused]] std::string_view _value,
@@ -93,11 +89,11 @@ TEST( ParseArguments, StringViewOverloadWorks ) {
         return true;
     };
 
-    option_t l_opt( l_cb );
-    l_opt.name = "flag";
-    l_opt.argument = ""; // no arg
+    option_t l_opt( "flag", l_cb );
 
-    l_options[ static_cast< int >( 'f' ) ] = l_opt;
+    std::map< int, option_t > l_options{
+        { static_cast< int >( 'f' ), l_opt },
+    };
 
     // Act: call overload taking std::string_view for format
     bool l_ok = parseArguments( std::string_view( "--flag" ), l_argsSpan, "app",
@@ -112,17 +108,15 @@ TEST( ParseArgumentsDeath, CallbackReturningFalseTriggersError_ASSERT_DEATH ) {
     std::vector< std::string > l_argv = { "program", "--input", "file1.txt" };
     auto l_argsSpan = makeSpanFromArgv( l_argv );
 
-    std::map< int, option_t > l_options;
-
     // callback returns false -> parserForOption will call error(_state) ->
     // argp_error -> abort (because of our override)
     callback_t l_cb = []( int /*_k*/, std::string_view /*_v*/,
                           state_t /*_s*/ ) -> bool { return false; };
 
-    option_t l_opt( l_cb );
-    l_opt.name = "input";
-    l_opt.argument = "FILE";
-    l_options[ static_cast< int >( 'i' ) ] = l_opt;
+    option_t l_opt( "input", l_cb, "FILE" );
+    std::map< int, option_t > l_options{
+        { static_cast< int >( 'i' ), l_opt },
+    };
 
     // ASSERT_DEATH runs the statement in a child process and expects it to die.
     ASSERT_DEATH(
@@ -138,17 +132,15 @@ TEST( ParseArgumentsDeath, CallbackReturningFalseTriggersError_EXPECT_DEATH ) {
     std::vector< std::string > l_argv = { "program", "-i", "b" };
     auto l_argsSpan = makeSpanFromArgv( l_argv );
 
-    std::map< int, option_t > l_options;
-
     // Another callback that returns false; this exercises the short-option
     // path.
     callback_t l_cb = []( int /*_k*/, std::string_view /*_v*/,
                           state_t /*_s*/ ) -> bool { return false; };
 
-    option_t l_opt( l_cb );
-    l_opt.name = "input";
-    l_opt.argument = "FILE";
-    l_options[ static_cast< int >( 'i' ) ] = l_opt;
+    option_t l_opt( "input", l_cb, "FILE" );
+    std::map< int, option_t > l_options{
+        { static_cast< int >( 'i' ), l_opt },
+    };
 
     // EXPECT_DEATH is like ASSERT_DEATH but test continues on failure.
     EXPECT_DEATH(

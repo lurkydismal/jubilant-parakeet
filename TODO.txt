@@ -9,3 +9,5 @@ Implement slickdl
 Test state, object, animation
 Move to multi-window system
 Improve vsync, window, FPS
+Improve watch check()
+Implement container for watch check() cases

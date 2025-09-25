@@ -47,7 +47,7 @@ RC_SRCS             := $(libfile_a_RC_SRCS)
 
 RM := rm -f
 RC := rcc
-AR := gcc-ar
+AR := llvm-ar
 
 
 ### Generic targets

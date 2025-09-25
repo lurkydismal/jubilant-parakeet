@@ -3,7 +3,7 @@
 #include <sys/inotify.h>
 
 #include <functional>
-#include <string>
+#include <string_view>
 #include <variant>
 
 namespace watch {
@@ -16,7 +16,7 @@ using event_t = enum class event : uint16_t {
 };
 
 using watch_t = struct watch {
-    using callback_t =
+    using callbackFile_t =
         std::function< bool( std::string_view _fileName, event_t _event ) >;
 
     // If event is rename then callback will be called two times with the same
@@ -30,7 +30,7 @@ using watch_t = struct watch {
     watch( watch&& ) = default;
     ~watch();
 
-    watch( std::string_view _path, callback_t _callback, event_t _event );
+    watch( std::string_view _path, callbackFile_t _callback, event_t _event );
     watch( std::string_view _path,
            callbackDirectory_t _callback,
            event_t _event );
@@ -40,12 +40,20 @@ using watch_t = struct watch {
 
     void check( bool _isBlocking );
 
+    // Helper
+private:
+    // TODO: Improve
+    using callback_t = std::variant< callbackFile_t, callbackDirectory_t >;
+
+    watch( std::string_view _path, callback_t _callback, event_t _event );
+
+    // Variable
 private:
     int _inotifyDescriptor;
     int _epollDescriptor;
     std::vector< int > _watchDescriptors;
     // TODO: Multiple callbacks
-    std::variant< std::monostate, callback_t, callbackDirectory_t > _callback;
+    callback_t _callback;
 };
 
 } // namespace watch

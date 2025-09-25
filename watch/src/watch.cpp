@@ -48,6 +48,18 @@ watch::~watch() {
     l_closeDescriptor( _epollDescriptor );
 };
 
+watch::watch( std::string_view _path, callbackFile_t _callback, event_t _event )
+    : watch( _path,
+             static_cast< callback_t >( std::move( _callback ) ),
+             _event ) {}
+
+watch::watch( std::string_view _path,
+              callbackDirectory_t _callback,
+              event_t _event )
+    : watch( _path,
+             static_cast< callback_t >( std::move( _callback ) ),
+             _event ) {}
+
 watch::watch( std::string_view _path, callback_t _callback, event_t _event )
     : _inotifyDescriptor( inotify_init1( IN_NONBLOCK | IN_ONLYDIR ) ),
       _epollDescriptor( epoll_create1( 0 ) ),
@@ -72,43 +84,6 @@ watch::watch( std::string_view _path, callback_t _callback, event_t _event )
     // Inotify
     {
         // TODO: Improve _path
-        int l_watchDescriptor =
-            inotify_add_watch( _inotifyDescriptor, std::string( _path ).c_str(),
-                               static_cast< uint32_t >( _event ) );
-
-        const bool l_result = ( l_watchDescriptor != -1 );
-
-        stdfunc::assert( l_result, "Adding watch to path: '{}'", _path );
-
-        _watchDescriptors.emplace_back( l_watchDescriptor );
-    }
-}
-
-watch::watch( std::string_view _path,
-              callbackDirectory_t _callback,
-              event_t _event )
-    : _inotifyDescriptor( inotify_init1( IN_NONBLOCK | IN_ONLYDIR ) ),
-      _epollDescriptor( epoll_create1( 0 ) ),
-      _callback( std::move( _callback ) ) {
-    stdfunc::assert( _inotifyDescriptor != -1 );
-    stdfunc::assert( _epollDescriptor != -1 );
-
-    // Epoll
-    {
-        epoll_event l_event = {
-            .events = EPOLLIN,
-            .data.fd = _inotifyDescriptor,
-        };
-
-        const bool l_result =
-            ( epoll_ctl( _epollDescriptor, EPOLL_CTL_ADD, _inotifyDescriptor,
-                         &l_event ) == -1 );
-
-        stdfunc::assert( l_result );
-    }
-
-    // Inotify
-    {
         int l_watchDescriptor =
             inotify_add_watch( _inotifyDescriptor, std::string( _path ).c_str(),
                                static_cast< uint32_t >( _event ) );
@@ -191,8 +166,8 @@ void watch::check( bool _isBlocking ) {
 
                         const bool l_result = std::visit(
                             [ & ]< typename T >( T& _function ) -> bool {
-                                if constexpr ( std::is_same_v< T,
-                                                               callback_t > ) {
+                                if constexpr ( std::is_same_v<
+                                                   T, callbackFile_t > ) {
                                     return (
                                         _function( l_eventName, l_eventType ) );
 
@@ -203,7 +178,8 @@ void watch::check( bool _isBlocking ) {
                                                         l_event->cookie ) );
 
                                 } else {
-                                    return false;
+                                    // TODO: Write message
+                                    static_assert( false );
                                 }
                             },
                             _callback );

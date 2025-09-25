@@ -3,11 +3,11 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_video.h>
 
-#include <gsl/pointers>
 #include <utility>
 
 #include "animation.hpp"
 #include "boxes.hpp"
+#include "slickdl.hpp"
 
 namespace state {
 
@@ -20,7 +20,7 @@ using state_t = struct state {
     constexpr state( animation::animation_t _animation,
                      boxes::boxes_t _boxes,
                      bool _isActionable,
-                     gsl::not_null< SDL_Renderer* > _renderer )
+                     const slickdl::renderer_t& _renderer )
         : _animation( std::move( _animation ) ),
           _boxes( std::move( _boxes ) ),
           _isActionable( _isActionable ),
@@ -40,38 +40,13 @@ using state_t = struct state {
 
     void render( const boxes::box_t& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
-                 bool _doFillBoxes ) const {
-        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes );
-    }
+                 bool _doFillBoxes ) const;
 
     void render( const boxes::box_t& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
                  bool _doFillBoxes,
                  double _angle,
-                 SDL_FlipMode _flipMode ) const {
-        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes, _angle,
-                 _flipMode );
-    }
-
-    // Helpers
-private:
-    template < typename... Arguments >
-    void _render( const boxes::box_t& _cameraBoxCoordinates,
-                  bool _doDrawBoxes,
-                  bool _doFillBoxes,
-                  Arguments&&... _arguments ) const {
-        boxes::box_t l_targetBox = _animation.currentTargetBox();
-
-        l_targetBox.x += _cameraBoxCoordinates.x;
-        l_targetBox.y += _cameraBoxCoordinates.y;
-
-        _animation.render( _renderer, l_targetBox,
-                           std::forward< Arguments >( _arguments )... );
-
-        if ( _doDrawBoxes ) {
-            _boxes.render( _renderer, l_targetBox, _doFillBoxes );
-        }
-    }
+                 SDL_FlipMode _flipMode ) const;
 
     // Variables
 private:
@@ -79,7 +54,7 @@ private:
     boxes::boxes_t _boxes;
     bool _isActionable;
     bool _canLoop{};
-    gsl::not_null< SDL_Renderer* > _renderer;
+    slickdl::renderer_t _renderer;
 };
 
 } // namespace state

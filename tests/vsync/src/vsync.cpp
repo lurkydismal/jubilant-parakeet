@@ -18,14 +18,16 @@ TEST_F( VsyncTest, InitQuitReinit ) {
     const auto l_f16 = static_cast< float16_t >( l_fps );
 
     // first init should succeed
-    ASSERT_TRUE( init( vsync_t::software, l_f16 ) );
+    ASSERT_DEATH( init( vsync_t::software, l_f16 ), ".*" );
 
     // second init without quit should fail (already initialized)
-    ASSERT_FALSE( init( vsync_t::software, l_f16 ) );
+    ASSERT_DEATH( init( vsync_t::software, l_f16 ), ".*" );
 
     // quit should reset state and allow init again
     quit();
-    ASSERT_TRUE( init( vsync_t::software, l_f16 ) );
+    ASSERT_DEATH( init( vsync_t::software, l_f16 ), ".*" );
+
+    EXPECT_DEATH( init( vsync_t::software, 0 ), ".*" );
 }
 
 // Test that begin/end enforces at least one frame duration when vsync::off
@@ -35,7 +37,7 @@ TEST_F( VsyncTest, FrameEnforcesMinimumDuration ) {
     const int l_fps = 50; // target FPS for this test => 20 ms frame
     const auto l_f16 = static_cast< float16_t >( l_fps );
 
-    ASSERT_TRUE( init( vsync_t::software, l_f16 ) );
+    ASSERT_DEATH( init( vsync_t::software, l_f16 ), ".*" );
 
     // expected frame duration in milliseconds (integer math mirrors your
     // implementation)

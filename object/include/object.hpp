@@ -10,13 +10,19 @@
 namespace object {
 
 using object_t = struct object {
+    // TODO: Improve
+    using position_t = struct position {
+        float x;
+        float y;
+    };
+
     object() = delete;
     object( const object& ) = default;
     object( object&& ) = default;
     ~object() = default;
 
     constexpr object(
-        std::span< std::pair< std::string, state::state_t > > _states ) {
+        std::span< const std::pair< std::string, state::state_t > > _states ) {
         _stateNames.reserve( _states.size() );
         this->_states.reserve( _states.size() );
 
@@ -28,15 +34,8 @@ using object_t = struct object {
 
     constexpr object(
         std::initializer_list< std::pair< std::string, state::state_t > >
-            _states ) {
-        _stateNames.reserve( _states.size() );
-        this->_states.reserve( _states.size() );
-
-        for ( const auto& [ l_name, l_state ] : _states ) {
-            _stateNames.emplace_back( l_name );
-            this->_states.emplace_back( l_state );
-        }
-    }
+            _states )
+        : object( std::span( _states ) ) {}
 
     auto operator=( const object& ) -> object& = default;
     auto operator=( object&& ) -> object& = default;
@@ -59,18 +58,13 @@ using object_t = struct object {
 
     void render( const boxes::box_t& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
-                 bool _doFillBoxes ) const {
-        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes );
-    }
+                 bool _doFillBoxes ) const;
 
     void render( const boxes::box_t& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
                  bool _doFillBoxes,
                  double _angle,
-                 SDL_FlipMode _flipMode ) const {
-        _render( _cameraBoxCoordinates, _doDrawBoxes, _doFillBoxes, _angle,
-                 _flipMode );
-    }
+                 SDL_FlipMode _flipMode ) const;
 
     // helpers
 private:
@@ -78,17 +72,9 @@ private:
         return ( _states.at( _currentStateIndex ) );
     }
 
-    template < typename... Arguments >
-    void _render( const boxes::box_t& _cameraBoxCoordinates,
-                  bool _doDrawBoxes,
-                  bool _doFillBoxes,
-                  Arguments&&... _arguments ) const {
-        const boxes::box_t l_targetRectangle(
-            ( _position.x - _cameraBoxCoordinates.x ),
-            ( _position.y - _cameraBoxCoordinates.y ), 0, 0 );
-
-        currentState().render( l_targetRectangle, _doDrawBoxes, _doFillBoxes,
-                               std::forward< Arguments >( _arguments )... );
+    [[nodiscard]] constexpr auto _currentState() const
+        -> const state::state_t& {
+        return ( _states.at( _currentStateIndex ) );
     }
 
     // Variables
@@ -96,11 +82,6 @@ private:
     std::vector< std::string > _stateNames;
     std::vector< state::state_t > _states;
     size_t _currentStateIndex{};
-
-    using position_t = struct position {
-        float x;
-        float y;
-    };
 
     position_t _position{};
     position_t _minPosition{};
