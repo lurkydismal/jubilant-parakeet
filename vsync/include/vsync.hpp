@@ -4,7 +4,6 @@
 
 #include "stdfloat16.hpp"
 
-// Software vsync implementation
 namespace vsync {
 
 using vsync_t = enum class vsync : uint8_t {

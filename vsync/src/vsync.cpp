@@ -10,15 +10,15 @@ namespace vsync {
 namespace {
 
 vsync_t g_vsyncType = vsync_t::off;
-float g_desiredFPS = 0;
 timespec g_sleepTime, g_startTime, g_endTime;
 
 } // namespace
 
 void init( vsync_t _vsyncType, float16_t _desiredFPS ) {
-    stdfunc::assert( g_desiredFPS );
+    stdfunc::assert( g_vsyncType == vsync_t::off );
+    stdfunc::assert( _vsyncType != vsync_t::off );
+    stdfunc::assert( _desiredFPS );
 
-    g_desiredFPS = _desiredFPS;
     g_vsyncType = _vsyncType;
 
     if ( _vsyncType == vsync_t::software ) {
@@ -32,7 +32,9 @@ void init( vsync_t _vsyncType, float16_t _desiredFPS ) {
 }
 
 void quit() {
-    g_desiredFPS = 0;
+    stdfunc::assert( g_vsyncType != vsync_t::off );
+
+    g_vsyncType = vsync_t::off;
 
     __builtin_memset( std::bit_cast< void* >( &g_sleepTime ), 0,
                       sizeof( g_sleepTime ) );

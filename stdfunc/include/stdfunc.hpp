@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <print>
-// #include <stacktrace>
+#include <stacktrace>
 #include <thread>
 
 #endif
@@ -50,6 +50,7 @@ constexpr size_t g_decimalRadix = 10;
 
 namespace color {
 
+constexpr std::string_view g_white = "\x1b[1;37m";
 constexpr std::string_view g_cyanLight = "\x1b[1;36m";
 constexpr std::string_view g_blueLight = "\x1b[1;34m";
 constexpr std::string_view g_green = "\x1b[1;32m";
@@ -124,10 +125,12 @@ template < typename... Arguments >
                 color::g_reset );
     std::println( std::cerr, _format,
                   std::forward< Arguments >( _arguments )... );
-#if 0
-    // FIX: Undefined symbol in debug build
-    std::println( "{}", std::stacktrace::current( 2, g_backtraceLimit ) );
-#endif
+    // FIX: No stacktrace
+    std::println(
+        "{}{}",
+        formatWithColor( std::stacktrace::current( 1, g_backtraceLimit ),
+                         color::g_white ),
+        color::g_reset );
 
     __builtin_trap();
 }

@@ -5,13 +5,13 @@ namespace state {
 namespace {
 
 template < typename... Arguments >
-void _render( const animation::animation_t& _animation,
-              const boxes::boxes_t& _boxes,
-              const slickdl::renderer_t& _renderer,
-              const boxes::box_t& _cameraBoxCoordinates,
-              bool _doDrawBoxes,
-              bool _doFillBoxes,
-              Arguments&&... _arguments ) {
+void render( const animation::animation_t& _animation,
+             const boxes::boxes_t& _boxes,
+             const slickdl::renderer_t& _renderer,
+             const boxes::box_t& _cameraBoxCoordinates,
+             bool _doDrawBoxes,
+             bool _doFillBoxes,
+             Arguments&&... _arguments ) {
     boxes::box_t l_targetBox = _animation.currentTargetBox();
 
     l_targetBox.x += _cameraBoxCoordinates.x;
@@ -30,8 +30,8 @@ void _render( const animation::animation_t& _animation,
 void state_t::render( const boxes::box_t& _cameraBoxCoordinates,
                       bool _doDrawBoxes,
                       bool _doFillBoxes ) const {
-    _render( _animation, _boxes, _renderer, _cameraBoxCoordinates, _doDrawBoxes,
-             _doFillBoxes );
+    ::state::render( _animation, _boxes, _renderer, _cameraBoxCoordinates,
+                     _doDrawBoxes, _doFillBoxes );
 }
 
 void state_t::render( const boxes::box_t& _cameraBoxCoordinates,
@@ -39,8 +39,8 @@ void state_t::render( const boxes::box_t& _cameraBoxCoordinates,
                       bool _doFillBoxes,
                       double _angle,
                       SDL_FlipMode _flipMode ) const {
-    _render( _animation, _boxes, _renderer, _cameraBoxCoordinates, _doDrawBoxes,
-             _doFillBoxes, _angle, _flipMode );
+    ::state::render( _animation, _boxes, _renderer, _cameraBoxCoordinates,
+                     _doDrawBoxes, _doFillBoxes, _angle, _flipMode );
 }
 
 } // namespace state

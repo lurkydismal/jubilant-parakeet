@@ -83,6 +83,8 @@ LIBRARIES_TO_LINK+=(
     "zstd"
     "elf"
     "unwind"
+
+    "stdc++exp"
 )
 
 LIBRARIES_TO_LINK_TESTS+=()
@@ -100,7 +102,8 @@ EXTERNAL_LIBRARIES_TO_LINK_TESTS+=(
 
 export MODULE_NAME_FIELD_WIDTH=24
 
-if [ "$BUILD_TYPE" -eq "${BUILD_TYPES[TESTS]}" ]; then
+# Tests
+if [ "$BUILD_TYPE" -eq 3 ]; then
     ((MODULE_NAME_FIELD_WIDTH += 6))
 fi
 

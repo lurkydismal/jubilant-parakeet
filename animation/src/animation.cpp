@@ -5,12 +5,12 @@ namespace animation {
 namespace {
 
 template < typename... Arguments >
-void _render( const boxes::box_t& _targetBoxSizes,
-              const slickdl::texture_t& _keyFrame,
-              const slickdl::renderer_t& _renderer,
-              const boxes::box_t& _targetBoxCoordinates,
-              auto _renderFunction,
-              Arguments&&... _arguments ) {
+void render( const boxes::box_t& _targetBoxSizes,
+             const slickdl::texture_t& _keyFrame,
+             const slickdl::renderer_t& _renderer,
+             const boxes::box_t& _targetBoxCoordinates,
+             auto _renderFunction,
+             Arguments&&... _arguments ) {
     const SDL_FRect l_resolvedTargetRectangle = {
         _targetBoxCoordinates.x, _targetBoxCoordinates.y, _targetBoxSizes.width,
         _targetBoxSizes.height };
@@ -29,17 +29,17 @@ void _render( const boxes::box_t& _targetBoxSizes,
 
 void animation_t::render( const slickdl::renderer_t& _renderer,
                           const boxes::box_t& _targetBoxCoordinates ) const {
-    _render( currentTargetBox(), currentKeyFrame(), _renderer,
-             _targetBoxCoordinates, SDL_RenderTexture );
+    ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,
+                         _targetBoxCoordinates, SDL_RenderTexture );
 }
 
 void animation_t::render( const slickdl::renderer_t& _renderer,
                           const boxes::box_t& _targetBoxCoordinates,
                           double _angle,
                           SDL_FlipMode _flipMode ) const {
-    _render( currentTargetBox(), currentKeyFrame(), _renderer,
-             _targetBoxCoordinates, SDL_RenderTextureRotated, _angle, nullptr,
-             _flipMode );
+    ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,
+                         _targetBoxCoordinates, SDL_RenderTextureRotated,
+                         _angle, nullptr, _flipMode );
 }
 
 } // namespace animation
