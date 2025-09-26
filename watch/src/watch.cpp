@@ -38,7 +38,7 @@ watch::~watch() {
     }
 #endif
 
-    auto l_closeDescriptor = []( int _descriptor ) -> auto {
+    auto l_closeDescriptor = []( int _descriptor ) -> void {
         const bool l_result = ( close( _descriptor ) != -1 );
 
         stdfunc::assert( l_result );

@@ -110,9 +110,7 @@ auto event( applicationState_t& _applicationState, const event_t& _event )
     do {
         const event_t l_emptyEVent{};
 
-        /**
-         * @brief Empty means last event on current frame
-         */
+        // Empty means last event on current frame
         const bool l_isEventEmpty =
             ( __builtin_memcmp( &_event, &l_emptyEVent, sizeof( _event ) ) ==
               0 );
@@ -123,7 +121,7 @@ auto event( applicationState_t& _applicationState, const event_t& _event )
             }
 
         } else {
-            auto l_handleEvent = [ & ] {
+            auto l_handleEvent = [ & ] -> bool {
                 bool l_returnValue = false;
 
                 switch ( _event.type ) {

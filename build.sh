@@ -117,12 +117,14 @@ export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-flto=jobserver -fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_TESTS="$BUILD_C_FLAGS_DEBUG -fopenmp -O0"
+export BUILD_C_FLAGS_HOT_RELOAD=""
 
 export BUILD_CPP_FLAGS="$BUILD_C_FLAGS -std=gnu++26 -fno-rtti -fno-exceptions -fno-threadsafe-statics -Wno-enum-enum-conversion -Wno-c99-designator -Wno-gnu-string-literal-operator-template"
 export BUILD_CPP_FLAGS_DEBUG="$BUILD_C_FLAGS_DEBUG"
 export BUILD_CPP_FLAGS_RELEASE="$BUILD_C_FLAGS_RELEASE -fno-unwind-tables"
 export BUILD_CPP_FLAGS_PROFILE="$BUILD_C_FLAGS_PROFILE -fno-unwind-tables"
 export BUILD_CPP_FLAGS_TESTS="$BUILD_C_FLAGS_TESTS"
+export BUILD_CPP_FLAGS_HOT_RELOAD=""
 
 # TODO: checker alpha
 export SCAN_BUILD_FLAGS="-enable-checker core,security,nullability,deadcode,unix,optin"
@@ -156,11 +158,11 @@ export BUILD_DEFINES_HOT_RELOAD=(
 export BUILD_INCLUDES=()
 
 export LINK_FLAGS="-fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
-export LINK_FLAGS_DEBUG="-rdynamic -Wl,-rpath,\$ORIGIN"
+export LINK_FLAGS_DEBUG="-rdynamic"
 export LINK_FLAGS_RELEASE="-flto -s"
 export LINK_FLAGS_PROFILE=""
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
-export LINK_FLAGS_HOT_RELOAD=""
+export LINK_FLAGS_HOT_RELOAD="-Wl,-rpath,\$ORIGIN"
 
 export LIBRARIES_TO_LINK=()
 export LIBRARIES_TO_LINK_TESTS=()
@@ -317,6 +319,8 @@ source './config.sh' && {
     if [ -n "${ENABLE_HOT_RELOAD+x}" ]; then
         echo -e "$BUILD_TYPE_COLOR"'Building with hot reload'"$RESET_COLOR"
 
+        BUILD_C_FLAGS="$BUILD_C_FLAGS $BUILD_C_FLAGS_HOT_RELOAD"
+        BUILD_CPP_FLAGS="$BUILD_CPP_FLAGS $BUILD_CPP_FLAGS_HOT_RELOAD"
         LINK_FLAGS="$LINK_FLAGS $LINK_FLAGS_HOT_RELOAD"
         BUILD_DEFINES+=("${BUILD_DEFINES_HOT_RELOAD[@]}")
     fi
