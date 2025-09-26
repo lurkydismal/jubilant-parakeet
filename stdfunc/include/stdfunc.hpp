@@ -160,11 +160,11 @@ constexpr void assert(
 #endif
 
 // Literals ( no side-effects )
-[[nodiscard]] constexpr auto operator""_b( char _symbol ) -> std::byte {
+[[nodiscard]] consteval auto operator""_b( char _symbol ) -> std::byte {
     return ( static_cast< std::byte >( _symbol ) );
 }
 
-[[nodiscard]] constexpr auto operator""_b( unsigned long long _symbol )
+[[nodiscard]] consteval auto operator""_b( unsigned long long _symbol )
     -> std::byte {
     assert( _symbol <= 0xFF );
 
@@ -172,7 +172,7 @@ constexpr void assert(
 }
 
 template < typename SymbolTypes, SymbolTypes... _symbols >
-[[nodiscard]] constexpr auto operator""_bytes() {
+[[nodiscard]] consteval auto operator""_bytes() {
     assert( ( ... && ( _symbols <= 0xFF ) ) );
 
     return ( std::array< std::byte, sizeof...( _symbols ) >{
