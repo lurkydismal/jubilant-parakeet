@@ -151,7 +151,7 @@ public:
             std::string l_failedTests;
             l_failedTests.reserve( 100 );
 
-            const auto l_iterateTestSuites = [ & ]( auto _callback ) -> auto {
+            auto l_iterateTestSuites = [ & ]( auto _callback ) -> auto {
                 for ( const gsl::not_null _testSuite :
                       std::views::iota(
                           size_t{}, static_cast< size_t >(

@@ -501,7 +501,7 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
         for ( ;; ) {
             vsync::begin();
 
-            const auto l_handleEvents = [ & ] -> bool {
+            auto l_handleEvents = [ & ] -> bool {
                 // Poll events
                 {
                     l_events.clear();

@@ -255,7 +255,7 @@ TEST( FcbIntrusive, EmplaceBackMoveOnlyAndPopDestroys ) {
     EXPECT_EQ( lifeTracker::g_constructions, 2 );
     EXPECT_EQ( lifeTracker::g_destructions, 0 );
 
-    // pop should move out and destroy the removed object's storage
+    // pop should move out and destroy the removed objects storage
     {
         lifeTracker l_removed = l_buf.pop_back();
         EXPECT_EQ( l_removed.v, 20 );

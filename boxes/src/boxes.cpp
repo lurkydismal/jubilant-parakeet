@@ -38,7 +38,7 @@ void boxes_t::render( const slickdl::renderer_t& _renderer,
             .h = _box.height,
         };
 
-        const auto l_render = [ & ]( auto _renderFunction ) -> void {
+        auto l_render = [ & ]( auto _renderFunction ) -> void {
             const bool l_result =
                 _renderFunction( _renderer, &l_targetRectangle );
 
