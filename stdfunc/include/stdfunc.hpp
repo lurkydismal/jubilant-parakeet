@@ -29,7 +29,7 @@
 
 // Function attributes
 #define FORCE_INLINE [[gnu::always_inline]] inline
-#define NO_OPTIMIZE [[gnu::optimize( "0" )]]
+#define NOINLINE [[gnu::noinline, gnu::used]]
 #define CONST [[gnu::const]]
 #define PURE [[gnu::pure]]
 #define HOT [[gnu::hot]]

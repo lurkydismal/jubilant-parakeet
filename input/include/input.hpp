@@ -17,20 +17,20 @@ using direction_t = enum class direction : uint8_t {
 
 [[nodiscard]] constexpr auto operator|( direction_t _storage,
                                         direction_t _value ) -> direction_t {
-    using directionType_t = std::underlying_type_t< direction_t >;
+    using underlying_t = std::underlying_type_t< direction_t >;
 
-    return ( static_cast< direction_t >(
-        static_cast< directionType_t >( _storage ) |
-        static_cast< directionType_t >( _value ) ) );
+    return (
+        static_cast< direction_t >( static_cast< underlying_t >( _storage ) |
+                                    static_cast< underlying_t >( _value ) ) );
 }
 
 [[nodiscard]] constexpr auto operator&( direction_t _storage,
                                         direction_t _value ) -> direction_t {
-    using directionType_t = std::underlying_type_t< direction_t >;
+    using underlying_t = std::underlying_type_t< direction_t >;
 
-    return ( static_cast< direction_t >(
-        static_cast< directionType_t >( _storage ) &
-        static_cast< directionType_t >( _value ) ) );
+    return (
+        static_cast< direction_t >( static_cast< underlying_t >( _storage ) &
+                                    static_cast< underlying_t >( _value ) ) );
 }
 
 constexpr void operator|=( direction_t& _storage, direction_t _value ) {
@@ -40,9 +40,9 @@ constexpr void operator|=( direction_t& _storage, direction_t _value ) {
 // TODO: Implement
 [[nodiscard]] inline auto toString( const direction_t& _direction )
     -> std::string {
-    using directionType_t = std::underlying_type_t< direction_t >;
+    using underlying_t = std::underlying_type_t< direction_t >;
 
-    return ( std::to_string( static_cast< directionType_t >( _direction ) ) );
+    return ( std::to_string( static_cast< underlying_t >( _direction ) ) );
 }
 
 using button_t = enum class button : uint8_t {
@@ -51,9 +51,9 @@ using button_t = enum class button : uint8_t {
 
 // TODO: Implement
 [[nodiscard]] inline auto toString( const button_t& _button ) -> std::string {
-    using buttonType_t = std::underlying_type_t< button_t >;
+    using underlying_t = std::underlying_type_t< button_t >;
 
-    return ( std::to_string( static_cast< buttonType_t >( _button ) ) );
+    return ( std::to_string( static_cast< underlying_t >( _button ) ) );
 }
 
 using input_t = struct input {
