@@ -11,3 +11,4 @@ Move to multi-window system
 Improve vsync, window, FPS
 Improve watch check()
 Implement container for watch check() cases
+Check all std::span uses for mutability
