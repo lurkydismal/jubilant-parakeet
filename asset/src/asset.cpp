@@ -154,7 +154,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-auto save( std::span< std::byte > _asset,
+auto save( std::span< const std::byte > _asset,
            std::string_view _path,
            bool _needAppend ) -> bool {
     bool l_returnValue = false;
@@ -210,7 +210,7 @@ auto save( std::span< std::byte > _asset,
 
 namespace async {
 
-auto save( std::span< std::byte > _asset,
+auto save( std::span< const std::byte > _asset,
            std::string_view _path,
            bool _needAppend ) -> bool {
     bool l_returnValue = false;

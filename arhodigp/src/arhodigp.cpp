@@ -6,8 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "stdfunc.hpp"
-
 static std::string g_version;
 const char* argp_program_version;
 
@@ -18,8 +16,9 @@ namespace arhodigp {
 
 namespace {
 
-inline auto parserForOption( int _key, char* _value, argp_state* _state )
-    -> error_t {
+[[nodiscard]] inline auto parserForOption( int _key,
+                                           char* _value,
+                                           argp_state* _state ) -> error_t {
     error_t l_returnValue = 0;
 
     using options_t = std::map< int, option_t >;
@@ -76,13 +75,14 @@ inline auto parserForOption( int _key, char* _value, argp_state* _state )
 
 } // namespace
 
-auto parseArguments( std::string& _format,
-                     std::span< std::string_view > _arguments,
-                     std::string_view _applicationIdentifier,
-                     std::string_view _applicationDescription,
-                     float _applicationVersion,
-                     std::string_view _contactAddress,
-                     std::map< int, option_t >& _options ) -> bool {
+[[nodiscard]] auto parseArguments(
+    std::string_view _format,
+    std::span< const std::string_view > _arguments,
+    std::string_view _applicationIdentifier,
+    std::string_view _applicationDescription,
+    float _applicationVersion,
+    std::string_view _contactAddress,
+    std::map< int, option_t >& _options ) -> bool {
     bool l_returnValue = false;
 
     do {
@@ -120,13 +120,14 @@ auto parseArguments( std::string& _format,
                 l_options.emplace_back( argp_option{} );
             }
 
+            const std::string l_format = std::string( _format );
             const std::string l_description = std::format(
                 "{} - {}", _applicationIdentifier, _applicationDescription );
 
             argp l_argumentParser = {
                 .options = l_options.data(),
                 .parser = parserForOption,
-                .args_doc = _format.c_str(),
+                .args_doc = l_format.c_str(),
                 .doc = l_description.c_str(),
                 .children = nullptr,
                 .help_filter = nullptr,
@@ -161,20 +162,6 @@ auto parseArguments( std::string& _format,
     } while ( false );
 
     return ( l_returnValue );
-}
-
-auto parseArguments( std::string_view _format,
-                     std::span< std::string_view > _arguments,
-                     std::string_view _applicationIdentifier,
-                     std::string_view _applicationDescription,
-                     float _applicationVersion,
-                     std::string_view _contactAddress,
-                     std::map< int, option_t >& _options ) -> bool {
-    auto l_format = std::string( _format );
-
-    return ( parseArguments( l_format, _arguments, _applicationIdentifier,
-                             _applicationDescription, _applicationVersion,
-                             _contactAddress, _options ) );
 }
 
 void error( const state_t& _state, const std::string& _message ) {

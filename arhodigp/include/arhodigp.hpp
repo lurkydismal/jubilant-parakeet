@@ -92,19 +92,8 @@ using option_t = struct option {
 // [NAME] - optional
 // NAME - required
 // NAME... - at least one and more
-auto parseArguments( std::string& _format,
-                     std::span< std::string_view > _arguments,
-                     std::string_view _applicationIdentifier,
-                     std::string_view _applicationDescription,
-                     float _applicationVersion,
-                     std::string_view _contactAddress,
-                     std::map< int, option_t >& _options ) -> bool;
-
-// [NAME] - optional
-// NAME - required
-// NAME... - at least one and more
 auto parseArguments( std::string_view _format,
-                     std::span< std::string_view > _arguments,
+                     std::span< const std::string_view > _arguments,
                      std::string_view _applicationIdentifier,
                      std::string_view _applicationDescription,
                      float _applicationVersion,

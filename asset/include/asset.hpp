@@ -19,7 +19,7 @@ using asset_t = std::optional< std::vector< std::byte > >;
 namespace sync {
 
 auto load( std::string_view _path ) -> asset_t;
-auto save( std::span< std::byte > _asset,
+auto save( std::span< const std::byte > _asset,
            std::string_view _path,
            bool _needAppend ) -> bool;
 
@@ -28,7 +28,7 @@ auto save( std::span< std::byte > _asset,
 namespace async {
 
 auto load( std::string_view _path ) -> asset_t;
-auto save( std::span< std::byte > _asset,
+auto save( std::span< const std::byte > _asset,
            std::string_view _path,
            bool _needAppend ) -> bool;
 
