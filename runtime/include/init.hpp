@@ -5,6 +5,6 @@
 namespace runtime {
 
 auto init( applicationState_t& _applicationState,
-           std::span< std::string_view > _arguments ) -> bool;
+           std::span< const std::string_view > _arguments ) -> bool;
 
 } // namespace runtime
