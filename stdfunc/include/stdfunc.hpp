@@ -2,7 +2,7 @@
 
 #include <glaze/core/common.hpp>
 #include <glaze/core/reflect.hpp>
-#include <xxhash.h>
+#include <xxh3.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -42,11 +42,70 @@
 // Struct attributes
 #define PACKED [[gnu::packed]]
 
+using uint128_t = __uint128_t;
+
 namespace stdfunc {
+
+// TODO: Add support for 64bits
+namespace system {
+
+using call_t = enum class call : uint8_t {
+    exit = 1,
+    read = 3,
+    write = 4,
+    ioctl = 54,
+};
+
+template < typename... Arguments >
+    requires( sizeof...( Arguments ) <= 3 &&
+              ( std::convertible_to< Arguments, uintptr_t > && ... ) )
+FORCE_INLINE void syscall( call_t _systemCall, Arguments... _arguments ) {
+    const auto l_systemCall = static_cast< uint32_t >( _systemCall );
+
+    constexpr size_t l_amount = sizeof...( Arguments );
+
+    std::array l_arguments = { static_cast< uintptr_t >( _arguments )... };
+
+    if constexpr ( l_amount == 0 ) {
+        __asm__ volatile( "int $0x80"
+                          :
+                          : "a"( l_systemCall )
+                          : "memory", "cc" );
+
+    } else if constexpr ( l_amount == 1 ) {
+        const uintptr_t l_ebx = l_arguments[ 0 ];
+
+        __asm__ volatile( "int $0x80"
+                          :
+                          : "a"( l_systemCall ), "b"( l_ebx )
+                          : "memory", "cc" );
+
+    } else if constexpr ( l_amount == 2 ) {
+        const uintptr_t l_ebx = l_arguments[ 0 ];
+        const uintptr_t l_ecx = l_arguments[ 1 ];
+
+        __asm__ volatile( "int $0x80"
+                          :
+                          : "a"( l_systemCall ), "b"( l_ebx ), "c"( l_ecx )
+                          : "memory", "cc" );
+
+    } else if constexpr ( l_amount == 3 ) {
+        const uintptr_t l_ebx = l_arguments[ 0 ];
+        const uintptr_t l_ecx = l_arguments[ 1 ];
+        const uintptr_t l_edx = l_arguments[ 2 ];
+
+        __asm__ volatile( "int $0x80"
+                          :
+                          : "a"( l_systemCall ), "b"( l_ebx ), "c"( l_ecx ),
+                            "d"( l_edx )
+                          : "memory", "cc" );
+    }
+}
+
+} // namespace system
 
 // Constants
 constexpr char g_commentSymbol = '#';
-constexpr size_t g_decimalRadix = 10;
 
 namespace color {
 
@@ -67,7 +126,7 @@ constexpr std::string_view g_reset = "\x1b[0m";
 template < typename... Arguments >
 concept has_common_type = ( requires {
     typename std::common_type_t< Arguments... >;
-} && ( !std::is_void_v< std::common_type_t< Arguments... > > ));
+} && !std::is_void_v< std::common_type_t< Arguments... > > );
 
 template < typename T >
 concept is_container = ( std::ranges::range< T > && requires( T _container ) {
@@ -83,6 +142,11 @@ concept is_lambda =
     ( std::invocable< Lambda, Arguments... > &&
       std::convertible_to< std::invoke_result_t< Lambda, Arguments... >,
                            ReturnType > );
+
+template < typename T >
+concept is_formattable = ( requires( const T& _argument ) {
+    { std::format( "{}", _argument ) } -> std::convertible_to< std::string >;
+} );
 
 // Utility macros ( no side-effects )
 #define STRINGIFY( _value ) #_value
@@ -115,27 +179,30 @@ constexpr auto formatWithColor( auto _what, std::string_view _color )
 
 } // namespace
 
-template < typename... Arguments >
-[[noreturn]] void trap( std::format_string< Arguments... > _format = "",
-                        Arguments&&... _arguments ) {
-    std::print( std::cerr, "{} Thread {}{:#X}{}:",
-                formatWithColor( "[TRAP]", g_trapColorLevel ),
-                g_trapColorThreadId,
-                std::hash< std::thread::id >{}( std::this_thread::get_id() ),
-                color::g_reset );
-    std::println( std::cerr, _format,
-                  std::forward< Arguments >( _arguments )... );
-    // FIX: No stacktrace
-    std::println(
-        "{}{}",
-        formatWithColor( std::stacktrace::current( 1, g_backtraceLimit ),
-                         color::g_white ),
-        color::g_reset );
+template < is_formattable... Arguments >
+[[noreturn]] constexpr void trap(
+    std::format_string< Arguments... > _format = "",
+    Arguments&&... _arguments ) {
+    if !consteval {
+        std::print(
+            std::cerr, "{} Thread {}{:#X}{}:",
+            formatWithColor( "[TRAP]", g_trapColorLevel ), g_trapColorThreadId,
+            std::hash< std::thread::id >{}( std::this_thread::get_id() ),
+            color::g_reset );
+        std::println( std::cerr, _format,
+                      std::forward< Arguments >( _arguments )... );
+        // FIX: No stacktrace
+        std::println(
+            "{}{}",
+            formatWithColor( std::stacktrace::current( 1, g_backtraceLimit ),
+                             color::g_white ),
+            color::g_reset );
+    }
 
     __builtin_trap();
 }
 
-template < typename... Arguments >
+template < is_formattable... Arguments >
 constexpr void assert( bool _result,
                        std::format_string< Arguments... > _format = "",
                        Arguments&&... _arguments ) {
@@ -146,12 +213,12 @@ constexpr void assert( bool _result,
 
 #else
 
-template < typename... Arguments >
+template < is_formattable... Arguments >
 constexpr void trap(
     [[maybe_unused]] std::format_string< Arguments... > _format = "",
     [[maybe_unused]] Arguments&&... _arguments ) {}
 
-template < typename... Arguments >
+template < is_formattable... Arguments >
 constexpr void assert(
     [[maybe_unused]] bool _result,
     [[maybe_unused]] std::format_string< Arguments... > _format = "",
@@ -159,7 +226,26 @@ constexpr void assert(
 
 #endif
 
-// Literals ( no side-effects )
+// Utility functions ( no side-effects )
+[[nodiscard]] constexpr auto makeU128( std::string_view _string ) -> uint128_t {
+    if ( !std::ranges::all_of( _string, []( char _symbol ) -> bool {
+             return ( ( _symbol >= '0' ) && ( _symbol <= '9' ) );
+         } ) ) {
+        // TODO: Write message
+        stdfunc::trap();
+    }
+
+    uint128_t l_returnValue = 0;
+
+    for ( const char _symbol : _string ) {
+        l_returnValue = ( l_returnValue * 10 + ( _symbol - '0' ) );
+    }
+
+    return ( l_returnValue );
+}
+
+namespace literals {
+
 [[nodiscard]] consteval auto operator""_b( char _symbol ) -> std::byte {
     return ( static_cast< std::byte >( _symbol ) );
 }
@@ -179,15 +265,38 @@ template < typename SymbolTypes, SymbolTypes... _symbols >
         std::byte{ _symbols }... } );
 }
 
-// Utility functions ( no side-effects )
-template < typename T >
-    requires std::is_arithmetic_v< T >
+template < typename SymbolTypes, SymbolTypes... _symbols >
+[[nodiscard]] consteval auto operator""_u128() -> uint128_t {
+    assert( ( ... && ( _symbols <= 0xFF ) ) );
+
+    return ( makeU128( { _symbols... } ) );
+}
+
+} // namespace literals
+
+template < template < typename > typename Container, typename... Arguments >
+[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
+    using variant_t = std::variant< std::decay_t< Arguments >... >;
+
+    return ( Container< variant_t >{
+        variant_t( std::forward< Arguments >( _arguments ) )... } );
+}
+
+template < template < typename, size_t > typename Container,
+           typename... Arguments >
+[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
+    using variant_t = std::variant< std::decay_t< Arguments >... >;
+
+    return ( Container< variant_t, sizeof...( Arguments ) >{
+        variant_t( std::forward< Arguments >( _arguments ) )... } );
+}
+
+template < std::integral T >
 [[nodiscard]] constexpr auto bitsToBytes( T _bits ) -> T {
     return ( ( _bits + 7 ) / 8 );
 }
 
-template < typename T >
-    requires std::is_arithmetic_v< T >
+template < std::integral T >
 [[nodiscard]] constexpr auto lengthOfNumber( T _number ) -> size_t {
     return ( ( _number < 10ULL )                     ? ( 1 )
              : ( _number < 100ULL )                  ? ( 2 )
@@ -226,9 +335,121 @@ template < typename T >
              std::views::reverse );
 }
 
+namespace hash {
+
+// FNV-1A for 32bits, 64bits and 128bits
+template < std::unsigned_integral T >
+[[nodiscard]] constexpr auto weak( std::span< const std::byte > _data ) -> T {
+    assert( _data.size() );
+
+    T l_offsetBasis = 0;
+    T l_prime = 0;
+
+    if constexpr ( std::is_same_v< T, uint32_t > ) {
+        l_offsetBasis = 0x811C9DC5;
+        l_prime = 0x1000193;
+
+    } else if constexpr ( std::is_same_v< T, uint64_t > ) {
+        l_offsetBasis = 0xCBF29CE484222325;
+        l_prime = 0x100000001b3;
+
+    } else if constexpr ( std::is_same_v< T, uint128_t > ) {
+        l_offsetBasis = makeU128( "0x6C62272E07BB014262B821756295C58D" );
+        l_prime = makeU128( "0x1000000000000000000013b" );
+
+    } else {
+        // TODO: Message
+        static_assert( false );
+    }
+
+    T l_hash = l_offsetBasis;
+
+    for ( const uint8_t _item :
+          _data | std::views::transform( []( std::byte _byte ) -> uint8_t {
+              return ( static_cast< uint8_t >( _byte ) );
+          } ) ) {
+        l_hash ^= _item;
+
+        l_hash *= l_prime;
+    }
+
+    return ( l_hash );
+}
+
+// xxHash3 for 64bits and 128bits
+template < std::unsigned_integral T >
+[[nodiscard]] constexpr auto balanced( std::span< const std::byte > _data,
+                                       size_t _seed = 0x9E3779B1 ) -> T {
+    if constexpr ( std::is_same_v< T, uint64_t > ) {
+        return ( XXH3_64bits_withSeed( _data.data(), _data.size(), _seed ) );
+
+    } else if constexpr ( std::is_same_v< T, uint128_t > ) {
+        return ( XXH3_128bits_withSeed( _data.data(), _data.size(), _seed ) );
+
+    } else {
+        // TODO: Message
+        static_assert( false );
+    }
+}
+
+// TODO: Strong and Robust
+
+} // namespace hash
+
 // Utility functions ( side-effects )
 namespace random {
 
+// Seconds from midnight
+constexpr size_t g_compilationTimeAsSeed =
+    ( ( ( ( ( __TIME__[ 0 ] - '0' ) * 10 ) + ( __TIME__[ 1 ] - '0' ) ) *
+        3600 ) +
+      ( ( ( ( __TIME__[ 3 ] - '0' ) * 10 ) + ( __TIME__[ 4 ] - '0' ) ) * 60 ) +
+      ( ( ( __TIME__[ 6 ] - '0' ) * 10 ) + ( __TIME__[ 7 ] - '0' ) ) );
+
+namespace number {
+
+// Constexpr
+// XOR-Shift for 32bits, 64bits and 128bits
+template < std::unsigned_integral T >
+[[nodiscard]] constexpr auto weak( T _seed ) -> T {
+    T l_first = 0;
+    T l_second = 0;
+    T l_third = 0;
+
+    if constexpr ( std::is_same_v< T, uint32_t > ) {
+        l_first = 13;
+        l_second = 17;
+        l_third = 5;
+
+    } else if constexpr ( std::is_same_v< T, uint64_t > ) {
+        l_first = 13;
+        l_second = 7;
+        l_third = 17;
+
+    } else if constexpr ( std::is_same_v< T, uint128_t > ) {
+        l_first = 23;
+        l_second = 17;
+        l_third = 26;
+
+    } else {
+        // TODO: Message
+        static_assert( false );
+    }
+
+    const auto l_data = std::bit_cast<
+        std::array< std::byte, ( sizeof( T ) / sizeof( std::byte ) ) > >(
+        _seed );
+
+    _seed = hash::weak< T >( l_data );
+
+    _seed ^= ( _seed << l_first );
+    _seed ^= ( _seed >> l_second );
+    _seed ^= ( _seed << l_third );
+
+    return ( _seed );
+}
+
+// Runtime
 using engine_t = std::
     conditional_t< ( sizeof( size_t ) > 4 ), std::mt19937_64, std::mt19937 >;
 
@@ -236,7 +457,7 @@ extern thread_local engine_t g_engine;
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-constexpr auto number( T _min, T _max ) -> T {
+auto strong( T _min, T _max ) -> T {
     using distribution_t =
         std::conditional_t< std::is_integral_v< T >,
                             std::uniform_int_distribution< T >,
@@ -247,7 +468,7 @@ constexpr auto number( T _min, T _max ) -> T {
 
 template < typename T >
     requires std::is_arithmetic_v< T >
-constexpr auto number() -> T {
+auto strong() -> T {
     using numericLimit_t = std::numeric_limits< T >;
 
     const auto l_max = numericLimit_t::max();
@@ -262,22 +483,34 @@ constexpr auto number() -> T {
     }
 }
 
+// TODO: Balanced and Robust
+
+constexpr auto g_defaultNumberGenerator = weak< size_t >;
+
+} // namespace number
+
 template < typename Container >
     requires is_container< Container >
-constexpr auto value( Container& _container ) ->
+constexpr auto value(
+    Container& _container,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) ->
     typename Container::value_type& {
     assert( !_container.empty() );
 
-    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
+    return ( _container.at(
+        _randomNumberGenerator( 0, ( _container.size() - 1 ) ) ) );
 }
 
 template < typename Container >
     requires is_container< Container >
-constexpr auto value( const Container& _container ) -> const
+constexpr auto value(
+    const Container& _container,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) -> const
     typename Container::value_type& {
     assert( !_container.empty() );
 
-    return ( _container.at( number< size_t >( 0, _container.size() - 1 ) ) );
+    return ( _container.at(
+        _randomNumberGenerator( 0, ( _container.size() - 1 ) ) ) );
 }
 
 template < typename Container >
@@ -303,60 +536,51 @@ constexpr auto view( const Container& _container ) {
 }
 
 template < typename Container, typename T = typename Container::value_type >
-    requires is_container< Container > && std::is_arithmetic_v< T >
-constexpr void fill( Container& _container, T _min, T _max ) {
+    requires( is_container< Container > && std::is_arithmetic_v< T > )
+constexpr void fill(
+    Container& _container,
+    T _min,
+    T _max,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) {
     std::ranges::generate( _container, [ & ] constexpr -> auto {
-        return ( number< T >( _min, _max ) );
+        return ( _randomNumberGenerator( _min, _max ) );
     } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
-    requires is_container< Container > && std::is_same_v< T, std::byte >
-constexpr void fill( Container& _container, uint8_t _min, uint8_t _max ) {
+    requires( is_container< Container > && std::is_same_v< T, std::byte > )
+constexpr void fill(
+    Container& _container,
+    uint8_t _min,
+    uint8_t _max,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) {
     std::ranges::generate( _container, [ & ] constexpr -> auto {
-        return ( static_cast< std::byte >( number< uint8_t >( _min, _max ) ) );
+        return (
+            static_cast< std::byte >( _randomNumberGenerator( _min, _max ) ) );
     } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
-    requires is_container< Container > && std::is_arithmetic_v< T >
-constexpr void fill( Container& _container ) {
-    std::ranges::generate(
-        _container, [ & ] constexpr -> auto { return ( number< T >() ); } );
+    requires( is_container< Container > && std::is_arithmetic_v< T > )
+constexpr void fill(
+    Container& _container,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) {
+    std::ranges::generate( _container, [ & ] constexpr -> auto {
+        return ( _randomNumberGenerator() );
+    } );
 }
 
 template < typename Container, typename T = typename Container::value_type >
-    requires is_container< Container > && std::is_same_v< T, std::byte >
-constexpr void fill( Container& _container ) {
+    requires( is_container< Container > && std::is_same_v< T, std::byte > )
+constexpr void fill(
+    Container& _container,
+    auto _randomNumberGenerator = number::g_defaultNumberGenerator ) {
     std::ranges::generate( _container, [ & ] constexpr -> auto {
-        return ( static_cast< std::byte >( number< uint8_t >() ) );
+        return ( static_cast< std::byte >( _randomNumberGenerator() ) );
     } );
 }
 
 } // namespace random
-
-[[nodiscard]] constexpr auto generateHash( std::span< const std::byte > _data,
-                                           size_t _seed = 0x9E3779B1 )
-    -> size_t {
-    return ( XXH32( _data.data(), _data.size(), _seed ) );
-}
-
-template < template < typename > typename Container, typename... Arguments >
-[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
-    using variant_t = std::variant< std::decay_t< Arguments >... >;
-
-    return ( Container< variant_t >{
-        variant_t( std::forward< Arguments >( _arguments ) )... } );
-}
-
-template < template < typename, size_t > typename Container,
-           typename... Arguments >
-[[nodiscard]] constexpr auto makeVariantContainer( Arguments&&... _arguments ) {
-    using variant_t = std::variant< std::decay_t< Arguments >... >;
-
-    return ( Container< variant_t, sizeof...( Arguments ) >{
-        variant_t( std::forward< Arguments >( _arguments ) )... } );
-}
 
 namespace filesystem {
 
@@ -409,7 +633,7 @@ template < size_t N >
 [[nodiscard]] auto getPathsByRegexp( const ctll::fixed_string< N >& _regexp,
                                      std::string_view _directory )
     -> std::vector< std::filesystem::path > {
-    auto l_matcher = ctre::match< _regexp >;
+    constexpr auto l_matcher = ctre::match< _regexp >;
 
     return ( _getPathsByRegexp( _directory,
                                 [ & ]( const std::string& _fileName ) -> auto {
@@ -610,7 +834,7 @@ constexpr void iterateStructTopMostFields( T&& _instance,
 template < typename T, typename Callback >
     requires is_reflectable< T >
 constexpr void iterateStructTopMostFields( Callback&& _callback ) {
-    T l_instance{};
+    constexpr T l_instance{};
 
     glz::for_each_field( l_instance, std::forward< Callback >( _callback ) );
 }
