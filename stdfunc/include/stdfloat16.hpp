@@ -24,41 +24,35 @@ template <>
 struct numeric_limits< float16_t > {
     static constexpr bool is_specialized = true;
 
-    static constexpr auto min() noexcept -> float16_t {
-        return ( 6.103515625e-5f );
-    }
+    static constexpr auto min() -> float16_t { return ( 6.103515625e-5f ); }
 
-    static constexpr auto max() noexcept -> float16_t { return ( 65504.0f ); }
+    static constexpr auto max() -> float16_t { return ( 65504.0f ); }
 
-    static constexpr auto lowest() noexcept -> float16_t {
-        return ( -65504.0f );
-    }
+    static constexpr auto lowest() -> float16_t { return ( -65504.0f ); }
 
-    static constexpr auto epsilon() noexcept -> float16_t {
-        return ( 0.0009765625f );
-    }
+    static constexpr auto epsilon() -> float16_t { return ( 0.0009765625f ); }
 
-    static constexpr auto round_error() noexcept -> float16_t { return 0.5f; }
+    static constexpr auto round_error() -> float16_t { return 0.5f; }
 
-    static constexpr auto infinity() noexcept -> float16_t {
+    static constexpr auto infinity() -> float16_t {
         return ( float16_t{ INFINITY } );
     }
 
-    static constexpr auto quiet_NaN() noexcept -> float16_t {
+    static constexpr auto quiet_NaN() -> float16_t {
         return ( float16_t{ NAN } );
     }
 
-    static constexpr auto signaling_NaN() noexcept -> float16_t {
+    static constexpr auto signaling_NaN() -> float16_t {
         return ( float16_t{ NAN } );
     }
 
-    static constexpr auto denorm_min() noexcept -> float16_t {
+    static constexpr auto denorm_min() -> float16_t {
         return ( 5.960464477539063e-8f );
     }
 
-    static constexpr int digits = 11;      // mantissa bits
-    static constexpr int digits10 = 3;     // base-10 precision
-    static constexpr int max_digits10 = 5; // for round-trip conversion
+    static constexpr int digits = 11;      // Mantissa bits
+    static constexpr int digits10 = 3;     // Base-10 precision
+    static constexpr int max_digits10 = 5; // For round-trip conversion
 
     static constexpr bool is_signed = true;
     static constexpr bool is_integer = false;

@@ -27,7 +27,7 @@ template < auto V >
 struct rotate_value {
     template < auto... Vs >
     friend constexpr auto operator+( string< Vs... >,
-                                     rotate_value< V > ) noexcept
+                                     rotate_value< V > ) 
         -> string< V, Vs... > {
         return {};
     }

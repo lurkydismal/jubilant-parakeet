@@ -16,14 +16,14 @@ struct regex_range {
     EndIterator _end;
 
     constexpr CTRE_FORCE_INLINE regex_range( BeginIterator begin,
-                                             EndIterator end ) noexcept
+                                             EndIterator end ) 
         : _begin{ begin }, _end{ end } {}
 
-    constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto begin() const  {
         return regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >(
             _begin, _end );
     }
-    constexpr CTRE_FORCE_INLINE auto end() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto end() const  {
         return regex_end_iterator{};
     }
 };
@@ -40,14 +40,14 @@ struct regex_split_range {
     EndIterator _end;
 
     constexpr CTRE_FORCE_INLINE regex_split_range( BeginIterator begin,
-                                                   EndIterator end ) noexcept
+                                                   EndIterator end ) 
         : _begin{ begin }, _end{ end } {}
 
-    constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto begin() const  {
         return regex_split_iterator< BeginIterator, EndIterator, RE,
                                      ResultIterator >( _begin, _end );
     }
-    constexpr CTRE_FORCE_INLINE auto end() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto end() const  {
         return regex_end_iterator{};
     }
 };
@@ -75,12 +75,12 @@ struct multi_subject_range {
         last_type last{};
         value_type current_result{};
 
-        constexpr CTRE_FORCE_INLINE iterator() noexcept = default;
+        constexpr CTRE_FORCE_INLINE iterator()  = default;
         constexpr CTRE_FORCE_INLINE iterator( first_type f,
-                                              last_type l ) noexcept
+                                              last_type l ) 
             : first{ f }, last{ l }, current_result{ find_first() } {}
 
-        constexpr CTRE_FORCE_INLINE value_type find_first() noexcept {
+        constexpr CTRE_FORCE_INLINE value_type find_first()  {
             while ( first != last ) {
                 if ( auto res = RE::exec( *first ) )
                     return res;
@@ -90,20 +90,20 @@ struct multi_subject_range {
             return {};
         }
 
-        constexpr CTRE_FORCE_INLINE reference operator*() const noexcept {
+        constexpr CTRE_FORCE_INLINE reference operator*() const  {
             return current_result;
         }
 
-        constexpr CTRE_FORCE_INLINE pointer operator->() const noexcept {
+        constexpr CTRE_FORCE_INLINE pointer operator->() const  {
             return &current_result;
         }
 
-        constexpr CTRE_FORCE_INLINE iterator& operator++() noexcept {
+        constexpr CTRE_FORCE_INLINE iterator& operator++()  {
             ++first;
             current_result = find_first();
             return *this;
         }
-        constexpr CTRE_FORCE_INLINE iterator operator++( int ) noexcept {
+        constexpr CTRE_FORCE_INLINE iterator operator++( int )  {
             auto previous = *this;
             this->operator++();
             return previous;
@@ -111,66 +111,66 @@ struct multi_subject_range {
 
         friend constexpr CTRE_FORCE_INLINE bool operator==(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return left.first == right.first;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator!=(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return !( left.first == right.first );
         }
         friend constexpr CTRE_FORCE_INLINE bool operator<(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return left.first < right.first;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator>(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return left.first > right.first;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator<=(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return left.first <= right.first;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator>=(
             const iterator& left,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return left.first >= right.first;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator==(
             const iterator& left,
-            end_iterator ) noexcept {
+            end_iterator )  {
             return left.first == left.last;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator==(
             end_iterator,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return right.first == right.last;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator!=(
             const iterator& left,
-            end_iterator ) noexcept {
+            end_iterator )  {
             return left.first != left.last;
         }
         friend constexpr CTRE_FORCE_INLINE bool operator!=(
             end_iterator,
-            const iterator& right ) noexcept {
+            const iterator& right )  {
             return right.first == right.last;
         }
     };
 
     Range range{};
 
-    constexpr CTRE_FORCE_INLINE multi_subject_range() noexcept = default;
-    constexpr CTRE_FORCE_INLINE multi_subject_range( Range r ) noexcept
+    constexpr CTRE_FORCE_INLINE multi_subject_range()  = default;
+    constexpr CTRE_FORCE_INLINE multi_subject_range( Range r ) 
         : range{ r } {}
 
-    constexpr CTRE_FORCE_INLINE auto begin() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto begin() const  {
         return iterator{ range.begin(), range.end() };
     }
-    constexpr CTRE_FORCE_INLINE auto end() const noexcept {
+    constexpr CTRE_FORCE_INLINE auto end() const  {
         return end_iterator{};
     }
 };

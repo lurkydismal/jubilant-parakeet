@@ -15,7 +15,7 @@ struct property_value {};
 
 template < size_t Sz >
 constexpr std::string_view get_string_view(
-    const char ( &arr )[ Sz ] ) noexcept {
+    const char ( &arr )[ Sz ] )  {
     return std::string_view( arr, Sz );
 }
 
@@ -37,7 +37,7 @@ using make_property =
 template < uni::detail::binary_prop Property >
 struct binary_property< uni::detail::binary_prop, Property > {
     template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) noexcept {
+    inline static constexpr bool match_char( CharT c, const flags& )  {
         return uni::detail::get_binary_prop< Property >(
             static_cast< char32_t >( c ) );
     }
@@ -52,7 +52,7 @@ enum class property_type { script, script_extension, age, block, unknown };
 template < uni::script Script >
 struct binary_property< uni::script, Script > {
     template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) noexcept {
+    inline static constexpr bool match_char( CharT c, const flags& )  {
         return uni::cp_script( c ) == Script;
     }
 };
@@ -60,7 +60,7 @@ struct binary_property< uni::script, Script > {
 template < uni::script Script >
 struct property< property_type, property_type::script_extension, Script > {
     template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) noexcept {
+    inline static constexpr bool match_char( CharT c, const flags& )  {
         for ( uni::script sc : uni::cp_script_extensions( c ) ) {
             if ( sc == Script )
                 return true;
@@ -72,7 +72,7 @@ struct property< property_type, property_type::script_extension, Script > {
 template < uni::version Age >
 struct binary_property< uni::version, Age > {
     template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) noexcept {
+    inline static constexpr bool match_char( CharT c, const flags& )  {
         return uni::cp_age( c ) <= Age;
     }
 };
@@ -80,7 +80,7 @@ struct binary_property< uni::version, Age > {
 template < uni::block Block >
 struct binary_property< uni::block, Block > {
     template < typename CharT >
-    inline static constexpr bool match_char( CharT c, const flags& ) noexcept {
+    inline static constexpr bool match_char( CharT c, const flags& )  {
         return uni::cp_block( c ) == Block;
     }
 };
@@ -90,7 +90,7 @@ struct binary_property< uni::block, Block > {
 template < typename = void > // Make it always a template as propnamecomp isn't
                              // defined yet
 constexpr property_type property_type_from_name(
-    std::string_view str ) noexcept {
+    std::string_view str )  {
     using namespace std::string_view_literals;
     if ( uni::detail::propnamecomp( str, "script"sv ) == 0 ||
          uni::detail::propnamecomp( str, "sc"sv ) == 0 ) {

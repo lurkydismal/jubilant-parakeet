@@ -37,7 +37,7 @@ struct parser { // in c++20
     struct results {
         static constexpr bool is_correct = Decision == decision::accept;
 
-        constexpr inline CTLL_FORCE_INLINE operator bool() const noexcept {
+        constexpr inline CTLL_FORCE_INLINE operator bool() const  {
             return is_correct;
         }
 
@@ -46,7 +46,7 @@ struct parser { // in c++20
         using output_type = Subject;
         static constexpr size_t position = Pos;
 
-        constexpr auto operator+( placeholder ) const noexcept {
+        constexpr auto operator+( placeholder ) const  {
             if constexpr ( Decision == decision::undecided ) {
                 // parse for current char (RPos) with previous stack and subject
                 // :)
@@ -62,7 +62,7 @@ struct parser { // in c++20
     };
 
     template < size_t Pos >
-    static constexpr auto get_current_term() noexcept {
+    static constexpr auto get_current_term()  {
         if constexpr ( Pos < input.size() ) {
             constexpr auto value = input[ Pos ];
             if constexpr ( value <=
@@ -79,7 +79,7 @@ struct parser { // in c++20
         }
     }
     template < size_t Pos >
-    static constexpr auto get_previous_term() noexcept {
+    static constexpr auto get_previous_term()  {
         if constexpr ( Pos == 0 ) {
             // there is no previous character on input if we are on start
             return epsilon{};
@@ -101,7 +101,7 @@ struct parser { // in c++20
     static constexpr auto move( ctll::accept,
                                 Terminal,
                                 Stack,
-                                Subject ) noexcept {
+                                Subject )  {
         return typename parser< Grammar, _input, ActionSelector,
                                 IgnoreUnknownActions >::
             template results< Pos, Stack, Subject, decision::accept >();
@@ -111,7 +111,7 @@ struct parser { // in c++20
     static constexpr auto move( ctll::reject,
                                 Terminal,
                                 Stack,
-                                Subject ) noexcept {
+                                Subject )  {
         return typename parser< Grammar, _input, ActionSelector,
                                 IgnoreUnknownActions >::
             template results< Pos, Stack, Subject, decision::reject >();
@@ -121,7 +121,7 @@ struct parser { // in c++20
     static constexpr auto move( ctll::pop_input,
                                 Terminal,
                                 Stack,
-                                Subject ) noexcept {
+                                Subject )  {
         return typename parser< Grammar, _input, ActionSelector,
                                 IgnoreUnknownActions >::
             template results< Pos + 1, Stack, Subject, decision::undecided >();
@@ -135,7 +135,7 @@ struct parser { // in c++20
     static constexpr auto move( push< Content... > string,
                                 Terminal,
                                 Stack stack,
-                                Subject subject ) noexcept {
+                                Subject subject )  {
         return decide< Pos >( push_front( string, stack ), subject );
     }
     // if rule is epsilon (empty string) => continue
@@ -143,7 +143,7 @@ struct parser { // in c++20
     static constexpr auto move( epsilon,
                                 Terminal,
                                 Stack stack,
-                                Subject subject ) noexcept {
+                                Subject subject )  {
         return decide< Pos >( stack, subject );
     }
     // if rule is string with current character at the beginning (term<V>) =>
@@ -157,7 +157,7 @@ struct parser { // in c++20
     static constexpr auto move( push< term< V >, Content... >,
                                 term< V >,
                                 Stack stack,
-                                Subject ) noexcept {
+                                Subject )  {
         constexpr auto local_input = input;
         return typename parser< Grammar, local_input, ActionSelector,
                                 IgnoreUnknownActions >::
@@ -177,7 +177,7 @@ struct parser { // in c++20
     static constexpr auto move( push< anything, Content... >,
                                 term< T >,
                                 Stack stack,
-                                Subject ) noexcept {
+                                Subject )  {
         constexpr auto local_input = input;
         return typename parser< Grammar, local_input, ActionSelector,
                                 IgnoreUnknownActions >::
@@ -188,7 +188,7 @@ struct parser { // in c++20
     // decide if we need to take action or move
     template < size_t Pos, typename Stack, typename Subject >
     static constexpr auto decide( Stack previous_stack,
-                                  Subject previous_subject ) noexcept {
+                                  Subject previous_subject )  {
         // each call means we pop something from stack
         auto top_symbol =
             decltype( ctll::front( previous_stack, empty_stack_symbol() ) )();
@@ -224,7 +224,7 @@ struct parser { // in c++20
     template < typename Subject, size_t... Pos >
     static constexpr auto trampoline_decide(
         Subject,
-        std::index_sequence< Pos... > ) noexcept {
+        std::index_sequence< Pos... > )  {
         // parse everything for first char and than for next and next ...
         // Pos+1 is needed as we want to finish calculation with epsilons on
         // stack
@@ -235,7 +235,7 @@ struct parser { // in c++20
     }
 
     template < typename Subject = empty_subject >
-    static constexpr auto trampoline_decide( Subject subject = {} ) noexcept {
+    static constexpr auto trampoline_decide( Subject subject = {} )  {
         // there will be no recursion, just sequence long as the input
         return trampoline_decide( subject,
                                   std::make_index_sequence< input.size() >() );

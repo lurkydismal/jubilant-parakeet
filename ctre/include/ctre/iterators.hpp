@@ -11,7 +11,7 @@ namespace ctre {
 // TODO make proper iterator traits here
 
 struct regex_end_iterator {
-    constexpr regex_end_iterator() noexcept {}
+    constexpr regex_end_iterator()  {}
 };
 
 template < typename BeginIterator,
@@ -33,14 +33,14 @@ struct regex_iterator {
     EndIterator end{};
     value_type current_match{};
 
-    constexpr CTRE_FORCE_INLINE regex_iterator() noexcept = default;
+    constexpr CTRE_FORCE_INLINE regex_iterator()  = default;
     constexpr CTRE_FORCE_INLINE regex_iterator(
-        const regex_iterator& ) noexcept = default;
-    constexpr CTRE_FORCE_INLINE regex_iterator( regex_iterator&& ) noexcept =
+        const regex_iterator& )  = default;
+    constexpr CTRE_FORCE_INLINE regex_iterator( regex_iterator&& )  =
         default;
 
     constexpr CTRE_FORCE_INLINE regex_iterator( BeginIterator begin,
-                                                EndIterator last ) noexcept
+                                                EndIterator last ) 
         : orig_begin{ begin },
           current{ begin },
           end{ last },
@@ -54,14 +54,14 @@ struct regex_iterator {
     }
 
     constexpr CTRE_FORCE_INLINE regex_iterator& operator=(
-        const regex_iterator& ) noexcept = default;
+        const regex_iterator& )  = default;
     constexpr CTRE_FORCE_INLINE regex_iterator& operator=(
-        regex_iterator&& ) noexcept = default;
+        regex_iterator&& )  = default;
 
-    constexpr CTRE_FORCE_INLINE const value_type& operator*() const noexcept {
+    constexpr CTRE_FORCE_INLINE const value_type& operator*() const  {
         return current_match;
     }
-    constexpr CTRE_FORCE_INLINE regex_iterator& operator++() noexcept {
+    constexpr CTRE_FORCE_INLINE regex_iterator& operator++()  {
         if ( current == end ) {
             current_match = decltype( current_match ){};
             return *this;
@@ -76,7 +76,7 @@ struct regex_iterator {
         }
         return *this;
     }
-    constexpr CTRE_FORCE_INLINE regex_iterator operator++( int ) noexcept {
+    constexpr CTRE_FORCE_INLINE regex_iterator operator++( int )  {
         auto previous = *this;
         this->operator++();
         return previous;
@@ -85,66 +85,66 @@ struct regex_iterator {
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return left.current == right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return !( left.current == right.current );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator<(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return left.current < right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator>(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return left.current > right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator<=(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return left.current <= right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator>=(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return left.current >= right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator==(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
-        regex_end_iterator ) noexcept {
+        regex_end_iterator )  {
         return !bool( left.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator==(
         regex_end_iterator,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return !bool( right.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
             left,
-        regex_end_iterator ) noexcept {
+        regex_end_iterator )  {
         return bool( left.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
         regex_end_iterator,
         const regex_iterator< BeginIterator, EndIterator, RE, ResultIterator >&
-            right ) noexcept {
+            right )  {
         return bool( right.current_match );
     }
 };
@@ -184,15 +184,15 @@ struct regex_split_iterator {
         last_match = true;
     }
 
-    constexpr CTRE_FORCE_INLINE regex_split_iterator() noexcept = default;
+    constexpr CTRE_FORCE_INLINE regex_split_iterator()  = default;
     constexpr CTRE_FORCE_INLINE regex_split_iterator(
-        const regex_split_iterator& ) noexcept = default;
+        const regex_split_iterator& )  = default;
     constexpr CTRE_FORCE_INLINE regex_split_iterator(
-        regex_split_iterator&& ) noexcept = default;
+        regex_split_iterator&& )  = default;
 
     constexpr CTRE_FORCE_INLINE regex_split_iterator(
         BeginIterator begin,
-        EndIterator last ) noexcept
+        EndIterator last ) 
         : orig_begin{ begin },
           current{ begin },
           end{ last },
@@ -208,14 +208,14 @@ struct regex_split_iterator {
     }
 
     constexpr CTRE_FORCE_INLINE regex_split_iterator& operator=(
-        const regex_split_iterator& ) noexcept = default;
+        const regex_split_iterator& )  = default;
     constexpr CTRE_FORCE_INLINE regex_split_iterator& operator=(
-        regex_split_iterator&& ) noexcept = default;
+        regex_split_iterator&& )  = default;
 
-    constexpr CTRE_FORCE_INLINE const value_type& operator*() const noexcept {
+    constexpr CTRE_FORCE_INLINE const value_type& operator*() const  {
         return current_match;
     }
-    constexpr CTRE_FORCE_INLINE regex_split_iterator& operator++() noexcept {
+    constexpr CTRE_FORCE_INLINE regex_split_iterator& operator++()  {
         if ( current == end && last_match ) {
             current_match = decltype( current_match ){};
             return *this;
@@ -233,7 +233,7 @@ struct regex_split_iterator {
         return *this;
     }
     constexpr CTRE_FORCE_INLINE regex_split_iterator
-    operator++( int ) noexcept {
+    operator++( int )  {
         auto previous = *this;
         this->operator++();
         return previous;
@@ -246,7 +246,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return left.current == right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
@@ -257,7 +257,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return !( left.current == right.current );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator<(
@@ -268,7 +268,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return left.current < right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator>(
@@ -279,7 +279,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return left.current > right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator<=(
@@ -290,7 +290,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return left.current <= right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator>=(
@@ -301,7 +301,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return left.current >= right.current;
     }
     friend constexpr CTRE_FORCE_INLINE bool operator==(
@@ -309,7 +309,7 @@ struct regex_split_iterator {
                                     EndIterator,
                                     RE,
                                     ResultIterator >& left,
-        regex_end_iterator ) noexcept {
+        regex_end_iterator )  {
         return !bool( left.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator==(
@@ -317,7 +317,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return !bool( right.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
@@ -325,7 +325,7 @@ struct regex_split_iterator {
                                     EndIterator,
                                     RE,
                                     ResultIterator >& left,
-        regex_end_iterator ) noexcept {
+        regex_end_iterator )  {
         return bool( left.current_match );
     }
     friend constexpr CTRE_FORCE_INLINE bool operator!=(
@@ -333,7 +333,7 @@ struct regex_split_iterator {
         const regex_split_iterator< BeginIterator,
                                     EndIterator,
                                     RE,
-                                    ResultIterator >& right ) noexcept {
+                                    ResultIterator >& right )  {
         return bool( right.current_match );
     }
 };

@@ -25,7 +25,7 @@ namespace ctre {
 
 template < size_t Limit >
 constexpr CTRE_FORCE_INLINE bool less_than_or_infinite(
-    [[maybe_unused]] size_t i ) noexcept {
+    [[maybe_unused]] size_t i )  {
     if constexpr ( Limit == 0 ) {
         // infinite
         return true;
@@ -36,7 +36,7 @@ constexpr CTRE_FORCE_INLINE bool less_than_or_infinite(
 
 template < size_t Limit >
 constexpr CTRE_FORCE_INLINE bool less_than(
-    [[maybe_unused]] size_t i ) noexcept {
+    [[maybe_unused]] size_t i )  {
     if constexpr ( Limit == 0 ) {
         // infinite
         return false;
@@ -62,7 +62,7 @@ constexpr CTRE_FORCE_INLINE R evaluate( const BeginIterator,
                                         const EndIterator,
                                         flags,
                                         R,
-                                        ... ) noexcept {
+                                        ... )  {
     return not_matched;
 }
 
@@ -76,7 +76,7 @@ constexpr CTRE_FORCE_INLINE R evaluate( const BeginIterator,
                                         const EndIterator,
                                         flags,
                                         R captures,
-                                        ctll::list< accept > ) noexcept {
+                                        ctll::list< accept > )  {
     return captures.matched();
 }
 
@@ -92,7 +92,7 @@ evaluate( const BeginIterator,
           const EndIterator,
           flags,
           R,
-          ctll::list< reject, Rest... > ) noexcept {
+          ctll::list< reject, Rest... > )  {
     return not_matched;
 }
 
@@ -108,7 +108,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< start_mark, Tail... > ) noexcept {
+          ctll::list< start_mark, Tail... > )  {
     return evaluate( begin, current, last, f,
                      captures.set_start_mark( current ),
                      ctll::list< Tail... >() );
@@ -126,7 +126,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< end_mark, Tail... > ) noexcept {
+          ctll::list< end_mark, Tail... > )  {
     return evaluate( begin, current, last, f, captures.set_end_mark( current ),
                      ctll::list< Tail... >() );
 }
@@ -143,7 +143,7 @@ evaluate( const BeginIterator,
           const EndIterator,
           [[maybe_unused]] const flags& f,
           R captures,
-          ctll::list< end_cycle_mark > ) noexcept {
+          ctll::list< end_cycle_mark > )  {
     if ( cannot_be_empty_match( f ) ) {
         return not_matched;
     }
@@ -168,7 +168,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< CharacterLike, Tail... > ) noexcept {
+          ctll::list< CharacterLike, Tail... > )  {
     if ( current == last )
         return not_matched;
     if ( !CharacterLike::match_char( *current, f ) )
@@ -188,7 +188,7 @@ constexpr CTRE_FORCE_INLINE R evaluate( const BeginIterator begin,
                                         const EndIterator last,
                                         const flags& f,
                                         R captures,
-                                        ctll::list< any, Tail... > ) noexcept {
+                                        ctll::list< any, Tail... > )  {
     if ( current == last )
         return not_matched;
 
@@ -225,7 +225,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           [[maybe_unused]] const flags& f,
           R captures,
-          ctll::list< string< String... >, Tail... > ) noexcept {
+          ctll::list< string< String... >, Tail... > )  {
     if ( !match_string< String... >( current, last, f ) ) {
         return not_matched;
     }
@@ -249,7 +249,7 @@ constexpr CTRE_FORCE_INLINE R evaluate(
     const EndIterator last,
     const flags& f,
     R captures,
-    ctll::list< select< HeadOptions, TailOptions... >, Tail... > ) noexcept {
+    ctll::list< select< HeadOptions, TailOptions... >, Tail... > )  {
     if ( auto r = evaluate( begin, current, last, f, captures,
                             ctll::list< HeadOptions, Tail... >() ) ) {
         return r;
@@ -270,7 +270,7 @@ evaluate( const BeginIterator,
           const EndIterator,
           flags,
           R,
-          ctll::list< select<>, Tail... > ) noexcept {
+          ctll::list< select<>, Tail... > )  {
     // no previous option was matched => REJECT
     return not_matched;
 }
@@ -289,7 +289,7 @@ constexpr CTRE_FORCE_INLINE R evaluate(
     const EndIterator last,
     const flags& f,
     R captures,
-    ctll::list< sequence< HeadContent, TailContent... >, Tail... > ) noexcept {
+    ctll::list< sequence< HeadContent, TailContent... >, Tail... > )  {
     if constexpr ( sizeof...( TailContent ) > 0 ) {
         return evaluate(
             begin, current, last, f, captures,
@@ -312,7 +312,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< empty, Tail... > ) noexcept {
+          ctll::list< empty, Tail... > )  {
     return evaluate( begin, current, last, f, captures,
                      ctll::list< Tail... >() );
 }
@@ -329,7 +329,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< assert_subject_begin, Tail... > ) noexcept {
+          ctll::list< assert_subject_begin, Tail... > )  {
     if ( begin != current ) {
         return not_matched;
     }
@@ -348,7 +348,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< assert_subject_end, Tail... > ) noexcept {
+          ctll::list< assert_subject_end, Tail... > )  {
     if ( last != current ) {
         return not_matched;
     }
@@ -367,7 +367,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< assert_subject_end_line, Tail... > ) noexcept {
+          ctll::list< assert_subject_end_line, Tail... > )  {
     if ( multiline_mode( f ) ) {
         if ( last == current ) {
             return evaluate( begin, current, last, f, captures,
@@ -398,7 +398,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< assert_line_begin, Tail... > ) noexcept {
+          ctll::list< assert_line_begin, Tail... > )  {
     if ( multiline_mode( f ) ) {
         if ( begin == current ) {
             return evaluate( begin, current, last, f, captures,
@@ -429,7 +429,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< assert_line_end, Tail... > ) noexcept {
+          ctll::list< assert_line_end, Tail... > )  {
     if ( multiline_mode( f ) ) {
         if ( last == current ) {
             return evaluate( begin, current, last, f, captures,
@@ -463,7 +463,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< boundary< CharacterLike >, Tail... > ) noexcept {
+          ctll::list< boundary< CharacterLike >, Tail... > )  {
     // reason why I need bidirectional iterators or some clever hack
     bool before = false;
     bool after = false;
@@ -501,7 +501,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< not_boundary< CharacterLike >, Tail... > ) noexcept {
+          ctll::list< not_boundary< CharacterLike >, Tail... > )  {
     // reason why I need bidirectional iterators or some clever hack
     bool before = false;
     bool after = false;
@@ -541,7 +541,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           [[maybe_unused]] const flags& f,
           R captures,
-          ctll::list< lazy_repeat< A, B, Content... >, Tail... > ) noexcept {
+          ctll::list< lazy_repeat< A, B, Content... >, Tail... > )  {
     if constexpr ( B != 0 && A > B ) {
         return not_matched;
     } else {
@@ -614,7 +614,7 @@ constexpr CTRE_FORCE_INLINE R evaluate(
     const EndIterator last,
     [[maybe_unused]] const flags& f,
     R captures,
-    ctll::list< possessive_repeat< A, B, Content... >, Tail... > ) noexcept {
+    ctll::list< possessive_repeat< A, B, Content... >, Tail... > )  {
     if constexpr ( ( B != 0 ) && ( A > B ) ) {
         return not_matched;
     } else {
@@ -660,7 +660,7 @@ constexpr inline void evaluate_recursive(
     const EndIterator last,
     [[maybe_unused]] const flags& f,
     R captures,
-    ctll::list< repeat< A, B, Content... >, Tail... > stack ) noexcept {
+    ctll::list< repeat< A, B, Content... >, Tail... > stack )  {
 #else
 constexpr inline R evaluate_recursive(
     size_t i,
@@ -669,7 +669,7 @@ constexpr inline R evaluate_recursive(
     const EndIterator last,
     [[maybe_unused]] const flags& f,
     R captures,
-    ctll::list< repeat< A, B, Content... >, Tail... > stack ) noexcept {
+    ctll::list< repeat< A, B, Content... >, Tail... > stack )  {
 #endif
     if ( less_than_or_infinite< B >( i ) ) {
         // a*ab
@@ -779,7 +779,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< capture< Id, Content... >, Tail... > ) noexcept {
+          ctll::list< capture< Id, Content... >, Tail... > )  {
     return evaluate(
         begin, current, last, f,
         captures.template start_capture< Id >( current ),
@@ -799,7 +799,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< numeric_mark< Id >, Tail... > ) noexcept {
+          ctll::list< numeric_mark< Id >, Tail... > )  {
     return evaluate( begin, current, last, f,
                      captures.template end_capture< Id >( current ),
                      ctll::list< Tail... >() );
@@ -821,7 +821,7 @@ evaluate( const BeginIterator begin,
           const flags& f,
           R captures,
           ctll::list< capture_with_name< Id, Name, Content... >,
-                      Tail... > ) noexcept {
+                      Tail... > )  {
     return evaluate(
         begin, current, last, f,
         captures.template start_capture< Id >( current ),
@@ -841,7 +841,7 @@ constexpr CTRE_FORCE_INLINE string_match< Iterator > match_against_range(
     const EndIterator last,
     Iterator range_current,
     const Iterator range_end,
-    flags ) noexcept {
+    flags )  {
     while ( last != current && range_end != range_current ) {
         if ( *current == *range_current ) {
             current++;
@@ -866,7 +866,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< back_reference_with_name< Id >, Tail... > ) noexcept {
+          ctll::list< back_reference_with_name< Id >, Tail... > )  {
     if ( const auto ref = captures.template get< Id >() ) {
         if ( auto result = match_against_range( current, last, ref.begin(),
                                                 ref.end(), f );
@@ -892,7 +892,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< back_reference< Id >, Tail... > ) noexcept {
+          ctll::list< back_reference< Id >, Tail... > )  {
     if ( const auto ref = captures.template get< Id >() ) {
         if ( auto result = match_against_range( current, last, ref.begin(),
                                                 ref.end(), f );
@@ -917,7 +917,7 @@ evaluate( const BeginIterator,
           const EndIterator,
           flags,
           R captures,
-          ctll::list< end_lookahead_mark > ) noexcept {
+          ctll::list< end_lookahead_mark > )  {
     // TODO check interaction with non-empty flag
     return captures.matched();
 }
@@ -933,7 +933,7 @@ evaluate( const BeginIterator,
           const EndIterator,
           flags,
           R captures,
-          ctll::list< end_lookbehind_mark > ) noexcept {
+          ctll::list< end_lookbehind_mark > )  {
     // TODO check interaction with non-empty flag
     return captures.matched();
 }
@@ -951,7 +951,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< lookahead_positive< Content... >, Tail... > ) noexcept {
+          ctll::list< lookahead_positive< Content... >, Tail... > )  {
     if ( auto lookahead_result = evaluate(
              begin, current, last, f, captures,
              ctll::list< sequence< Content... >, end_lookahead_mark >() ) ) {
@@ -976,7 +976,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< lookahead_negative< Content... >, Tail... > ) noexcept {
+          ctll::list< lookahead_negative< Content... >, Tail... > )  {
     if ( auto lookahead_result = evaluate(
              begin, current, last, f, captures,
              ctll::list< sequence< Content... >, end_lookahead_mark >() ) ) {
@@ -1008,7 +1008,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< lookbehind_positive< Content... >, Tail... > ) noexcept {
+          ctll::list< lookbehind_positive< Content... >, Tail... > )  {
     static_assert(
         is_at_least_bidirectional(
             typename std::iterator_traits< Iterator >::iterator_category{} ),
@@ -1040,7 +1040,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< lookbehind_negative< Content... >, Tail... > ) noexcept {
+          ctll::list< lookbehind_negative< Content... >, Tail... > )  {
     static_assert(
         is_at_least_bidirectional(
             typename std::iterator_traits< Iterator >::iterator_category{} ),
@@ -1074,7 +1074,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< atomic_group< Content... >, Tail... > ) noexcept {
+          ctll::list< atomic_group< Content... >, Tail... > )  {
     return evaluate(
         begin, current, last, f, captures,
         ctll::list< possessive_repeat< 1, 1, Content... >, Tail... >{} );
@@ -1093,7 +1093,7 @@ evaluate( const BeginIterator begin,
           const EndIterator last,
           const flags& f,
           R captures,
-          ctll::list< mode_switch< Mode >, Tail... > ) noexcept {
+          ctll::list< mode_switch< Mode >, Tail... > )  {
     return evaluate( begin, current, last, f + Mode{}, captures,
                      ctll::list< Tail... >() );
 }

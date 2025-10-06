@@ -9,7 +9,7 @@
 namespace ctre {
 
 template < ctll::fixed_string input, typename Modifier = void >
-CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto re() noexcept {
+CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto re()  {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
 
     using tmp =

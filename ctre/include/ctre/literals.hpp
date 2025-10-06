@@ -60,7 +60,7 @@ namespace literals {
 // charpack...>, ctre::pcre_actions>::template correct_with<pcre_context<>>
 
 template < ctll::fixed_string input >
-CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre() noexcept {
+CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre()  {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
     using tmp =
         typename ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
@@ -77,7 +77,7 @@ CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre() noexcept {
 // this will need to be fixed with C++20
 #if !CTRE_CNTTP_COMPILER_CHECK
 template < typename CharT, CharT... charpack >
-CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre_id() noexcept {
+CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto operator""_ctre_id()  {
     return id< charpack... >();
 }
 #endif
@@ -91,13 +91,13 @@ namespace test_literals {
 #ifdef CTRE_ENABLE_LITERALS
 
 template < ctll::fixed_string input >
-CTRE_FLATTEN constexpr inline auto operator""_ctre_test() noexcept {
+CTRE_FLATTEN constexpr inline auto operator""_ctre_test()  {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
     return ctll::parser< ctre::pcre, _input >::template correct_with<>;
 }
 
 template < ctll::fixed_string input >
-CTRE_FLATTEN constexpr inline auto operator""_ctre_gen() noexcept {
+CTRE_FLATTEN constexpr inline auto operator""_ctre_gen()  {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
     using tmp =
         typename ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
@@ -108,7 +108,7 @@ CTRE_FLATTEN constexpr inline auto operator""_ctre_gen() noexcept {
 
 template < ctll::fixed_string input >
 CTRE_FLATTEN constexpr CTRE_FORCE_INLINE auto
-operator""_ctre_syntax() noexcept {
+operator""_ctre_syntax()  {
     constexpr auto _input = input; // workaround for GCC 9 bug 88092
     return ctll::parser< ctre::pcre, _input, ctre::pcre_actions >::
         template correct_with< pcre_context<> >;

@@ -48,7 +48,7 @@ struct character {
     template < typename CharT >
     CTRE_FORCE_INLINE static constexpr bool match_char(
         CharT value,
-        const flags& f ) noexcept {
+        const flags& f )  {
         if constexpr ( is_ascii_alpha( V ) ) {
             if ( is_case_insensitive( f ) ) {
                 if ( value == ( V ^ static_cast< decltype( V ) >( 0x20 ) ) ) {
@@ -65,7 +65,7 @@ struct negative_set {
     template < typename CharT >
     CTRE_FORCE_INLINE static constexpr bool match_char(
         [[maybe_unused]] CharT value,
-        const flags& f ) noexcept {
+        const flags& f )  {
         return !( Content::match_char( value, f ) || ... || false );
     }
 };
@@ -75,7 +75,7 @@ struct set {
     template < typename CharT >
     CTRE_FORCE_INLINE static constexpr bool match_char(
         [[maybe_unused]] CharT value,
-        const flags& f ) noexcept {
+        const flags& f )  {
         return ( Content::match_char( value, f ) || ... || false );
     }
 };
@@ -88,7 +88,7 @@ struct negate {
     template < typename CharT >
     CTRE_FORCE_INLINE static constexpr bool match_char(
         [[maybe_unused]] CharT value,
-        const flags& f ) noexcept {
+        const flags& f )  {
         return !( Content::match_char( value, f ) || ... || false );
     }
 };
@@ -98,7 +98,7 @@ struct char_range {
     template < typename CharT >
     CTRE_FORCE_INLINE static constexpr bool match_char(
         CharT value,
-        const flags& f ) noexcept {
+        const flags& f )  {
         if constexpr ( is_ascii_alpha_lowercase( A ) &&
                        is_ascii_alpha_lowercase( B ) ) {
             if ( is_case_insensitive( f ) ) {

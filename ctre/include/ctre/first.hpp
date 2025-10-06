@@ -12,85 +12,85 @@ namespace ctre {
 struct can_be_anything {};
 
 template < typename... Content >
-constexpr auto first( ctll::list< Content... > l, ctll::list<> ) noexcept {
+constexpr auto first( ctll::list< Content... > l, ctll::list<> )  {
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< accept, Tail... > ) noexcept {
+                      ctll::list< accept, Tail... > )  {
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< end_mark, Tail... > ) noexcept {
+                      ctll::list< end_mark, Tail... > )  {
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< end_cycle_mark, Tail... > ) noexcept {
+                      ctll::list< end_cycle_mark, Tail... > )  {
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< end_lookahead_mark, Tail... > ) noexcept {
+                      ctll::list< end_lookahead_mark, Tail... > )  {
     return l;
 }
 
 template < typename... Content, size_t Id, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< numeric_mark< Id >, Tail... > ) noexcept {
+                      ctll::list< numeric_mark< Id >, Tail... > )  {
     return first( l, ctll::list< Tail... >{} );
 }
 
 // empty
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< empty, Tail... > ) noexcept {
+                      ctll::list< empty, Tail... > )  {
     return first( l, ctll::list< Tail... >{} );
 }
 
 // boundary
 template < typename... Content, typename CharLike, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< boundary< CharLike >, Tail... > ) noexcept {
+                      ctll::list< boundary< CharLike >, Tail... > )  {
     return first( l, ctll::list< Tail... >{} );
 }
 
 // asserts
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< assert_subject_begin, Tail... > ) noexcept {
+                      ctll::list< assert_subject_begin, Tail... > )  {
     return first( l, ctll::list< Tail... >{} );
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< assert_subject_end, Tail... > ) noexcept {
+                      ctll::list< assert_subject_end, Tail... > )  {
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< assert_subject_end_line, Tail... > ) noexcept {
+    ctll::list< assert_subject_end_line, Tail... > )  {
     // FIXME allow endline here
     return l;
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< assert_line_begin, Tail... > ) noexcept {
+                      ctll::list< assert_line_begin, Tail... > )  {
     // FIXME line begin is a bit different than subject begin
     return first( l, ctll::list< Tail... >{} );
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< assert_line_end, Tail... > ) noexcept {
+                      ctll::list< assert_line_end, Tail... > )  {
     // FIXME line end is a bit different than subject begin
     return l;
 }
@@ -98,14 +98,14 @@ constexpr auto first( ctll::list< Content... > l,
 // sequence
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< sequence< Seq... >, Tail... > ) noexcept {
+                      ctll::list< sequence< Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 // atomic group
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< atomic_group< Seq... >, Tail... > ) noexcept {
+                      ctll::list< atomic_group< Seq... >, Tail... > )  {
     return first( l,
                   ctll::list< possessive_repeat< 1, 1, Seq... >, Tail... >{} );
 }
@@ -113,14 +113,14 @@ constexpr auto first( ctll::list< Content... > l,
 // plus
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< plus< Seq... >, Tail... > ) noexcept {
+                      ctll::list< plus< Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 // lazy_plus
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< lazy_plus< Seq... >, Tail... > ) noexcept {
+                      ctll::list< lazy_plus< Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
@@ -128,14 +128,14 @@ constexpr auto first( ctll::list< Content... > l,
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< possessive_plus< Seq... >, Tail... > ) noexcept {
+    ctll::list< possessive_plus< Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 // star
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< star< Seq... >, Tail... > ) noexcept {
+                      ctll::list< star< Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -143,7 +143,7 @@ constexpr auto first( ctll::list< Content... > l,
 // lazy_star
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< lazy_star< Seq... >, Tail... > ) noexcept {
+                      ctll::list< lazy_star< Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -152,7 +152,7 @@ constexpr auto first( ctll::list< Content... > l,
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< possessive_star< Seq... >, Tail... > ) noexcept {
+    ctll::list< possessive_star< Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -165,14 +165,14 @@ template < typename... Content,
            typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< lazy_repeat< A, B, Seq... >, Tail... > ) noexcept {
+    ctll::list< lazy_repeat< A, B, Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 template < typename... Content, size_t B, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< lazy_repeat< 0, B, Seq... >, Tail... > ) noexcept {
+    ctll::list< lazy_repeat< 0, B, Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -185,14 +185,14 @@ template < typename... Content,
            typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< possessive_repeat< A, B, Seq... >, Tail... > ) noexcept {
+    ctll::list< possessive_repeat< A, B, Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 template < typename... Content, size_t B, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< possessive_repeat< 0, B, Seq... >, Tail... > ) noexcept {
+    ctll::list< possessive_repeat< 0, B, Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -204,13 +204,13 @@ template < typename... Content,
            typename... Seq,
            typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< repeat< A, B, Seq... >, Tail... > ) noexcept {
+                      ctll::list< repeat< A, B, Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 template < typename... Content, size_t B, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< repeat< 0, B, Seq... >, Tail... > ) noexcept {
+                      ctll::list< repeat< 0, B, Seq... >, Tail... > )  {
     return first( first( l, ctll::list< Tail... >{} ),
                   ctll::list< Seq..., Tail... >{} );
 }
@@ -219,7 +219,7 @@ constexpr auto first( ctll::list< Content... > l,
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< lookahead_positive< Seq... >, Tail... > ) noexcept {
+    ctll::list< lookahead_positive< Seq... >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -227,7 +227,7 @@ constexpr auto first(
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< lookbehind_negative< Seq... >, Tail... > ) noexcept {
+    ctll::list< lookbehind_negative< Seq... >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -235,7 +235,7 @@ constexpr auto first(
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< lookbehind_positive< Seq... >, Tail... > ) noexcept {
+    ctll::list< lookbehind_positive< Seq... >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -243,14 +243,14 @@ constexpr auto first(
 template < typename... Content, typename... Seq, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< lookahead_negative< Seq... >, Tail... > ) noexcept {
+    ctll::list< lookahead_negative< Seq... >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
 // capture
 template < typename... Content, size_t Id, typename... Seq, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< capture< Id, Seq... >, Tail... > ) noexcept {
+                      ctll::list< capture< Id, Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
@@ -261,21 +261,21 @@ template < typename... Content,
            typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< capture_with_name< Id, Name, Seq... >, Tail... > ) noexcept {
+    ctll::list< capture_with_name< Id, Name, Seq... >, Tail... > )  {
     return first( l, ctll::list< Seq..., Tail... >{} );
 }
 
 // backreference
 template < typename... Content, size_t Id, typename... Tail >
 constexpr auto first( ctll::list< Content... >,
-                      ctll::list< back_reference< Id >, Tail... > ) noexcept {
+                      ctll::list< back_reference< Id >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
 template < typename... Content, typename Name, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< back_reference_with_name< Name >, Tail... > ) noexcept {
+    ctll::list< back_reference_with_name< Name >, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -283,20 +283,20 @@ constexpr auto first(
 template < typename... Content, auto First, auto... String, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< string< First, String... >, Tail... > ) noexcept {
+    ctll::list< string< First, String... >, Tail... > )  {
     return ctll::list< Content..., character< First > >{};
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< string<>, Tail... > ) noexcept {
+                      ctll::list< string<>, Tail... > )  {
     return first( l, ctll::list< Tail... >{} );
 }
 
 // optional
 template < typename... Content, typename... Opt, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< optional< Opt... >, Tail... > ) noexcept {
+                      ctll::list< optional< Opt... >, Tail... > )  {
     return first( first( l, ctll::list< Opt..., Tail... >{} ),
                   ctll::list< Tail... >{} );
 }
@@ -304,7 +304,7 @@ constexpr auto first( ctll::list< Content... > l,
 template < typename... Content, typename... Opt, typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< lazy_optional< Opt... >, Tail... > ) noexcept {
+    ctll::list< lazy_optional< Opt... >, Tail... > )  {
     return first( first( l, ctll::list< Opt..., Tail... >{} ),
                   ctll::list< Tail... >{} );
 }
@@ -316,14 +316,14 @@ template < typename... Content,
            typename... Tail >
 constexpr auto first(
     ctll::list< Content... > l,
-    ctll::list< select< SHead, STail... >, Tail... > ) noexcept {
+    ctll::list< select< SHead, STail... >, Tail... > )  {
     return first( first( l, ctll::list< SHead, Tail... >{} ),
                   ctll::list< select< STail... >, Tail... >{} );
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... > l,
-                      ctll::list< select<>, Tail... > ) noexcept {
+                      ctll::list< select<>, Tail... > )  {
     return l;
 }
 
@@ -335,7 +335,7 @@ template < typename... Content,
 constexpr auto first(
     ctll::list< Content... >,
     ctll::list< ctre::binary_property< PropertyType, Property >,
-                Tail... > ) noexcept {
+                Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -347,7 +347,7 @@ template < typename... Content,
 constexpr auto first(
     ctll::list< Content... >,
     ctll::list< ctre::property< PropertyType, Property, Value >,
-                Tail... > ) noexcept {
+                Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -355,32 +355,32 @@ constexpr auto first(
 
 template < typename... Content, auto V, typename... Tail >
 constexpr auto first( ctll::list< Content... >,
-                      ctll::list< character< V >, Tail... > ) noexcept {
+                      ctll::list< character< V >, Tail... > )  {
     return ctll::list< Content..., character< V > >{};
 }
 
 template < typename... Content, auto... Values, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< enumeration< Values... >, Tail... > ) noexcept {
+    ctll::list< enumeration< Values... >, Tail... > )  {
     return ctll::list< Content..., character< Values >... >{};
 }
 
 template < typename... Content, typename... SetContent, typename... Tail >
 constexpr auto first( ctll::list< Content... >,
-                      ctll::list< set< SetContent... >, Tail... > ) noexcept {
+                      ctll::list< set< SetContent... >, Tail... > )  {
     return ctll::list< Content..., SetContent... >{};
 }
 
 template < typename... Content, auto A, auto B, typename... Tail >
 constexpr auto first( ctll::list< Content... >,
-                      ctll::list< char_range< A, B >, Tail... > ) noexcept {
+                      ctll::list< char_range< A, B >, Tail... > )  {
     return ctll::list< Content..., char_range< A, B > >{};
 }
 
 template < typename... Content, typename... Tail >
 constexpr auto first( ctll::list< Content... >,
-                      ctll::list< any, Tail... > ) noexcept {
+                      ctll::list< any, Tail... > )  {
     return ctll::list< can_be_anything >{};
 }
 
@@ -388,20 +388,20 @@ constexpr auto first( ctll::list< Content... >,
 template < typename... Content, typename... SetContent, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< negate< SetContent... >, Tail... > ) noexcept {
+    ctll::list< negate< SetContent... >, Tail... > )  {
     return ctll::list< Content..., negative_set< SetContent... > >{};
 }
 
 template < typename... Content, typename... SetContent, typename... Tail >
 constexpr auto first(
     ctll::list< Content... >,
-    ctll::list< negative_set< SetContent... >, Tail... > ) noexcept {
+    ctll::list< negative_set< SetContent... >, Tail... > )  {
     return ctll::list< Content..., negative_set< SetContent... > >{};
 }
 
 // user facing interface
 template < typename... Content >
-constexpr auto calculate_first( Content... ) noexcept {
+constexpr auto calculate_first( Content... )  {
     return first( ctll::list<>{}, ctll::list< Content... >{} );
 }
 

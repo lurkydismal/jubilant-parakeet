@@ -33,31 +33,31 @@ struct utf8_iterator {
         using difference_type = int;
 
         // it's just sentinel it won't be ever called
-        auto operator++() noexcept -> self_type&;
-        auto operator++( int ) noexcept -> self_type;
-        auto operator--() noexcept -> self_type&;
-        auto operator--( int ) noexcept -> self_type;
-        friend auto operator==( self_type, self_type ) noexcept -> bool;
-        auto operator*() noexcept -> reference;
+        auto operator++()  -> self_type&;
+        auto operator++( int )  -> self_type;
+        auto operator--()  -> self_type&;
+        auto operator--( int )  -> self_type;
+        friend auto operator==( self_type, self_type )  -> bool;
+        auto operator*()  -> reference;
 
         friend constexpr auto operator==( self_type,
-                                          const char8_t* other_ptr ) noexcept {
+                                          const char8_t* other_ptr )  {
             return *other_ptr == char8_t{ 0 };
         }
 #if !defined( __cpp_impl_three_way_comparison ) || \
     __cpp_impl_three_way_comparison < 201907L
         friend constexpr auto operator!=( self_type,
-                                          const char8_t* other_ptr ) noexcept {
+                                          const char8_t* other_ptr )  {
             return *other_ptr != char8_t{ 0 };
         }
 
         friend constexpr auto operator==( const char8_t* other_ptr,
-                                          self_type ) noexcept {
+                                          self_type )  {
             return *other_ptr == char8_t{ 0 };
         }
 
         friend constexpr auto operator!=( const char8_t* other_ptr,
-                                          self_type ) noexcept {
+                                          self_type )  {
             return *other_ptr != char8_t{ 0 };
         }
 #endif
@@ -121,9 +121,9 @@ struct utf8_iterator {
         return *this;
     }
 
-    constexpr operator const char8_t*() const noexcept { return ptr; }
+    constexpr operator const char8_t*() const  { return ptr; }
 
-    constexpr utf8_iterator& operator++() noexcept {
+    constexpr utf8_iterator& operator++()  {
         // the contant is mapping from first 5 bits of first code unit to length
         // of UTF8 code point -1 xxxxx -> yy (5 bits to 2 bits) 5 bits are 32
         // combination, and for each I need 2 bits, hence 64 bit constant
@@ -137,7 +137,7 @@ struct utf8_iterator {
         return *this;
     }
 
-    constexpr utf8_iterator& operator--() noexcept {
+    constexpr utf8_iterator& operator--()  {
         if ( ptr > end ) {
             ptr = end - 1;
         } else {
@@ -151,19 +151,19 @@ struct utf8_iterator {
         return *this;
     }
 
-    constexpr utf8_iterator operator--( int ) noexcept {
+    constexpr utf8_iterator operator--( int )  {
         auto self = *this;
         this->operator--();
         return self;
     }
 
-    constexpr utf8_iterator operator++( int ) noexcept {
+    constexpr utf8_iterator operator++( int )  {
         auto self = *this;
         this->operator++();
         return self;
     }
 
-    constexpr utf8_iterator operator+( unsigned step ) const noexcept {
+    constexpr utf8_iterator operator+( unsigned step ) const  {
         utf8_iterator result = *this;
         while ( step > 0 ) {
             ++result;
@@ -172,7 +172,7 @@ struct utf8_iterator {
         return result;
     }
 
-    constexpr utf8_iterator operator-( unsigned step ) const noexcept {
+    constexpr utf8_iterator operator-( unsigned step ) const  {
         utf8_iterator result = *this;
         while ( step > 0 ) {
             --result;
@@ -181,7 +181,7 @@ struct utf8_iterator {
         return result;
     }
 
-    constexpr char32_t operator*() const noexcept {
+    constexpr char32_t operator*() const  {
         constexpr char32_t mojibake = 0xFFFDull;
 
         // quickpath
@@ -256,12 +256,12 @@ struct utf8_iterator {
 #ifdef CTRE_ENABLE_UTF8_RANGE
 struct utf8_range {
     std::u8string_view range;
-    constexpr utf8_range( std::u8string_view r ) noexcept : range{ r } {}
+    constexpr utf8_range( std::u8string_view r )  : range{ r } {}
 
-    constexpr auto begin() const noexcept {
+    constexpr auto begin() const  {
         return utf8_iterator{ range.data(), range.data() + range.size() };
     }
-    constexpr auto end() const noexcept { return utf8_iterator::sentinel{}; }
+    constexpr auto end() const  { return utf8_iterator::sentinel{}; }
 };
 #endif
 

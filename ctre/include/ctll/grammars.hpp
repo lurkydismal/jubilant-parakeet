@@ -25,10 +25,10 @@ using push = list< Ts... >;
 
 // accept/reject type for controlling output of LL1 machine
 struct accept {
-    constexpr explicit operator bool() noexcept { return true; }
+    constexpr explicit operator bool()  { return true; }
 };
 struct reject {
-    constexpr explicit operator bool() noexcept { return false; }
+    constexpr explicit operator bool()  { return false; }
 };
 
 // action type, every action item in grammar must inherit from
@@ -67,19 +67,19 @@ constexpr auto pop_front_and_push_front( T item, list< As... > l ) {
 
 // match any term
 struct anything {
-    constexpr inline anything() noexcept {}
+    constexpr inline anything()  {}
     template < auto V >
-    constexpr anything( term< V > ) noexcept;
+    constexpr anything( term< V > ) ;
 };
 
 // match range of term A-B
 template < auto A, decltype( A ) B >
 struct range {
-    constexpr inline range() noexcept {}
-    // template <auto V> constexpr range(term<V>) noexcept requires (A <= V) &&
+    constexpr inline range()  {}
+    // template <auto V> constexpr range(term<V>)  requires (A <= V) &&
     // (V <= B);
     template < auto V, typename = std::enable_if_t< ( A <= V ) && ( V <= B ) > >
-    constexpr range( term< V > ) noexcept;
+    constexpr range( term< V > ) ;
 };
 
 #ifdef __EDG__
@@ -92,32 +92,32 @@ struct contains {
 // match terms defined in set
 template < auto... Def >
 struct set {
-    constexpr inline set() noexcept {}
+    constexpr inline set()  {}
 #ifdef __EDG__
     template < auto V,
                typename = std::enable_if_t< contains< V, Def... >::value > >
-    constexpr set( term< V > ) noexcept;
+    constexpr set( term< V > ) ;
 #else
     template < auto V,
                typename = std::enable_if_t< ( ( Def == V ) || ... || false ) > >
-    constexpr set( term< V > ) noexcept;
+    constexpr set( term< V > ) ;
 #endif
 };
 
 // match terms not defined in set
 template < auto... Def >
 struct neg_set {
-    constexpr inline neg_set() noexcept {}
+    constexpr inline neg_set()  {}
 
 #ifdef __EDG__
     template < auto V,
                typename = std::enable_if_t< !contains< V, Def... >::value > >
-    constexpr neg_set( term< V > ) noexcept;
+    constexpr neg_set( term< V > ) ;
 #else
     template <
         auto V,
         typename = std::enable_if_t< !( ( Def == V ) || ... || false ) > >
-    constexpr neg_set( term< V > ) noexcept;
+    constexpr neg_set( term< V > ) ;
 #endif
 };
 

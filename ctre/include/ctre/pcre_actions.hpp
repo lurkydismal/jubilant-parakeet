@@ -25,9 +25,9 @@ struct pcre_context {
     static constexpr inline auto stack = stack_type();
     static constexpr inline auto parameters = parameters_type();
     static constexpr inline auto mode = mode_list();
-    constexpr pcre_context() noexcept {}
-    constexpr pcre_context( Stack, Parameters ) noexcept {}
-    constexpr pcre_context( Stack, Parameters, Mode ) noexcept {}
+    constexpr pcre_context()  {}
+    constexpr pcre_context( Stack, Parameters )  {}
+    constexpr pcre_context( Stack, Parameters, Mode )  {}
 };
 
 template < typename... Content, typename Parameters >

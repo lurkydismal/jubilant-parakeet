@@ -13,13 +13,13 @@ using empty_list = list<>;
 
 // calculate size of list content
 template < typename... Ts >
-constexpr auto size( list< Ts... > ) noexcept {
+constexpr auto size( list< Ts... > )  {
     return sizeof...( Ts );
 }
 
 // check if the list is empty
 template < typename... Ts >
-constexpr bool empty( list< Ts... > ) noexcept {
+constexpr bool empty( list< Ts... > )  {
     return false;
 }
 constexpr bool empty( empty_list ) {
@@ -28,20 +28,20 @@ constexpr bool empty( empty_list ) {
 
 // concat two lists together left to right
 template < typename... As, typename... Bs >
-constexpr auto concat( list< As... >, list< Bs... > ) noexcept
+constexpr auto concat( list< As... >, list< Bs... > ) 
     -> list< As..., Bs... > {
     return {};
 }
 
 // push something to the front of a list
 template < typename T, typename... As >
-constexpr auto push_front( T, list< As... > ) noexcept -> list< T, As... > {
+constexpr auto push_front( T, list< As... > )  -> list< T, As... > {
     return {};
 }
 
 // pop element from the front of a list
 template < typename T, typename... As >
-constexpr auto pop_front( list< T, As... > ) noexcept -> list< As... > {
+constexpr auto pop_front( list< T, As... > )  -> list< As... > {
     return {};
 }
 constexpr auto pop_front( empty_list ) -> empty_list;
@@ -55,23 +55,23 @@ struct list_pop_pair {
 };
 
 template < typename Head, typename... As, typename T = _nothing >
-constexpr auto pop_and_get_front( list< Head, As... >, T = T() ) noexcept
+constexpr auto pop_and_get_front( list< Head, As... >, T = T() ) 
     -> list_pop_pair< Head, list< As... > > {
     return {};
 }
 template < typename T = _nothing >
-constexpr auto pop_and_get_front( empty_list, T = T() ) noexcept
+constexpr auto pop_and_get_front( empty_list, T = T() ) 
     -> list_pop_pair< T, empty_list > {
     return {};
 }
 
 // return front of the list
 template < typename Head, typename... As, typename T = _nothing >
-constexpr auto front( list< Head, As... >, T = T() ) noexcept -> Head {
+constexpr auto front( list< Head, As... >, T = T() )  -> Head {
     return {};
 }
 template < typename T = _nothing >
-constexpr auto front( empty_list, T = T() ) noexcept -> T {
+constexpr auto front( empty_list, T = T() )  -> T {
     return {};
 }
 
@@ -79,7 +79,7 @@ constexpr auto front( empty_list, T = T() ) noexcept -> T {
 template < typename T >
 struct rotate_item {
     template < typename... Ts >
-    friend constexpr auto operator+( list< Ts... >, rotate_item< T > ) noexcept
+    friend constexpr auto operator+( list< Ts... >, rotate_item< T > ) 
         -> list< T, Ts... > {
         return {};
     }
@@ -116,12 +116,12 @@ struct item_matcher {
 };
 
 template < typename T, typename... Ts >
-constexpr bool exists_in( T, list< Ts... > ) noexcept {
+constexpr bool exists_in( T, list< Ts... > )  {
     return ( item_matcher< T >::check( Ts{} ) || ... || false );
 }
 
 template < typename T, typename... Ts >
-constexpr auto add_item( T item, list< Ts... > l ) noexcept {
+constexpr auto add_item( T item, list< Ts... > l )  {
     if constexpr ( exists_in( item, l ) ) {
         return l;
     } else {
@@ -130,7 +130,7 @@ constexpr auto add_item( T item, list< Ts... > l ) noexcept {
 }
 
 template < typename T, typename... Ts >
-constexpr auto remove_item( T, list< Ts... > ) noexcept {
+constexpr auto remove_item( T, list< Ts... > )  {
     item_matcher< T > matcher;
     return decltype( ( list<>{} + ... + matcher.select( Ts{} ) ) ){};
 }
