@@ -1,14 +1,21 @@
+P6
+Move to available C++ 26
 Improve font_t
 Change pthread() to fork() in asset_t async save
-
 Implement hot reload callbacks in modules
-Move to available C++ 26
-Move ctre to C++ 26
-Move plthook to C++ 26
-Implement slickdl
-Test state, object, animation
+
+P5
 Move to multi-window system
 Improve vsync, window, FPS
+
+P4
+Move plthook to C++ 26
+
+P3
+Test state, object, animation
 Improve watch check()
 Implement container for watch check() cases
-Check all std::span uses for mutability
+
+P1
+Implement slickdl
+tests: look for tests in module directory

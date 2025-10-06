@@ -1,0 +1,3 @@
+[submodule "arhodigp"]
+	path = arhodigp
+	url = https://github.com/lurkydismal/arhodigp.git

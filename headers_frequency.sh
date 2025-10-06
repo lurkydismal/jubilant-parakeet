@@ -2,4 +2,4 @@
 fd -e cpp src |
     xargs rg '^#include' |
     rg -o '#include\s+[<"].+[>"]' |
-    sort | uniq -c | sort -rn
+    sort | uniq -c | sort -n
