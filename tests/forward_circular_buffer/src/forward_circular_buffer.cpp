@@ -238,7 +238,7 @@ struct lifeTracker {
     int v;
     auto operator=( lifeTracker&& ) -> lifeTracker& = delete;
     lifeTracker( int _vv ) : v( _vv ) { ++g_constructions; }
-    lifeTracker( lifeTracker&& _o )  : v( _o.v ) { ++g_constructions; }
+    lifeTracker( lifeTracker&& _o ) : v( _o.v ) { ++g_constructions; }
     lifeTracker( const lifeTracker& ) = delete;
     auto operator=( const lifeTracker& ) -> lifeTracker& = delete;
     ~lifeTracker() { ++g_destructions; }

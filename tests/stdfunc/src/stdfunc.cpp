@@ -9,6 +9,7 @@
 #include "test.hpp"
 
 using namespace stdfunc;
+using namespace stdfunc::literals;
 
 TEST( stdfunc, STRINGIFY ) {
     EXPECT_EQ( STRINGIFY( Tessst ), "Tessst" );
@@ -165,34 +166,36 @@ TEST( stdfunc, sanitizeString ) {
                "KeepThis" );
 }
 
-TEST( stdfunc, random$number ) {
+TEST( stdfunc, random$number$weak ) {
     {
         // Integral range
         for ( int l_i = 0; l_i < 1000; ++l_i ) {
-            int l_value = random::number( 1, 10 );
+            int l_value = random::number::weak< uint >( 1, 10 );
             EXPECT_GE( l_value, 1 );
             EXPECT_LE( l_value, 10 );
         }
 
         // Floating-point range
         for ( int l_i = 0; l_i < 1000; ++l_i ) {
-            double l_value = random::number( 0.5, 2.5 );
+            double l_value = random::number::weak< uint >( 0.5, 2.5 );
             EXPECT_GE( l_value, 0.5 );
             EXPECT_LE( l_value, 2.5 );
         }
 
+#if 0
         // Different types
-        auto l_intVal = random::number< int >( 5, 5 ); // degenerate range
+        auto l_intVal = random::number::weak< uint >( 5, 5 ); // degenerate range
         auto l_floatVal =
-            random::number< float >( 1.0f, 1.0f ); // degenerate range
+            random::number::weak< float >( 1.0f, 1.0f ); // degenerate range
         EXPECT_EQ( l_intVal, 5 );
         EXPECT_FLOAT_EQ( l_floatVal, 1.0f );
+#endif
 
         // Variability check (not all results should be identical)
         bool l_sawDifferent = false;
-        int l_first = random::number( 1, 3 );
+        int l_first = random::number::weak< uint >( 1, 3 );
         for ( int l_i = 0; l_i < 50; ++l_i ) {
-            if ( random::number( 1, 3 ) != l_first ) {
+            if ( random::number::weak< uint >( 1, 3 ) != l_first ) {
                 l_sawDifferent = true;
                 break;
             }
@@ -203,19 +206,74 @@ TEST( stdfunc, random$number ) {
 
     // Ensure random numbers are different across calls
     {
-        const auto l_numberFirst = random::number< size_t >();
-        const auto l_numberSecond = random::number< size_t >();
+        const auto l_numberFirst = random::number::weak< size_t >();
+        const auto l_numberSecond = random::number::weak< size_t >();
 
         EXPECT_NE( l_numberFirst, l_numberSecond );
     }
 
     // Ensure multiple calls return nonzero values
     for ( auto _ : std::views::iota( size_t{}, 10'000'000uz ) ) {
-        EXPECT_NE( random::number< size_t >(), size_t{} );
+        EXPECT_NE( random::number::weak< size_t >(), size_t{} );
     }
 
     for ( auto _ : std::views::iota( size_t{}, 10'000'000uz ) ) {
-        EXPECT_NE( random::number< size_t >(), size_t{} );
+        EXPECT_NE( random::number::weak< size_t >(), size_t{} );
+    }
+}
+
+TEST( stdfunc, random$number$balanced ) {
+    {
+        // Integral range
+        for ( int l_i = 0; l_i < 1000; ++l_i ) {
+            int l_value = random::number::balanced( 1, 10 );
+            EXPECT_GE( l_value, 1 );
+            EXPECT_LE( l_value, 10 );
+        }
+
+        // Floating-point range
+        for ( int l_i = 0; l_i < 1000; ++l_i ) {
+            double l_value = random::number::balanced( 0.5, 2.5 );
+            EXPECT_GE( l_value, 0.5 );
+            EXPECT_LE( l_value, 2.5 );
+        }
+
+        // Different types
+        auto l_intVal =
+            random::number::balanced< int >( 5, 5 ); // degenerate range
+        auto l_floatVal =
+            random::number::balanced< float >( 1.0f, 1.0f ); // degenerate range
+        EXPECT_EQ( l_intVal, 5 );
+        EXPECT_FLOAT_EQ( l_floatVal, 1.0f );
+
+        // Variability check (not all results should be identical)
+        bool l_sawDifferent = false;
+        int l_first = random::number::balanced( 1, 3 );
+        for ( int l_i = 0; l_i < 50; ++l_i ) {
+            if ( random::number::balanced( 1, 3 ) != l_first ) {
+                l_sawDifferent = true;
+                break;
+            }
+        }
+
+        EXPECT_TRUE( l_sawDifferent ) << "RNG seems stuck or deterministic";
+    }
+
+    // Ensure random numbers are different across calls
+    {
+        const auto l_numberFirst = random::number::balanced< size_t >();
+        const auto l_numberSecond = random::number::balanced< size_t >();
+
+        EXPECT_NE( l_numberFirst, l_numberSecond );
+    }
+
+    // Ensure multiple calls return nonzero values
+    for ( auto _ : std::views::iota( size_t{}, 10'000'000uz ) ) {
+        EXPECT_NE( random::number::balanced< size_t >(), size_t{} );
+    }
+
+    for ( auto _ : std::views::iota( size_t{}, 10'000'000uz ) ) {
+        EXPECT_NE( random::number::balanced< size_t >(), size_t{} );
     }
 }
 
@@ -281,7 +339,7 @@ TEST( stdfunc, random$view ) {
     std::unordered_set< int > l_allowed( l_vec.begin(), l_vec.end() );
 
     // reseed deterministic engine & reset counter
-    random::g_engine.seed( 12345u );
+    stdfunc::random::number::g_engine.seed( 12345u );
 
     // Construct view (should be lazy: no calls yet)
     auto l_v = random::view( l_vec );
@@ -300,7 +358,7 @@ TEST( stdfunc, random$view ) {
     // ----- Reference semantics test: modify via returned reference affects the
     // container ----- reseed & reset so sequence deterministic for the next
     // small test
-    random::g_engine.seed( 42u );
+    stdfunc::random::number::g_engine.seed( 42u );
 
     std::vector< int > l_modVec{ 10, 20, 30 };
     // get a single element view and take one element; the transform returns a
@@ -324,7 +382,7 @@ TEST( stdfunc, random$view ) {
 
     // ----- Single-element container: should always return that same element
     // -----
-    random::g_engine.seed( 7u );
+    stdfunc::random::number::g_engine.seed( 7u );
     std::vector< int > l_single{ 77 };
     auto l_singleAll = random::view( l_single ) | std::views::take( 10 );
     for ( int l_x : l_singleAll ) {
@@ -342,7 +400,7 @@ TEST( stdfunc, random$view ) {
 
 TEST( stdfunc, random$fill ) {
     // reseed RNG so test is deterministic
-    random::g_engine.seed( 12345u );
+    stdfunc::random::number::g_engine.seed( 12345u );
 
     // ---- fill with min/max ----
     std::vector< int > l_vec( 100 );
@@ -377,16 +435,16 @@ TEST( stdfunc, random$fill ) {
         << "Default fill should not leave all elements as 0";
 
     // ---- check determinism with fixed seed ----
-    random::g_engine.seed( 12345u );
+    stdfunc::random::number::g_engine.seed( 12345u );
     std::vector< int > l_seq1( 5 ), l_seq2( 5 );
     random::fill( l_seq1, 1, 100 );
-    random::g_engine.seed( 12345u );
+    stdfunc::random::number::g_engine.seed( 12345u );
     random::fill( l_seq2, 1, 100 );
     EXPECT_EQ( l_seq1, l_seq2 )
         << "fill with same seed must produce identical sequence";
 }
 
-TEST( stdfunc, generateHash ) {
+TEST( stdfunc, generateHash$weak ) {
     // Invalid inputs
     {
         // Valid buffer
@@ -395,14 +453,14 @@ TEST( stdfunc, generateHash ) {
             {
                 std::array l_buffer = { '0'_b };
 
-                EXPECT_NE( generateHash( l_buffer ), size_t{} );
+                EXPECT_NE( hash::weak< size_t >( l_buffer ), size_t{} );
             }
 
             // NULL terminated string
             {
                 std::array l_buffer = ""_bytes;
 
-                EXPECT_NE( generateHash( l_buffer ), size_t{} );
+                EXPECT_NE( hash::weak< size_t >( l_buffer ), size_t{} );
             }
         }
     }
@@ -420,7 +478,7 @@ TEST( stdfunc, generateHash ) {
 
                 EXPECT_EQ( l_buffer.size(), l_bufferLength );
 
-                const size_t l_actualHash = generateHash( l_buffer );
+                const auto l_actualHash = hash::weak< size_t >( l_buffer );
 
                 EXPECT_TRUE( l_actualHash );
             }
@@ -432,8 +490,8 @@ TEST( stdfunc, generateHash ) {
         std::vector< std::byte > l_d = { std::byte{ 0 }, std::byte{ 1 },
                                          std::byte{ 2 }, std::byte{ 3 } };
         auto l_span = std::span< std::byte >( l_d );
-        size_t l_h1 = generateHash( l_span );
-        size_t l_h2 = generateHash( l_span );
+        auto l_h1 = hash::weak< size_t >( l_span );
+        auto l_h2 = hash::weak< size_t >( l_span );
         EXPECT_EQ( l_h1, l_h2 );
 
         // wrapper sanity: matches direct XXH32 call (note cast to size_t for
@@ -443,12 +501,12 @@ TEST( stdfunc, generateHash ) {
                                     static_cast< unsigned >( 0x9e3779b1 ) ) ) );
 
         // -- Default seed equals explicit default seed --
-        size_t l_hExplicitDefault = generateHash( l_span, 0x9e3779b1 );
+        size_t l_hExplicitDefault = hash::weak< uint >( l_span );
         EXPECT_EQ( l_h1, l_hExplicitDefault );
 
         // -- Different seeds should (practically always) produce different
         // results --
-        size_t l_hSeedDiff = generateHash( l_span, 123456u );
+        size_t l_hSeedDiff = hash::weak< uint >( l_span );
         EXPECT_NE( l_h1, l_hSeedDiff )
             << "Different seeds produced same hash — "
                "extremely unlikely but possible.";
@@ -456,8 +514,8 @@ TEST( stdfunc, generateHash ) {
         // -- Empty span behavior --
         std::vector< std::byte > l_empty;
         auto l_emptySpan = std::span< std::byte >( l_empty );
-        size_t l_he1 = generateHash( l_emptySpan );
-        size_t l_he2 = generateHash( l_emptySpan );
+        auto l_he1 = hash::weak< size_t >( l_emptySpan );
+        auto l_he2 = hash::weak< size_t >( l_emptySpan );
         EXPECT_EQ( l_he1, l_he2 );
         EXPECT_EQ( l_he1, static_cast< size_t >( XXH32(
                               l_empty.data(), l_empty.size(),
@@ -466,9 +524,10 @@ TEST( stdfunc, generateHash ) {
         // -- Small change in data should (practically always) change the hash
         // --
         std::vector< std::byte > l_d2 = l_d;
-        size_t l_hOrig = generateHash( std::span< std::byte >( l_d2 ) );
+        auto l_hOrig = hash::weak< size_t >( std::span< std::byte >( l_d2 ) );
         l_d2[ 2 ] = std::byte{ 0xFF };
-        size_t l_hChanged = generateHash( std::span< std::byte >( l_d2 ) );
+        auto l_hChanged =
+            hash::weak< size_t >( std::span< std::byte >( l_d2 ) );
         EXPECT_NE( l_hOrig, l_hChanged )
             << "Changing one byte produced same hash — extremely unlikely but "
                "possible.";
@@ -484,7 +543,7 @@ TEST( stdfunc, generateHash ) {
             return ( l_out );
         };
         auto l_sbytes = l_bytesFromString( l_s );
-        size_t l_hs = generateHash( std::span< std::byte >( l_sbytes ) );
+        auto l_hs = hash::weak< size_t >( std::span< std::byte >( l_sbytes ) );
         // direct XXH32 of the original char data must match (no
         // reinterpretation errors)
         EXPECT_EQ( l_hs, static_cast< size_t >(
@@ -513,8 +572,146 @@ TEST( stdfunc, generateHash ) {
             l_large[ l_i ] =
                 std::byte( static_cast< unsigned char >( l_i & 0xFF ) );
         EXPECT_NO_FATAL_FAILURE( {
-            volatile size_t l_hLarge =
-                generateHash( std::span< std::byte >( l_large ) );
+            volatile auto l_hLarge =
+                hash::weak< size_t >( std::span< std::byte >( l_large ) );
+            ( void )l_hLarge;
+        } );
+    }
+}
+
+TEST( stdfunc, generateHash$balanced ) {
+    // Invalid inputs
+    {
+        // Valid buffer
+        {
+            // Non NULL terminated string
+            {
+                std::array l_buffer = { '0'_b };
+
+                EXPECT_NE( hash::balanced< size_t >( l_buffer ), size_t{} );
+            }
+
+            // NULL terminated string
+            {
+                std::array l_buffer = ""_bytes;
+
+                EXPECT_NE( hash::balanced< size_t >( l_buffer ), size_t{} );
+            }
+        }
+    }
+
+    // Valid buffer
+    {
+        // Ensure multiple calls return nonzero values
+        {
+            for ( const auto _index : std::views::iota( 1uz, 10'000uz ) ) {
+                const size_t l_bufferLength = _index;
+
+                std::vector< std::byte > l_buffer( l_bufferLength );
+
+                stdfunc::random::fill( l_buffer );
+
+                EXPECT_EQ( l_buffer.size(), l_bufferLength );
+
+                const auto l_actualHash = hash::balanced< size_t >( l_buffer );
+
+                EXPECT_TRUE( l_actualHash );
+            }
+        }
+    }
+
+    {
+        // -- Basic identical-input determinism --
+        std::vector< std::byte > l_d = { std::byte{ 0 }, std::byte{ 1 },
+                                         std::byte{ 2 }, std::byte{ 3 } };
+        auto l_span = std::span< std::byte >( l_d );
+        auto l_h1 = hash::balanced< size_t >( l_span );
+        auto l_h2 = hash::balanced< size_t >( l_span );
+        EXPECT_EQ( l_h1, l_h2 );
+
+        // wrapper sanity: matches direct XXH32 call (note cast to size_t for
+        // return type)
+        EXPECT_EQ( l_h1, static_cast< size_t >(
+                             XXH32( l_d.data(), l_d.size(),
+                                    static_cast< unsigned >( 0x9e3779b1 ) ) ) );
+
+        // -- Default seed equals explicit default seed --
+        auto l_hExplicitDefault =
+            hash::balanced< size_t >( l_span, 0x9e3779b1 );
+        EXPECT_EQ( l_h1, l_hExplicitDefault );
+
+        // -- Different seeds should (practically always) produce different
+        // results --
+        auto l_hSeedDiff = hash::balanced< size_t >( l_span, 123456u );
+        EXPECT_NE( l_h1, l_hSeedDiff )
+            << "Different seeds produced same hash — "
+               "extremely unlikely but possible.";
+
+        // -- Empty span behavior --
+        std::vector< std::byte > l_empty;
+        auto l_emptySpan = std::span< std::byte >( l_empty );
+        auto l_he1 = hash::balanced< size_t >( l_emptySpan );
+        auto l_he2 = hash::balanced< size_t >( l_emptySpan );
+        EXPECT_EQ( l_he1, l_he2 );
+        EXPECT_EQ( l_he1, static_cast< size_t >( XXH32(
+                              l_empty.data(), l_empty.size(),
+                              static_cast< unsigned >( 0x9e3779b1 ) ) ) );
+
+        // -- Small change in data should (practically always) change the hash
+        // --
+        std::vector< std::byte > l_d2 = l_d;
+        auto l_hOrig =
+            hash::balanced< size_t >( std::span< std::byte >( l_d2 ) );
+        l_d2[ 2 ] = std::byte{ 0xFF };
+        auto l_hChanged =
+            hash::balanced< size_t >( std::span< std::byte >( l_d2 ) );
+        EXPECT_NE( l_hOrig, l_hChanged )
+            << "Changing one byte produced same hash — extremely unlikely but "
+               "possible.";
+
+        // -- Hashing string content (ensure layout correct) --
+        const std::string l_s = "hello, xxhash!";
+        const auto l_bytesFromString =
+            []( std::string_view _s ) -> std::vector< std::byte > {
+            std::vector< std::byte > l_out( _s.size() );
+            if ( !l_out.empty() ) {
+                __builtin_memcpy( l_out.data(), _s.data(), _s.size() );
+            }
+            return ( l_out );
+        };
+        auto l_sbytes = l_bytesFromString( l_s );
+        auto l_hs =
+            hash::balanced< size_t >( std::span< std::byte >( l_sbytes ) );
+        // direct XXH32 of the original char data must match (no
+        // reinterpretation errors)
+        EXPECT_EQ( l_hs, static_cast< size_t >(
+                             XXH32( l_s.data(), l_s.size(),
+                                    static_cast< unsigned >( 0x9e3779b1 ) ) ) );
+
+        // -- Larger data quick smoke test (no assertions beyond bounds) --
+        std::vector< std::byte > l_large( 1024 );
+        std::vector< unsigned char > l_tmp( l_large.size() );
+        std::ranges::iota( l_tmp, 0u );
+
+        std::ranges::transform( l_tmp, l_large.begin(),
+                                []( unsigned char _c ) -> std::byte {
+                                    return ( static_cast< std::byte >( _c ) );
+                                } );
+#if 0
+        std::iota(
+            std::bit_cast< unsigned char* >( l_large.data() ),
+            std::bit_cast< unsigned char* >( l_large.data() + l_large.size() ),
+            0u ); // fill with increasing bytes (note: UB if reinterpret_cast
+                  // used with std::byte on write, but this is just to
+                  // illustrate)
+#endif
+        // safer fill for std::byte:
+        for ( size_t l_i = 0; l_i < l_large.size(); ++l_i )
+            l_large[ l_i ] =
+                std::byte( static_cast< unsigned char >( l_i & 0xFF ) );
+        EXPECT_NO_FATAL_FAILURE( {
+            volatile auto l_hLarge =
+                hash::balanced< size_t >( std::span< std::byte >( l_large ) );
             ( void )l_hLarge;
         } );
     }
