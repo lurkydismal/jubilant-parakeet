@@ -13,3 +13,6 @@
 [submodule "stdfunc"]
 	path = stdfunc
 	url = https://github.com/lurkydismal/stdfunc.git
+[submodule "slickdl"]
+	path = slickdl
+	url = https://github.com/lurkydismal/slickdl.git
