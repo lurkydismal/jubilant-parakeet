@@ -4,3 +4,6 @@
 [submodule "ctre"]
 	path = ctre
 	url = https://github.com/lurkydismal/ctre.git
+[submodule "plthook"]
+	path = plthook
+	url = https://github.com/lurkydismal/plthook.git
