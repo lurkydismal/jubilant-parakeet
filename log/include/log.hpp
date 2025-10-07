@@ -95,7 +95,7 @@ void _variable( std::string_view _variableName,
 
 #else
 
-template < typename... Arguments >
+template < stdfunc::is_formattable... Arguments >
 void debug( [[maybe_unused]] std::format_string< Arguments... > _format,
             [[maybe_unused]] Arguments&&... _arguments ) {}
 
@@ -103,7 +103,7 @@ void variable( [[maybe_unused]] auto&& _variableToLog ) {}
 
 #endif
 
-template < typename... Arguments >
+template < stdfunc::is_formattable... Arguments >
 void info( std::format_string< Arguments... > _format,
            Arguments&&... _arguments ) {
     std::print( "{}", formatWithColor( "INFO: ", stdfunc::color::g_green ) );
@@ -111,7 +111,7 @@ void info( std::format_string< Arguments... > _format,
     std::println( _format, std::forward< Arguments >( _arguments )... );
 }
 
-template < typename... Arguments >
+template < stdfunc::is_formattable... Arguments >
 void warning( std::format_string< Arguments... > _format,
               Arguments&&... _arguments ) {
     std::print( std::cerr, "{}",

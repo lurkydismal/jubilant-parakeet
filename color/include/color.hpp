@@ -40,6 +40,7 @@ using color_t = struct color {
         const auto l_bytes =
             std::bit_cast< std::array< uint8_t, 4 > >( _colorPacked );
 
+        // NOTE: Use decomposition when it is available in constexpr
         if constexpr ( std::endian::native == std::endian::little ) {
             red = l_bytes[ 3 ];
             green = l_bytes[ 2 ];
