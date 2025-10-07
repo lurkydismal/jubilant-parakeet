@@ -15,6 +15,8 @@ using direction_t = enum class direction : uint8_t {
     right = 0b1000,
 };
 
+using directionUnderlying_t = std::underlying_type_t< direction_t >;
+
 [[nodiscard]] constexpr auto operator|( direction_t _storage,
                                         direction_t _value ) -> direction_t {
     using underlying_t = std::underlying_type_t< direction_t >;
@@ -48,6 +50,8 @@ constexpr void operator|=( direction_t& _storage, direction_t _value ) {
 using button_t = enum class button : uint8_t {
     none,
 };
+
+using buttonUnderlying_t = std::underlying_type_t< button_t >;
 
 // TODO: Implement
 [[nodiscard]] inline auto toString( const button_t& _button ) -> std::string {

@@ -4,6 +4,7 @@
 
 #include <functional>
 #include <string_view>
+#include <type_traits>
 #include <variant>
 
 namespace watch {
@@ -14,6 +15,8 @@ using event_t = enum class event : uint16_t {
     write = IN_CLOSE_WRITE,
     rename = IN_MOVE,
 };
+
+using eventUnderlying_t = std::underlying_type_t< event_t >;
 
 using watch_t = struct watch {
     using callbackFile_t =

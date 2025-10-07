@@ -11,6 +11,8 @@ using vsync_t = enum class vsync : uint8_t {
     software,
 };
 
+using vsyncUnderlying_t = std::underlying_type_t< vsync_t >;
+
 void init( vsync_t _vsyncType, float16_t _desiredFPS );
 void quit();
 

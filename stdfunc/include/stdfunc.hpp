@@ -56,6 +56,8 @@ using call_t = enum class call : uint8_t {
     ioctl = 54,
 };
 
+using callUnderlying_t = std::underlying_type_t< call_t >;
+
 template < typename... Arguments >
     requires( sizeof...( Arguments ) <= 3 &&
               ( std::convertible_to< Arguments, uintptr_t > && ... ) )
