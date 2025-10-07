@@ -7,3 +7,6 @@
 [submodule "plthook"]
 	path = plthook
 	url = https://github.com/lurkydismal/plthook.git
+[submodule "forward_circular_buffer"]
+	path = forward_circular_buffer
+	url = https://github.com/lurkydismal/forward_circular_buffer.git
