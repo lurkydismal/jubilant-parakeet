@@ -1,3 +1,6 @@
 [submodule "arhodigp"]
 	path = arhodigp
 	url = https://github.com/lurkydismal/arhodigp.git
+[submodule "ctre"]
+	path = ctre
+	url = https://github.com/lurkydismal/ctre.git
