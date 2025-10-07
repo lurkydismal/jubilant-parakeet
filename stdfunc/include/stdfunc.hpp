@@ -400,11 +400,7 @@ template < std::unsigned_integral T >
 namespace random {
 
 // Seconds from midnight
-constexpr size_t g_compilationTimeAsSeed =
-    ( ( ( ( ( __TIME__[ 0 ] - '0' ) * 10 ) + ( __TIME__[ 1 ] - '0' ) ) *
-        3600 ) +
-      ( ( ( ( __TIME__[ 3 ] - '0' ) * 10 ) + ( __TIME__[ 4 ] - '0' ) ) * 60 ) +
-      ( ( ( __TIME__[ 6 ] - '0' ) * 10 ) + ( __TIME__[ 7 ] - '0' ) ) );
+extern const size_t g_compilationTimeAsSeed;
 
 namespace number {
 
