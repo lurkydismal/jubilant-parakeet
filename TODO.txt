@@ -18,5 +18,3 @@ Implement container for watch check() cases
 
 P1
 Implement slickdl
-tests: look for tests in module directory
-Move stdfunc literals to literals namespace
