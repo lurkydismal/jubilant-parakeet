@@ -1,5 +1,6 @@
 #include "watch.hpp"
 
+#include <linux/limits.h>
 #include <sys/epoll.h>
 #include <sys/inotify.h>
 #include <sys/types.h>
@@ -11,7 +12,7 @@
 #include <string>
 #include <utility>
 
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace watch {
 

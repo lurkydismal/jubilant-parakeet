@@ -10,7 +10,7 @@
 #include <ranges>
 #include <string>
 
-#include "stdfunc.hpp"
+#include "stdcolor.hpp"
 
 size_t g_seed;
 

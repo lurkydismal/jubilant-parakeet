@@ -12,7 +12,7 @@
 
 #include "boxes.hpp"
 #include "state.hpp"
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace object {
 

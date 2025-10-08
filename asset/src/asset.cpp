@@ -12,7 +12,7 @@
 #include <thread>
 
 #include "log.hpp"
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace asset {
 

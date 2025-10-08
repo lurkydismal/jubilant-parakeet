@@ -12,7 +12,7 @@
 #include "input.hpp"
 #include "log.hpp"
 #include "runtime.hpp"
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace runtime {
 

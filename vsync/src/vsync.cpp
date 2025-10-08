@@ -6,7 +6,7 @@
 #include <chrono>
 #include <ctime>
 
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace vsync {
 

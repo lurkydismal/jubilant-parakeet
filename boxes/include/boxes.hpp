@@ -9,7 +9,7 @@
 
 #include "color.hpp"
 #include "slickdl.hpp"
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 #if !defined( TESTS )
 

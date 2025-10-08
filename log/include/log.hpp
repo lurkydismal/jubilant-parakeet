@@ -14,6 +14,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "stdcolor.hpp"
+#include "stdconcepts.hpp"
 #include "stdfunc.hpp"
 
 namespace {

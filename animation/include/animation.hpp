@@ -11,7 +11,7 @@
 
 #include "boxes.hpp"
 #include "slickdl.hpp"
-#include "stdfunc.hpp"
+#include "stddebug.hpp"
 
 namespace animation {
 
