@@ -1,5 +1,13 @@
 #include "log.hpp"
 
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <array>
+#include <stdexcept>
+#include <vector>
+
 #include "test.hpp"
 
 struct fdRedirect {

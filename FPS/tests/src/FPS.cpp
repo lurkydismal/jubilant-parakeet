@@ -1,5 +1,8 @@
 #include "FPS.hpp"
 
+#include <chrono>
+#include <thread>
+
 #include "test.hpp"
 
 using namespace std::chrono_literals;

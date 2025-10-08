@@ -2,8 +2,10 @@
 
 #if defined( TESTS )
 
-#include <gmock/gmock.h> // ElementsAre, HasSubstr, MatchesRegex ...
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+
+#include <cstddef>
 
 using namespace testing;
 

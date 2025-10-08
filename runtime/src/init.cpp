@@ -1,11 +1,21 @@
 #include "init.hpp"
 
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
+#include <SDL3/SDL_video.h>
+
+#include <format>
+#include <map>
+#include <string>
 
 #include "FPS.hpp"
 #include "arhodigp.hpp"
 #include "log.hpp"
 #include "vsync.hpp"
+#include "window.hpp"
 
 namespace runtime {
 

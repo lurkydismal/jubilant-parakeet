@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL3/SDL_video.h>
+#include <stddef.h>
 
 #include <string_view>
 

@@ -26,13 +26,22 @@
 
 #endif
 
+#include <SDL3/SDL_events.h>
+
+#include <algorithm>
+#include <cstdlib>
 #include <experimental/scope>
+#include <ranges>
+#include <span>
+#include <string_view>
+#include <vector>
 
 #include "event.hpp"
 #include "init.hpp"
 #include "iterate.hpp"
 #include "quit.hpp"
 #include "runtime.hpp"
+#include "vsync.hpp"
 
 namespace {
 

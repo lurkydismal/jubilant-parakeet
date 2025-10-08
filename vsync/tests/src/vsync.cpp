@@ -1,5 +1,9 @@
 #include "vsync.hpp"
 
+#include <chrono>
+#include <string>
+#include <thread>
+
 #include "test.hpp"
 
 class VsyncTest : public Test {

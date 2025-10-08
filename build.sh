@@ -112,7 +112,7 @@ EOF
     done
 }
 
-export BUILD_C_FLAGS="-pipe -std=gnu99 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat -Wno-incompatible-pointer-types-discards-qualifiers"
+export BUILD_C_FLAGS="-pipe -std=gnu23 -march=native -ffunction-sections -fdata-sections -fPIC -fopenmp-simd -fno-ident -fno-short-enums -Wall -Wextra -Wno-gcc-compat -Wno-incompatible-pointer-types-discards-qualifiers"
 export BUILD_C_FLAGS_DEBUG="-Og -ggdb3"
 export BUILD_C_FLAGS_RELEASE="-flto=jobserver -fprofile-instr-use -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"
 export BUILD_C_FLAGS_PROFILE="-fprofile-instr-generate -pg -O3 -ffast-math -funroll-loops -fno-asynchronous-unwind-tables"

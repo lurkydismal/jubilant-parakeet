@@ -1,5 +1,8 @@
 #include "FPS.hpp"
 
+#include <chrono>
+#include <functional>
+#include <stop_token>
 #include <thread>
 
 #if !defined( TESTS )

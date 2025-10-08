@@ -1,5 +1,14 @@
 #include "asset.hpp"
 
+#include <pthread.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <array>
+#include <bit>
+#include <ranges>
+#include <stop_token>
+#include <string>
 #include <thread>
 
 #include "log.hpp"

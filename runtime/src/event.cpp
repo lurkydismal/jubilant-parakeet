@@ -1,9 +1,13 @@
 #include "event.hpp"
 
-#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_render.h>
+#include <SDL3/SDL_scancode.h>
 
+#include <cstddef>
 #include <ranges>
+#include <span>
 
 #include "input.hpp"
 #include "log.hpp"

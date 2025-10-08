@@ -4,6 +4,9 @@
 
 #include <bit>
 #include <chrono>
+#include <ctime>
+
+#include "stdfunc.hpp"
 
 namespace vsync {
 

@@ -2,10 +2,19 @@
 
 #include <array>
 #include <atomic>
+#include <cmath>
+#include <concepts>
+#include <cstdio>
 #include <cstdlib>
+#include <functional>
 #include <iostream>
+#include <limits>
+#include <ranges>
 #include <string>
+#include <string_view>
 #include <thread>
+#include <utility>
+#include <variant>
 #include <vector>
 
 #include "stdfunc.hpp"

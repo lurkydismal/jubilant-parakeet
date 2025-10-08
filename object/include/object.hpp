@@ -1,11 +1,18 @@
 #pragma once
 
-#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 
 #include <algorithm>
+#include <cstddef>
 #include <initializer_list>
+#include <span>
+#include <string>
+#include <utility>
+#include <vector>
 
+#include "boxes.hpp"
 #include "state.hpp"
+#include "stdfunc.hpp"
 
 namespace object {
 

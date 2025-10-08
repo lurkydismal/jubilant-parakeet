@@ -2,9 +2,13 @@
 
 #if defined( TESTS )
 
+#include <format>
 #include <gsl/pointers>
+#include <iterator>
+#include <memory>
 #include <print>
 #include <ranges>
+#include <string>
 
 #include "stdfunc.hpp"
 

@@ -1,7 +1,11 @@
 #pragma once
 
+#include <cstddef>
+#include <iterator>
+
 #include "forward_circular_buffer.hpp"
 #include "input.hpp"
+#include "stdfunc.hpp"
 
 #define MAX_DELAY_BETWEEN_INPUTS ( 8 )
 

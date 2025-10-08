@@ -1,6 +1,7 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/detail/qualifier.hpp>
+#include <glm/ext/vector_float2.hpp>
 
 #include "stdfloat16.hpp"
 

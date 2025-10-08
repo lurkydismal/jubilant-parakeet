@@ -1,10 +1,13 @@
 #pragma once
 
-#include <SDL3/SDL_rect.h>
-#include <SDL3/SDL_render.h>
 #include <SDL3/SDL_surface.h>
 
+#include <cstddef>
+#include <initializer_list>
+#include <ranges>
+#include <span>
 #include <utility>
+#include <vector>
 
 #include "boxes.hpp"
 #include "slickdl.hpp"

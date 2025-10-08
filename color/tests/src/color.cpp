@@ -1,5 +1,7 @@
 #include "color.hpp"
 
+#include <initializer_list>
+
 #include "test.hpp"
 
 using namespace color;

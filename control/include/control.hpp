@@ -3,6 +3,9 @@
 #include <SDL3/SDL_keyboard.h>
 #include <SDL3/SDL_scancode.h>
 
+#include <string>
+#include <string_view>
+
 #include "input.hpp"
 
 namespace control {

@@ -1,5 +1,9 @@
 #include "animation.hpp"
 
+#include <SDL3/SDL_render.h>
+
+#include <gsl/pointers>
+
 #include "test.hpp"
 
 using namespace animation;

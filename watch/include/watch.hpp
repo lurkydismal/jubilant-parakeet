@@ -2,10 +2,12 @@
 
 #include <sys/inotify.h>
 
+#include <cstdint>
 #include <functional>
 #include <string_view>
 #include <type_traits>
 #include <variant>
+#include <vector>
 
 namespace watch {
 

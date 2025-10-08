@@ -1,5 +1,9 @@
 #include "boxes.hpp"
 
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_rect.h>
+#include <SDL3/SDL_render.h>
+
 namespace boxes {
 
 void boxes_t::render( const slickdl::renderer_t& _renderer,

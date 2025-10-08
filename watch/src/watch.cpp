@@ -1,13 +1,15 @@
 #include "watch.hpp"
 
-#include <linux/limits.h>
 #include <sys/epoll.h>
 #include <sys/inotify.h>
-#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include <array>
+#include <cstddef>
 #include <span>
+#include <string>
+#include <utility>
 
 #include "stdfunc.hpp"
 
