@@ -756,12 +756,12 @@ source './config.sh' && {
             export FILES_TO_INCLUDE=""
             export FILES_TO_COMPILE=""
 
-            source "$TESTS_DIRECTORY/$testToBuild/config.sh" && {
+            source "$testToBuild/$TESTS_DIRECTORY/config.sh" && {
                 OUTPUT_FILE='lib'"$testToBuild"'_test.a'
 
                 OUTPUT_FILE="$OUTPUT_FILE" \
                     './build_module.sh' \
-                    "$TESTS_DIRECTORY/$testToBuild" \
+                    "$testToBuild/$TESTS_DIRECTORY" \
                     "$BUILD_C_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
                     "$BUILD_CPP_FLAGS $externalLibrariesBuildFlagsAsString $externalLibrariesTestsBuildFlagsAsString" \
                     "$definesAsString" \
