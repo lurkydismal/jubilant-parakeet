@@ -4,23 +4,21 @@
 #define STB_RECT_PACK_IMPLEMENTATION
 #define STB_TRUETYPE_IMPLEMENTATION
 
-#include "font_t.h"
+#include "font.hpp"
 
-#include "log.h"
+#include "log.hpp"
 
 #define FONT_ATLAS_WIDTH( _font )    \
     ( ( size_t )( ( _font ).height * \
                   CHARACTERS_COUNT( ASCII_START, ASCII_END ) ) )
 #define FONT_ATLAS_HEIGHT( _font ) ( ( size_t )( ( _font ).height ) )
 
-static FORCE_INLINE uint8_t* font_t$bake$range( font_t* restrict _font,
-                                                const size_t _start,
-                                                const size_t _end ) {
-    uint8_t* l_returnValue = NULL;
+namespace font {
 
-    if ( UNLIKELY( !_font ) ) {
-        goto EXIT;
-    }
+static uint8_t* font_t$bake$range( font_t* _font,
+                                   const size_t _start,
+                                   const size_t _end ) {
+    uint8_t* l_returnValue = NULL;
 
     {
         const size_t l_fontAtlasWidth = FONT_ATLAS_WIDTH( *_font );
@@ -28,8 +26,7 @@ static FORCE_INLINE uint8_t* font_t$bake$range( font_t* restrict _font,
         const size_t l_bitmapSize =
             ( ( l_fontAtlasWidth * l_fontAtlasHeight ) * sizeof( uint8_t ) );
 
-        log$transaction$query$format( ( logLevel_t )debug,
-                                      "Font bitmap size: %zu\n", l_bitmapSize );
+        logg::debug( "Font bitmap size: %zu\n", l_bitmapSize );
 
         uint8_t* l_bitmap = ( uint8_t* )malloc( l_bitmapSize );
 
@@ -73,36 +70,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-font_t font_t$create( void ) {
-    font_t l_returnValue = DEFAULT_FONT;
-
-    return ( l_returnValue );
-}
-
-bool font_t$destroy( font_t* restrict _font ) {
-    bool l_returnValue = false;
-
-    if ( UNLIKELY( !_font ) ) {
-        goto EXIT;
-    }
-
-    {
-        _font->atlas = 0;
-        _font->height = 0;
-        _font->ascent = 0;
-        _font->atlasWidth = 0;
-        _font->atlasHeight = 0;
-        _font->descent = 0;
-        _font->lineGap = 0;
-
-        l_returnValue = true;
-    }
-
-EXIT:
-    return ( l_returnValue );
-}
-
-bool font_t$load$fromAsset( font_t* restrict _font, asset_t* restrict _asset ) {
+bool font_t$load$fromAsset( font_t* _font, asset_t* _asset ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_font ) ) {
@@ -287,8 +255,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool font_t$load$fromPath( font_t* restrict _font,
-                           const char* restrict _path ) {
+bool font_t$load$fromPath( font_t* _font, const char* _path ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_font ) ) {
@@ -336,7 +303,7 @@ EXIT:
     return ( l_returnValue );
 }
 
-bool font_t$unload( font_t* restrict _font ) {
+bool font_t$unload( font_t* _font ) {
     bool l_returnValue = false;
 
     if ( UNLIKELY( !_font ) ) {
@@ -363,3 +330,5 @@ bool font_t$unload( font_t* restrict _font ) {
 EXIT:
     return ( l_returnValue );
 }
+
+} // namespace font

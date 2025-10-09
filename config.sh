@@ -11,7 +11,7 @@ export partsToBuild=(
     "boxes"
     "window"
     "vsync"
-    # "font_t"
+    "font"
     "asset"
     "watch"
 )
