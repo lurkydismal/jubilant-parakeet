@@ -3,8 +3,6 @@
 #include <cstdint>
 #include <string>
 
-#include "stdfunc.hpp"
-
 namespace input {
 
 using direction_t = enum class direction : uint8_t {

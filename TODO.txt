@@ -1,4 +1,5 @@
 P6
+Implement slickdl
 Move to available C++ 26
 Improve font_t
 Change pthread() to fork() in asset_t async save
@@ -16,5 +17,10 @@ Test state, object, animation
 Improve watch check()
 Implement container for watch check() cases
 
+P2
+Implement hot reload in main
+Wrap plthook
+
 P1
-Implement slickdl
+Implement inputBuffer
+Improve watch
