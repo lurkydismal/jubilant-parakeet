@@ -7,8 +7,8 @@
 #include <span>
 #include <vector>
 
-#include "color.hpp"
 #include "slickdl.hpp"
+#include "slickdl/color.hpp"
 #include "stddebug.hpp"
 
 #if !defined( TESTS )
@@ -20,6 +20,11 @@
 namespace boxes {
 
 using box_t = struct box {
+    box() = delete;
+    box( const box& ) = default;
+    box( box&& ) = default;
+    ~box() = default;
+
     constexpr box( float _x, float _y, float _width, float _height )
         : x( _x ), y( _y ), width( _width ), height( _height ) {
         stdfunc::assert( _x );
@@ -37,10 +42,6 @@ using box_t = struct box {
 #endif
     }
 
-    box() = delete;
-    box( const box& ) = default;
-    box( box&& ) = default;
-    ~box() = default;
     auto operator=( const box& ) -> box& = default;
     auto operator=( box&& ) -> box& = default;
 
@@ -111,7 +112,7 @@ private:
 
     std::vector< frame_t > _frames;
     size_t _currentFrame{};
-    color::color_t _color{};
+    slickdl::color_t _color{};
 };
 
 } // namespace boxes

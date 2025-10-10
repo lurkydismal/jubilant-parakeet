@@ -11,7 +11,6 @@ export partsToBuild=(
     "boxes"
     "window"
     "vsync"
-    "font"
     "asset"
     "watch"
 )
@@ -27,7 +26,6 @@ export testsToBuild=(
     "boxes"
     # "window"
     "vsync"
-    # "font_t"
     # "asset"
     # "watch"
 
@@ -38,7 +36,6 @@ export testsToBuild=(
     "arhodigp"
     "log"
     "forward_circular_buffer"
-    "color"
     "stdfunc"
 
     "test"
@@ -51,7 +48,6 @@ export staticParts=(
     "arhodigp"
     "log"
     "forward_circular_buffer"
-    "color"
     "stdfunc"
 )
 export rootSharedObjectName="root"
@@ -63,7 +59,7 @@ BUILD_DEFINES+=(
     # xxhash
     "XXH_CPU_LITTLE_ENDIAN=1"
     "XXH_INLINE_ALL"
-    "XXH_NO_STDLIB"
+    # "XXH_NO_STDLIB"
     "XXH_NO_STREAM"
     "XXH_STATIC_LINKING_ONLY"
 )
@@ -93,6 +89,7 @@ EXTERNAL_LIBRARIES_TO_LINK+=(
     "snappy"
     "sdl3"
     "sdl3-image"
+    "sdl3-ttf"
 )
 
 EXTERNAL_LIBRARIES_TO_LINK_TESTS+=(

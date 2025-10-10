@@ -11,13 +11,15 @@
 namespace control {
 
 using control_t = struct control {
-    constexpr control( SDL_Scancode _scancode, input::input_t _input )
-        : scancode( _scancode ), input( _input ) {}
-    control( input::input_t _input ) : input( _input ) {}
     control() = default;
     control( const control& ) = default;
     control( control&& ) = default;
     ~control() = default;
+
+    constexpr control( input::input_t _input ) : input( _input ) {}
+    constexpr control( SDL_Scancode _scancode, input::input_t _input )
+        : scancode( _scancode ), input( _input ) {}
+
     auto operator=( const control& ) -> control& = default;
     auto operator=( control&& ) -> control& = default;
 

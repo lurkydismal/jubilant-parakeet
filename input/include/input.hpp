@@ -51,16 +51,17 @@ using buttonUnderlying_t = std::underlying_type_t< button_t >;
 }
 
 using input_t = struct input {
+    input() = default;
+    input( const input& ) = default;
+    input( input&& ) = default;
+    ~input() = default;
+
     constexpr input( direction_t _direction, button_t _button = button_t::none )
         : direction( _direction ), button( _button ) {}
     constexpr input( button_t _button,
                      direction_t _direction = direction_t::none )
         : direction( _direction ), button( _button ) {}
 
-    input() = default;
-    input( const input& ) = default;
-    input( input&& ) = default;
-    ~input() = default;
     auto operator=( const input& ) -> input& = default;
     auto operator=( input&& ) -> input& = default;
 

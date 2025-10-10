@@ -4,12 +4,14 @@
 #include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 
+#include "slickdl/color.hpp"
+
 namespace boxes {
 
 void boxes_t::render( const slickdl::renderer_t& _renderer,
                       const box_t& _screenSpaceTarget,
                       bool _doFill ) const {
-    color::color_t l_colorBefore;
+    slickdl::color_t l_colorBefore;
 
     // Store current draw color
     {
@@ -22,7 +24,7 @@ void boxes_t::render( const slickdl::renderer_t& _renderer,
     }
 
     const auto l_setRenderDrawColor =
-        [ & ]( auto _function, const color::color_t& _color ) -> void {
+        [ & ]( auto _function, const slickdl::color_t& _color ) -> void {
         const bool l_result = _function( _renderer, _color.red, _color.green,
                                          _color.blue, _color.alpha );
 
