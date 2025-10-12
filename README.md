@@ -99,4 +99,4 @@ Created by [@example](https://example.com/) - feel free to contact me!
 ## License
 
 This project is open source and available under the
-[GNU Affero General Public License v3.0](https://github.com/lurkydismal/fgengine/blob/main/LICENSE).
+[GNU Affero General Public License v3.0](LICENSE).
