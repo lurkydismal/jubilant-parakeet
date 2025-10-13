@@ -14,7 +14,7 @@ TEST( AnimationBasic, CurrentKeyFrameAndIndexing ) {
     auto* l_t1 = reinterpret_cast< SDL_Texture* >( 0x1 );
     auto* l_t2 = reinterpret_cast< SDL_Texture* >( 0x2 );
 
-    std::vector< gsl::not_null< SDL_Texture* > > l_keyFrames = { l_t1, l_t2 };
+    std::vector< slickdl::texture_t > l_keyFrames = { l_t1, l_t2 };
 
     // frames mapping: index into keyFrames
     // three-frame animation: frames 0->1->0
@@ -29,22 +29,22 @@ TEST( AnimationBasic, CurrentKeyFrameAndIndexing ) {
                         std::move( l_targetBoxes ) );
 
     // initial frame should map to keyFrames[ frames[0] ] == t1
-    EXPECT_EQ( l_anim.currentKeyFrame().get(), l_t1 );
+    EXPECT_EQ( l_anim.currentKeyFrame(), l_t1 );
 
     // step once (non-loop): move to frames[1] -> t2
     l_anim.step( false );
-    EXPECT_EQ( l_anim.currentKeyFrame().get(), l_t2 );
+    EXPECT_EQ( l_anim.currentKeyFrame(), l_t2 );
 
     // step second time: frames[2] -> t1
     l_anim.step( false );
-    EXPECT_EQ( l_anim.currentKeyFrame().get(), l_t1 );
+    EXPECT_EQ( l_anim.currentKeyFrame(), l_t1 );
 
     // step again with no loop: should stay at last frame (index 2) because code
     // only resets if canLoop==true After three frames _currentFrame should be
     // at index 2 (0-based) call step(false) now: since _currentFrame == 2 and
     // frames.size() == 3, it will hit else branch and not reset
     l_anim.step( false );
-    EXPECT_EQ( l_anim.currentKeyFrame().get(), l_t1 );
+    EXPECT_EQ( l_anim.currentKeyFrame(), l_t1 );
 
     // now construct again and test looping behavior
     boxes::boxes_t l_tb2( { { l_b }, { l_b }, { l_b } } );
@@ -54,20 +54,20 @@ TEST( AnimationBasic, CurrentKeyFrameAndIndexing ) {
     // advance to last frame
     l_anim2.step( false ); // -> index 1
     l_anim2.step( false ); // -> index 2
-    EXPECT_EQ( l_anim2.currentKeyFrame().get(), l_t1 );
+    EXPECT_EQ( l_anim2.currentKeyFrame(), l_t1 );
 
     // Now step with looping: should reset to 0 (first frame)
     l_anim2.step( true );
-    EXPECT_EQ( l_anim2.currentKeyFrame().get(),
+    EXPECT_EQ( l_anim2.currentKeyFrame(),
                l_t1 ); // frames[0] is t1 (because frames[0] == 0)
     // And stepping again should go to index 1 (t2)
     l_anim2.step( true );
-    EXPECT_EQ( l_anim2.currentKeyFrame().get(), l_t2 );
+    EXPECT_EQ( l_anim2.currentKeyFrame(), l_t2 );
 }
 
 TEST( AnimationTargetBox, CurrentTargetBoxAndBoxesStep ) {
     auto* l_t1 = reinterpret_cast< SDL_Texture* >( 0x10 );
-    std::vector< gsl::not_null< SDL_Texture* > > l_keyFrames = { l_t1 };
+    std::vector< slickdl::texture_t > l_keyFrames = { l_t1 };
     std::vector< size_t > l_frames = { 0, 0, 0 }; // indexes irrelevant here
 
     boxes::box_t l_b1{ 1, 2, 3, 4 };

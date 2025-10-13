@@ -37,15 +37,15 @@ inline auto formatLocation( const std::source_location& _sourceLocation =
     -> std::string {
     std::string_view l_functionNameMangled = _sourceLocation.function_name();
 
-    std::string l_functionName =
-        l_functionNameMangled |
-        std::views::drop_while( []( char _symbol ) -> bool {
-            return ( !stdfunc::isSpace( _symbol ) );
-        } ) |
-        std::views::drop( 1 ) |
-        std::views::take_while(
-            []( char _symbol ) -> bool { return ( _symbol != '(' ); } ) |
-        std::ranges::to< std::string >();
+    auto l_functionName = l_functionNameMangled |
+                          std::views::drop_while( []( char _symbol ) -> bool {
+                              return ( !stdfunc::isSpace( _symbol ) );
+                          } ) |
+                          std::views::drop( 1 ) |
+                          std::views::take_while( []( char _symbol ) -> bool {
+                              return ( _symbol != '(' );
+                          } ) |
+                          std::ranges::to< std::string >();
 
     return ( std::format(
         "Thread {}{:#X}{}: '{}:{}' "
@@ -90,7 +90,7 @@ void _variable( std::string_view _variableName,
 }
 
 template < typename T >
-    requires( std::is_pointer_v< T > )
+    requires std::is_pointer_v< T >
 void _variable( std::string_view _variableName,
                 const T _variable,
                 const std::source_location& _sourceLocation =

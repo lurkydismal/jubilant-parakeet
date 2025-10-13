@@ -1,9 +1,8 @@
 P6
-Implement slickdl
 Move to available C++ 26
-Improve font_t
 Change pthread() to fork() in asset_t async save
 Implement hot reload callbacks in modules
+Implement asset
 
 P5
 Move to multi-window system
@@ -24,3 +23,6 @@ Wrap plthook
 P1
 Implement inputBuffer
 Improve watch
+
+P0
+Implement slickdl: init, GPU, properties, render

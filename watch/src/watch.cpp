@@ -13,6 +13,7 @@
 #include <utility>
 
 #include "stddebug.hpp"
+#include "stdfunc.hpp"
 
 namespace watch {
 
@@ -167,25 +168,23 @@ void watch::check( bool _isBlocking ) {
                         auto l_eventName =
                             static_cast< const char* >( l_event->name );
 
-                        const bool l_result = std::visit(
-                            [ & ]< typename T >( T& _function ) -> bool {
-                                if constexpr ( std::is_same_v<
-                                                   T, callbackFile_t > ) {
+                        const bool l_result =
+                            _callback.visit( stdfunc::overloadedVisit{
+                                [ & ]( callbackFile_t& _function ) -> bool {
                                     return (
                                         _function( l_eventName, l_eventType ) );
-
-                                } else if constexpr (
-                                    std::is_same_v< T, callbackDirectory_t > ) {
+                                },
+                                [ & ](
+                                    callbackDirectory_t& _function ) -> bool {
                                     return ( _function( l_eventName,
                                                         l_eventType,
                                                         l_event->cookie ) );
-
-                                } else {
+                                },
+                                [ & ]( auto&& ) -> void {
                                     // TODO: Write message
                                     static_assert( false );
-                                }
-                            },
-                            _callback );
+                                },
+                            } );
 
                         stdfunc::assert( l_result );
                     }

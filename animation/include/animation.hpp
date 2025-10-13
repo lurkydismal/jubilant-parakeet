@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "boxes.hpp"
-#include "slickdl.hpp"
+#include "slickdl/render_texture.hpp"
 #include "stddebug.hpp"
 
 namespace animation {
@@ -24,8 +24,7 @@ using animation_t = struct animation {
     constexpr animation( std::span< const slickdl::texture_t > _keyFrames,
                          std::span< const size_t > _frames,
                          boxes::boxes_t _targetBoxes )
-        : _keyFrames( _keyFrames |
-                      std::ranges::to< std::vector< slickdl::texture_t > >() ),
+        : _keyFrames( _keyFrames | std::ranges::to< std::vector >() ),
           _frames( _frames | std::ranges::to< std::vector >() ),
           _targetBoxes( std::move( _targetBoxes ) ) {
         stdfunc::assert( !this->_keyFrames.empty() );

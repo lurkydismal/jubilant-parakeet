@@ -52,9 +52,9 @@ TEST( test, EXPECT_FALSE ) {
 
 TEST( test, EXPECT_EQ ) {
     for ( const auto& _element : g_array1 ) {
-        std::visit(
-            []( auto&& _value ) -> void { EXPECT_EQ( _value, _value ); },
-            _element );
+        _element.visit( []( auto&& _value ) constexpr -> void {
+            EXPECT_EQ( _value, _value );
+        } );
     }
 }
 
@@ -62,7 +62,8 @@ TEST( test, EXPECT_NE ) {
     for ( const auto& [ _element1, _element2 ] :
           std::views::zip( g_array1, g_array2 ) ) {
         std::visit(
-            []< typename T1, typename T2 >( T1& _value1, T2& _value2 ) -> void {
+            []< typename T1, typename T2 >( T1& _value1,
+                                            T2& _value2 ) constexpr -> void {
                 if constexpr ( std::equality_comparable_with< T1, T2 > ) {
                     EXPECT_NE( _value1, _value2 );
                 }

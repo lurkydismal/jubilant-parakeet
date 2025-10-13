@@ -7,8 +7,8 @@
 #include <span>
 #include <vector>
 
-#include "slickdl.hpp"
 #include "slickdl/color.hpp"
+#include "slickdl/render_texture.hpp"
 #include "stddebug.hpp"
 
 #if !defined( TESTS )

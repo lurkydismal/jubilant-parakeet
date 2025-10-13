@@ -238,9 +238,10 @@ auto save( std::span< const std::byte > _asset,
         }
 
         saveRequest l_saveRequest{
-            .asset = std::ranges::to< std::vector< std::byte > >( _asset ),
+            .asset = std::ranges::to< std::vector >( _asset ),
             .path = std::string( _path ),
-            .needAppend = _needAppend };
+            .needAppend = _needAppend,
+        };
 
         g_saveQueue.at( g_saveQueueLength ) = l_saveRequest;
 

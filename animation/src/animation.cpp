@@ -16,8 +16,11 @@ void render( const boxes::box_t& _targetBoxSizes,
              auto _renderFunction,
              Arguments&&... _arguments ) {
     const SDL_FRect l_resolvedTargetRectangle = {
-        _targetBoxCoordinates.x, _targetBoxCoordinates.y, _targetBoxSizes.width,
-        _targetBoxSizes.height };
+        _targetBoxCoordinates.x,
+        _targetBoxCoordinates.y,
+        _targetBoxSizes.width,
+        _targetBoxSizes.height,
+    };
 
     // Render
     {

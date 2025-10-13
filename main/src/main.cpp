@@ -466,13 +466,9 @@ auto hotReloadSo( std::string_view _sharedObjectPath ) -> bool {
 auto main( int _argumentCount, char** _argumentVector ) -> int {
     do {
         {
-            auto l_argumentVector =
-                std::span( _argumentVector, _argumentCount ) |
-                std::ranges::views::transform(
-                    []( const char* _argument ) -> std::string_view {
-                        return ( _argument );
-                    } ) |
-                std::ranges::to< std::vector >();
+            const std::vector< std::string_view > l_argumentVector =
+                stdfunc::spanToVector< char*, std::string_view >(
+                    std::span( _argumentVector, _argumentCount ) );
 
             if ( !runtime::init( g_applicationState, l_argumentVector ) )
                 [[unlikely]] {

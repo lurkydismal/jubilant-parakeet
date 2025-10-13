@@ -90,6 +90,16 @@ CheckOptions:
   - key: readability-identifier-naming.EnumMemberPrefix
     value: ''
 
+  # TODO: Implement
+  - key: readability-identifier-naming.ProtectedMemberCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMemberPrefix
+    value: _
+  - key: readability-identifier-naming.ProtectedMethodCase
+    value: camelBack
+  - key: readability-identifier-naming.ProtectedMethodPrefix
+    value: _
+
   - key: readability-identifier-naming.PrivateMemberCase
     value: camelBack
   - key: readability-identifier-naming.PrivateMemberPrefix

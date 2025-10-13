@@ -30,7 +30,8 @@ void init( vsync_t _vsyncType, float16_t _desiredFPS ) {
             .tv_nsec =
                 std::chrono::duration_cast< std::chrono::nanoseconds >(
                     std::chrono::duration< double >( 1.0 ) / _desiredFPS )
-                    .count() };
+                    .count(),
+        };
     }
 }
 
