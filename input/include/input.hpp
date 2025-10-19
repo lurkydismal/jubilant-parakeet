@@ -85,7 +85,7 @@ struct std::formatter< input::direction_t, char > {
 
     auto format( input::direction_t& _value,
                  std::format_context& _context ) const {
-        return ( std::format_to( _context.out(), "{{}}", _value ) );
+        return ( std::format_to( _context.out(), "{}", _value ) );
     }
 };
 
@@ -97,7 +97,7 @@ struct std::formatter< input::button_t, char > {
 
     auto format( input::button_t& _value,
                  std::format_context& _context ) const {
-        return ( std::format_to( _context.out(), "{{}}", _value ) );
+        return ( std::format_to( _context.out(), "{}", _value ) );
     }
 };
 
