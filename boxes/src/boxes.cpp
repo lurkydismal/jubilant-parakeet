@@ -1,15 +1,13 @@
 #include "boxes.hpp"
 
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
 
-#include "slickdl/color.hpp"
+#include "slickdl.hpp"
 
 namespace boxes {
 
-void boxes_t::render( const slickdl::renderer_t& _renderer,
-                      const box_t& _screenSpaceTarget,
+void boxes_t::render( slickdl::renderer_t& _renderer,
+                      const slickdl::box_t< float >& _screenSpaceTarget,
                       bool _doFill ) const {
     slickdl::color_t l_colorBefore;
 
@@ -19,8 +17,7 @@ void boxes_t::render( const slickdl::renderer_t& _renderer,
             _renderer, &l_colorBefore.red, &l_colorBefore.green,
             &l_colorBefore.blue, &l_colorBefore.alpha );
 
-        stdfunc::assert( l_result, "Getting renderer draw color: '{}'",
-                         SDL_GetError() );
+        slickdl::assert( l_result );
     }
 
     const auto l_setRenderDrawColor =
@@ -28,8 +25,7 @@ void boxes_t::render( const slickdl::renderer_t& _renderer,
         const bool l_result = _function( _renderer, _color.red, _color.green,
                                          _color.blue, _color.alpha );
 
-        stdfunc::assert( l_result, "Setting renderer draw color: '{}'",
-                         SDL_GetError() );
+        slickdl::assert( l_result );
     };
 
     l_setRenderDrawColor( SDL_SetRenderDrawColor, _color );
@@ -37,19 +33,19 @@ void boxes_t::render( const slickdl::renderer_t& _renderer,
     const auto l_currentFrame = currentFrame();
 
     for ( const auto& _box : l_currentFrame ) {
-        const SDL_FRect l_targetRectangle = {
-            .x = ( _screenSpaceTarget.x + _box.x ),
-            .y = ( _screenSpaceTarget.y + _box.y ),
-            .w = _box.width,
-            .h = _box.height,
+        const slickdl::box_t< float > l_targetRectangle = {
+            ( _screenSpaceTarget.x + _box.x ),
+            ( _screenSpaceTarget.y + _box.y ),
+            _box.width,
+            _box.height,
         };
 
         auto l_render = [ & ]( auto _renderFunction ) -> void {
-            const bool l_result =
-                _renderFunction( _renderer, &l_targetRectangle );
+            const SDL_FRect l_temp = l_targetRectangle;
 
-            stdfunc::assert( l_result, "Render rectangle: '{}'",
-                             SDL_GetError() );
+            const bool l_result = _renderFunction( _renderer, &l_temp );
+
+            slickdl::assert( l_result );
         };
 
         l_render( ( _doFill ) ? ( SDL_RenderFillRect ) : ( SDL_RenderRect ) );

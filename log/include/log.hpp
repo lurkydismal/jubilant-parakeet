@@ -67,40 +67,41 @@ namespace logg {
 
 #if defined( DEBUG )
 
-[[maybe_unused]] inline void _debug(
-    std::string_view _message,
-    const std::source_location& _sourceLocation =
-        std::source_location::current() ) {
+inline void _debug( std::string_view _message,
+                    const std::source_location& _sourceLocation =
+                        std::source_location::current() ) {
     std::println( "{}{} | Message: {}{}",
                   formatWithColor( "DEBUG: ", stdfunc::color::g_cyanLight ),
                   formatLocation( _sourceLocation ), _message,
                   stdfunc::color::g_reset );
 }
 
-#define debug( _format, ... ) _debug( std::format( _format, ##__VA_ARGS__ ) )
+#define logg$debug( _format, ... ) \
+    logg::_debug( std::format( _format, ##__VA_ARGS__ ) )
 
 template < typename T >
     requires( !std::is_pointer_v< T > )
-void _variable( std::string_view _variableName,
-                const T& _variable,
-                const std::source_location& _sourceLocation =
-                    std::source_location::current() ) {
+inline void _variable( std::string_view _variableName,
+                       const T& _variable,
+                       const std::source_location& _sourceLocation =
+                           std::source_location::current() ) {
     _debug( std::format( "{} = '{}'", _variableName, _variable ),
             _sourceLocation );
 }
 
 template < typename T >
     requires std::is_pointer_v< T >
-void _variable( std::string_view _variableName,
-                const T _variable,
-                const std::source_location& _sourceLocation =
-                    std::source_location::current() ) {
+inline void _variable( std::string_view _variableName,
+                       const T _variable,
+                       const std::source_location& _sourceLocation =
+                           std::source_location::current() ) {
     _debug( std::format( "{} = '0x{:08x}'", _variableName,
                          std::bit_cast< uintptr_t >( _variable ) ),
             _sourceLocation );
 }
 
-#define variable( _variableToLog ) _variable( #_variableToLog, _variableToLog )
+#define logg$variable( _variableToLog ) \
+    logg::_variable( #_variableToLog, _variableToLog )
 
 #else
 
@@ -130,16 +131,16 @@ void warning( std::format_string< Arguments... > _format,
                   std::forward< Arguments >( _arguments )... );
 }
 
-[[maybe_unused]] inline void _error(
-    std::string_view _message,
-    const std::source_location& _sourceLocation =
-        std::source_location::current() ) {
+inline void _error( std::string_view _message,
+                    const std::source_location& _sourceLocation =
+                        std::source_location::current() ) {
     std::println( std::cerr, "{}{} | Message: {}{}",
                   formatWithColor( "ERROR: ", stdfunc::color::g_red ),
                   formatLocation( _sourceLocation ), _message,
                   stdfunc::color::g_reset );
 }
 
-#define error( _format, ... ) _error( std::format( _format, ##__VA_ARGS__ ) )
+#define logg$error( _format, ... ) \
+    logg::_error( std::format( _format, ##__VA_ARGS__ ) )
 
 } // namespace logg

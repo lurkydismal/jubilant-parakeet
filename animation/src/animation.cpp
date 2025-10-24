@@ -1,21 +1,22 @@
 #include "animation.hpp"
 
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_rect.h>
 #include <SDL3/SDL_render.h>
+
+#include "slickdl.hpp"
+#include "slickdl/line_box.hpp"
 
 namespace animation {
 
 namespace {
 
 template < typename... Arguments >
-void render( const boxes::box_t& _targetBoxSizes,
+void render( const slickdl::box_t< float >& _targetBoxSizes,
              const slickdl::texture_t& _keyFrame,
-             const slickdl::renderer_t& _renderer,
-             const boxes::box_t& _targetBoxCoordinates,
+             slickdl::renderer_t& _renderer,
+             const slickdl::box_t< float >& _targetBoxCoordinates,
              auto _renderFunction,
              Arguments&&... _arguments ) {
-    const SDL_FRect l_resolvedTargetRectangle = {
+    const slickdl::box_t< float > l_resolvedTargetRectangle = {
         _targetBoxCoordinates.x,
         _targetBoxCoordinates.y,
         _targetBoxSizes.width,
@@ -24,24 +25,27 @@ void render( const boxes::box_t& _targetBoxSizes,
 
     // Render
     {
-        const bool l_result = _renderFunction(
-            _renderer, _keyFrame, nullptr, &l_resolvedTargetRectangle,
-            std::forward< Arguments >( _arguments )... );
+        const SDL_FRect l_temp = l_resolvedTargetRectangle;
 
-        stdfunc::assert( l_result, "Rendering texture: '{}'", SDL_GetError() );
+        const bool l_result =
+            _renderFunction( _renderer, _keyFrame, nullptr, &l_temp,
+                             std::forward< Arguments >( _arguments )... );
+
+        slickdl::assert( l_result );
     }
 }
 
 } // namespace
 
-void animation_t::render( const slickdl::renderer_t& _renderer,
-                          const boxes::box_t& _targetBoxCoordinates ) const {
+void animation_t::render(
+    slickdl::renderer_t& _renderer,
+    const slickdl::box_t< float >& _targetBoxCoordinates ) const {
     ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,
                          _targetBoxCoordinates, SDL_RenderTexture );
 }
 
-void animation_t::render( const slickdl::renderer_t& _renderer,
-                          const boxes::box_t& _targetBoxCoordinates,
+void animation_t::render( slickdl::renderer_t& _renderer,
+                          const slickdl::box_t< float >& _targetBoxCoordinates,
                           double _angle,
                           SDL_FlipMode _flipMode ) const {
     ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,

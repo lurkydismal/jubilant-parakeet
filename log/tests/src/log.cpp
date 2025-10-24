@@ -1,10 +1,10 @@
 #include "log.hpp"
 
-#include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
 
 #include <array>
+#include <cstdio>
 #include <stdexcept>
 #include <vector>
 
@@ -130,7 +130,7 @@ TEST_F( LogFixture, ErrorWritesToStderr ) {
     fdRedirect l_err;
     l_err.start( STDERR_FILENO );
 
-    logg::error( "This is an {}: {}", "error", 77 );
+    logg$error( "This is an {}: {}", "error", 77 );
 
     const std::string l_captured = l_err.stopAndRead();
 
@@ -145,7 +145,7 @@ TEST_F( LogFixture, DebugWritesToStdout ) {
     fdRedirect l_out;
     l_out.start( STDOUT_FILENO );
 
-    logg::debug( "Dbg: {} {}", 1, "two" );
+    logg$debug( "Dbg: {} {}", 1, "two" );
 
     const std::string l_captured = l_out.stopAndRead();
 
@@ -160,7 +160,7 @@ TEST_F( LogFixture, VariableMacroPrintsVariable ) {
     l_out.start( STDOUT_FILENO );
 
     int l_testValue = 1234;
-    logg::variable(
+    logg$variable(
         l_testValue ); // macro expands to _variable which uses _debug
 
     const std::string l_captured = l_out.stopAndRead();

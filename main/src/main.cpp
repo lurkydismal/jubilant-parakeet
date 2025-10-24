@@ -31,21 +31,24 @@
 #include <algorithm>
 #include <cstdlib>
 #include <experimental/scope>
-#include <ranges>
+#include <map>
 #include <span>
 #include <string_view>
 #include <vector>
 
+#include "arhodigp.hpp"
 #include "event.hpp"
 #include "init.hpp"
 #include "iterate.hpp"
+#include "log.hpp"
 #include "quit.hpp"
 #include "runtime.hpp"
+#include "slickdl/init_quit.hpp"
+#include "slickdl/metadata.hpp"
+#include "stdfunc.hpp"
 #include "vsync.hpp"
 
 namespace {
-
-runtime::applicationState_t g_applicationState;
 
 #if defined( HOT_RELOAD )
 
@@ -465,98 +468,147 @@ auto hotReloadSo( std::string_view _sharedObjectPath ) -> bool {
 
 auto main( int _argumentCount, char** _argumentVector ) -> int {
     do {
+        // Parse arguments
         {
-            const std::vector< std::string_view > l_argumentVector =
-                stdfunc::spanToVector< char*, std::string_view >(
-                    std::span( _argumentVector, _argumentCount ) );
+            std::map< int, arhodigp::option_t > l_options{};
 
-            if ( !runtime::init( g_applicationState, l_argumentVector ) )
-                [[unlikely]] {
+            if ( !arhodigp::parseArguments(
+                     "",
+                     stdfunc::spanToVector< char*, std::string_view >(
+                         std::span( _argumentVector, _argumentCount ) ),
+                     runtime::applicationState_t::metadata::g_identifier,
+                     runtime::applicationState_t::metadata::g_description,
+                     runtime::applicationState_t::metadata::g_version,
+                     runtime::applicationState_t::metadata::g_contactAddress,
+                     l_options ) ) {
                 break;
             }
         }
 
-        auto l_onExit = std::experimental::scope_exit( [ & ] -> void {
-            runtime::quit( g_applicationState );
+        // TODO: Write descripption
+        {
+            // Metadata
+            slickdl::metadata::set(
+                window::window_t::g_defaultName,
+                std::format( "{}",
+                             runtime::applicationState_t::metadata::g_version ),
+                runtime::applicationState_t::metadata::g_identifier );
+
+            // TODO: Setup recources to load
+
+            // Init SDL sub-systems
+            slickdl::init::all( slickdl::init::flag_t::video );
+        }
+
+        auto [ l_nativeWindow, l_renderer ] = slickdl::windowAndRenderer(
+            std::string( window::window_t::g_defaultName ).c_str(),
+            slickdl::volume_t< int >{
+                640,
+                480,
+            },
+            SDL_WINDOW_INPUT_FOCUS );
+
+        runtime::applicationState_t l_applicationState(
+            l_nativeWindow, std::move( l_renderer ) );
+
+        // Log Window and Renderer
+        // TODO: Log renderer
+        {
+            logg$variable( l_applicationState.renderContext.window.width );
+            logg$variable( l_applicationState.renderContext.window.height );
+        }
+
+        if ( runtime::init( l_applicationState ) ) {
+            auto l_onExit = std::experimental::scope_exit( [ & ] -> void {
+                runtime::quit( l_applicationState );
 
 #if defined( __SANITIZE_LEAK__ )
 
-            __lsan_do_leak_check();
+                __lsan_do_leak_check();
 
 #endif
-        } );
+            } );
 
+            do {
 #if defined( HOT_RELOAD )
+                signal( SIGSEGV, crashHandler );
+                signal( SIGILL, crashHandler );
+                signal( SIGBUS, crashHandler );
 
-        signal( SIGSEGV, crashHandler );
-        signal( SIGILL, crashHandler );
-        signal( SIGBUS, crashHandler );
-
-        if ( !hotReloadSo( g_rootSharedObjectPath.c_str() ) ) [[unlikely]] {
-            break;
-        }
-
-        size_t l_iterationCount = 0;
-
-#endif
-
-        std::vector< runtime::event_t > l_events( 16 );
-
-        // Main loop
-        for ( ;; ) {
-            vsync::begin();
-
-            auto l_handleEvents = [ & ] -> bool {
-                // Poll events
-                {
-                    l_events.clear();
-
-                    SDL_PumpEvents();
-
-                    runtime::event_t l_event{};
-
-                    while ( SDL_PollEvent( &l_event ) ) {
-                        l_events.emplace_back( l_event );
-                    }
-                }
-
-                return ( std::ranges::all_of(
-                             l_events,
-                             [ & ]( const runtime::event_t& _event ) -> bool {
-                                 return ( runtime::event( g_applicationState,
-                                                          _event ) );
-                             } ) &&
-                         (
-                             // Empty means last event on current frame
-                             runtime::event( g_applicationState, {} ) ) );
-            };
-
-            if ( !l_handleEvents() ) {
-                break;
-            }
-
-            if ( !runtime::iterate( g_applicationState ) ) {
-                break;
-            }
-
-            vsync::end();
-
-            ( g_applicationState.renderContext.totalFramesRendered )++;
-
-#if defined( HOT_RELOAD )
-
-            l_iterationCount++;
-
-            if ( ( l_iterationCount % g_hotReloadCheckDelayFrames ) == 0 ) {
                 if ( !hotReloadSo( g_rootSharedObjectPath.c_str() ) )
                     [[unlikely]] {
                     break;
                 }
-            }
+
+                size_t l_iterationCount = 0;
+
 #endif
+
+                std::vector< runtime::event_t > l_events( 16 );
+
+                // Main loop
+                for ( ;; ) {
+                    vsync::begin();
+
+                    auto l_handleEvents = [ & ] -> bool {
+                        // Poll events
+                        {
+                            l_events.clear();
+
+                            SDL_PumpEvents();
+
+                            runtime::event_t l_event{};
+
+                            while ( SDL_PollEvent( &l_event ) ) {
+                                l_events.emplace_back( l_event );
+                            }
+                        }
+
+                        return (
+                            std::ranges::all_of(
+                                l_events,
+                                [ & ](
+                                    const runtime::event_t& _event ) -> bool {
+                                    return ( runtime::event( l_applicationState,
+                                                             _event ) );
+                                } ) &&
+                            (
+                                // Empty means last event on current frame
+                                runtime::event( l_applicationState, {} ) ) );
+                    };
+
+                    if ( !l_handleEvents() ) {
+                        break;
+                    }
+
+                    if ( !runtime::iterate( l_applicationState ) ) {
+                        break;
+                    }
+
+                    vsync::end();
+
+                    ( l_applicationState.renderContext.window
+                          .totalFramesRendered )++;
+
+#if defined( HOT_RELOAD )
+
+                    l_iterationCount++;
+
+                    if ( ( l_iterationCount % g_hotReloadCheckDelayFrames ) ==
+                         0 ) {
+                        if ( !hotReloadSo( g_rootSharedObjectPath.c_str() ) )
+                            [[unlikely]] {
+                            break;
+                        }
+                    }
+#endif
+                }
+            } while ( false );
+
+            return ( ( l_applicationState.status ) ? ( EXIT_SUCCESS )
+                                                   : ( EXIT_FAILURE ) );
         }
     } while ( false );
 
-    return ( ( g_applicationState.status ) ? ( EXIT_SUCCESS )
-                                           : ( EXIT_FAILURE ) );
+    return ( EXIT_FAILURE );
 }

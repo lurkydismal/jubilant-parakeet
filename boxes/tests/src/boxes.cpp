@@ -4,9 +4,9 @@
 
 using namespace boxes;
 
-// Helper to quickly make a span<vector<box_t>>
-static auto spanOfVec( const std::vector< box_t >& _v )
-    -> std::span< const box_t > {
+// Helper to quickly make a span<vector<slickdl::box_t<float>>>
+static auto spanOfVec( const std::vector< slickdl::box_t< float > >& _v )
+    -> std::span< const slickdl::box_t< float > > {
     return { _v.data(), _v.size() };
 }
 
@@ -15,7 +15,7 @@ static auto spanOfVec( const std::vector< box_t >& _v )
 // -------------------------
 
 TEST( BoxesDeathTests, ConstructorDiesOnEmptyFrames_ASSERT_DEATH ) {
-    std::vector< std::span< const box_t > > l_frames; // empty
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames; // empty
     // Constructor should assert when given empty
     // input.
     ASSERT_DEATH( { boxes_t l_b{ std::span( l_frames ) }; }, ".*" );
@@ -23,8 +23,8 @@ TEST( BoxesDeathTests, ConstructorDiesOnEmptyFrames_ASSERT_DEATH ) {
 
 TEST( BoxesDeathTests, ConstructorDiesOnFrameBeingEmpty_EXPECT_DEATH ) {
     // Create a frames-list that contains one empty frame span.
-    std::vector< std::span< const box_t > > l_frames{
-        std::span< const box_t >() };
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames{
+        std::span< const slickdl::box_t< float > >() };
 
     // The constructor checks that no contained frame is empty -> should die.
     EXPECT_DEATH( { boxes_t l_b{ std::span( l_frames ) }; }, ".*" );
@@ -36,13 +36,15 @@ TEST( BoxesDeathTests, ConstructorDiesOnFrameBeingEmpty_EXPECT_DEATH ) {
 
 TEST( BoxesLogic, ConstructorAcceptsNonEmptyFrames_CurrentKeyFrameContents ) {
     // frame 0
-    std::vector< box_t > l_f0{ box_t( 1.0f, 2.0f, 3.0f, 4.0f ) };
+    std::vector< slickdl::box_t< float > > l_f0{
+        slickdl::box_t< float >( 1.0f, 2.0f, 3.0f, 4.0f ) };
     // frame 1
-    std::vector< box_t > l_f1{ box_t( 5.0f, 6.0f, 7.0f, 8.0f ),
-                               box_t( 9.0f, 10.0f, 11.0f, 12.0f ) };
+    std::vector< slickdl::box_t< float > > l_f1{
+        slickdl::box_t< float >( 5.0f, 6.0f, 7.0f, 8.0f ),
+        slickdl::box_t< float >( 9.0f, 10.0f, 11.0f, 12.0f ) };
 
-    std::vector< std::span< const box_t > > l_frames{ spanOfVec( l_f0 ),
-                                                      spanOfVec( l_f1 ) };
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames{
+        spanOfVec( l_f0 ), spanOfVec( l_f1 ) };
 
     // Construct (should not die)
     boxes_t l_b{ std::span( l_frames ) };
@@ -57,11 +59,14 @@ TEST( BoxesLogic, ConstructorAcceptsNonEmptyFrames_CurrentKeyFrameContents ) {
 }
 
 TEST( BoxesLogic, StepAdvancesAndStopsWhenNoLoop ) {
-    std::vector< box_t > l_f0{ box_t( 1, 1, 2, 2 ) };
-    std::vector< box_t > l_f1{ box_t( 2, 2, 3, 3 ) };
-    std::vector< box_t > l_f2{ box_t( 3, 3, 4, 4 ) };
+    std::vector< slickdl::box_t< float > > l_f0{
+        slickdl::box_t< float >( 1, 1, 2, 2 ) };
+    std::vector< slickdl::box_t< float > > l_f1{
+        slickdl::box_t< float >( 2, 2, 3, 3 ) };
+    std::vector< slickdl::box_t< float > > l_f2{
+        slickdl::box_t< float >( 3, 3, 4, 4 ) };
 
-    std::vector< std::span< const box_t > > l_frames{
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames{
         spanOfVec( l_f0 ), spanOfVec( l_f1 ), spanOfVec( l_f2 ) };
 
     boxes_t l_b{ std::span( l_frames ) };
@@ -85,11 +90,13 @@ TEST( BoxesLogic, StepAdvancesAndStopsWhenNoLoop ) {
 }
 
 TEST( BoxesLogic, StepWrapsWhenLoopTrue ) {
-    std::vector< box_t > l_f0{ box_t( 1, 1, 2, 2 ) };
-    std::vector< box_t > l_f1{ box_t( 2, 2, 3, 3 ) };
+    std::vector< slickdl::box_t< float > > l_f0{
+        slickdl::box_t< float >( 1, 1, 2, 2 ) };
+    std::vector< slickdl::box_t< float > > l_f1{
+        slickdl::box_t< float >( 2, 2, 3, 3 ) };
 
-    std::vector< std::span< const box_t > > l_frames{ spanOfVec( l_f0 ),
-                                                      spanOfVec( l_f1 ) };
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames{
+        spanOfVec( l_f0 ), spanOfVec( l_f1 ) };
 
     boxes_t l_b{ std::span( l_frames ) };
 
@@ -105,8 +112,10 @@ TEST( BoxesLogic, StepWrapsWhenLoopTrue ) {
 }
 
 TEST( BoxesLogic, SingleFrameStepNoChangeRegardlessOfLoopFlag ) {
-    std::vector< box_t > l_f0{ box_t( 7, 8, 9, 10 ) };
-    std::vector< std::span< const box_t > > l_frames{ spanOfVec( l_f0 ) };
+    std::vector< slickdl::box_t< float > > l_f0{
+        slickdl::box_t< float >( 7, 8, 9, 10 ) };
+    std::vector< std::span< const slickdl::box_t< float > > > l_frames{
+        spanOfVec( l_f0 ) };
 
     boxes_t l_b{ std::span( l_frames ) };
 
