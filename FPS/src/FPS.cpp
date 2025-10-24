@@ -16,7 +16,7 @@ namespace {
 std::jthread g_loggerThread;
 
 void logger( const std::stop_token& _stopToken,
-             [[maybe_unused]] std::atomic< size_t >& _frameCount ) {
+             [[maybe_unused]] size_t& _frameCount ) {
     using clock_t = std::chrono::steady_clock;
     using namespace std::chrono_literals;
 
@@ -29,7 +29,9 @@ void logger( const std::stop_token& _stopToken,
 
 #if !defined( TESTS )
         {
-            const auto l_framesCount = _frameCount.exchange( 0 );
+            const auto l_framesCount = _frameCount;
+            // FIX: Make total and not per frame
+            _frameCount = 0;
 
             const auto l_frameDuration = ( l_timeNow - l_timeLast );
             const std::chrono::duration< double > l_frameDurationInSeconds =
@@ -59,7 +61,7 @@ void logger( const std::stop_token& _stopToken,
 
 namespace FPS {
 
-void init( std::atomic< size_t >& _frameCount ) {
+void init( size_t& _frameCount ) {
     g_loggerThread = std::jthread( logger, std::ref( _frameCount ) );
 }
 

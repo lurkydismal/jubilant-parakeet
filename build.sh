@@ -157,10 +157,10 @@ export BUILD_DEFINES_HOT_RELOAD=(
 
 export BUILD_INCLUDES=()
 
-export LINK_FLAGS="-fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections -Wl,--no-eh-frame-hdr"
+export LINK_FLAGS="-fPIC -fuse-ld=mold -Wl,-O1 -Wl,--gc-sections"
 export LINK_FLAGS_DEBUG="-rdynamic"
-export LINK_FLAGS_RELEASE="-flto -s"
-export LINK_FLAGS_PROFILE=""
+export LINK_FLAGS_RELEASE="-flto -s -Wl,--no-eh-frame-hdr"
+export LINK_FLAGS_PROFILE="-Wl,--no-eh-frame-hdr"
 export LINK_FLAGS_TESTS="-fopenmp $LINK_FLAGS_DEBUG"
 export LINK_FLAGS_HOT_RELOAD="-Wl,-rpath,\$ORIGIN"
 

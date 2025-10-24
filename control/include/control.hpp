@@ -1,12 +1,11 @@
 #pragma once
 
-#include <SDL3/SDL_keyboard.h>
-#include <SDL3/SDL_scancode.h>
-
 #include <string>
 #include <string_view>
 
 #include "input.hpp"
+#include "slickdl/keyboard.hpp"
+#include "slickdl/scancode.hpp"
 
 namespace control {
 
@@ -17,7 +16,7 @@ using control_t = struct control {
     ~control() = default;
 
     constexpr control( input::input_t _input ) : input( _input ) {}
-    constexpr control( SDL_Scancode _scancode, input::input_t _input )
+    constexpr control( slickdl::scancode_t _scancode, input::input_t _input )
         : scancode( _scancode ), input( _input ) {}
 
     auto operator=( const control& ) -> control& = default;
@@ -31,11 +30,8 @@ using control_t = struct control {
 
     // TODO: Implement
     operator std::string() const {
-        std::string_view l_keyName = SDL_GetKeyName( scancode );
-
-        if ( l_keyName.empty() ) {
-            l_keyName = "UNKNOWN";
-        }
+        std::string_view l_keyName = slickdl::keyboard::keyName(
+            slickdl::keyboard::scancodeToKeycode( scancode ) );
 
 #if 0
         return ( std::format( "{} - {}", l_keyName, input ) );
@@ -43,7 +39,7 @@ using control_t = struct control {
         return ( std::string( l_keyName ) );
     }
 
-    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+    slickdl::scancode_t scancode = slickdl::scancode_t::unknown;
     input::input_t input;
 };
 

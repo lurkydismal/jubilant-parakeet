@@ -74,8 +74,8 @@ void resolver( const std::stop_token& _stopToken ) {
                                         l_saveRequest.needAppend );
 
             if ( !l_result ) [[unlikely]] {
-                logg::error( "Saving asset of size {} to path: '{}'",
-                             l_saveRequest.asset.size(), l_saveRequest.path );
+                logg$error( "Saving asset of size {} to path: '{}'",
+                            l_saveRequest.asset.size(), l_saveRequest.path );
             }
 
             // TODO: Pop request
@@ -107,7 +107,7 @@ void quit() {
 
 namespace sync {
 
-auto load( std::string_view _path ) -> asset_t {
+auto load( [[maybe_unused]] std::string_view _path ) -> asset_t {
     asset_t l_returnValue = std::nullopt;
 
     do {
@@ -159,13 +159,15 @@ auto load( std::string_view _path ) -> asset_t {
 #endif
     } while ( false );
 
+#if 0
 EXIT:
+#endif
     return ( l_returnValue );
 }
 
 auto save( std::span< const std::byte > _asset,
            std::string_view _path,
-           bool _needAppend ) -> bool {
+           [[maybe_unused]] bool _needAppend ) -> bool {
     bool l_returnValue = false;
 
     do {
@@ -190,7 +192,7 @@ auto save( std::span< const std::byte > _asset,
             }
 
             if ( l_fileDescriptor == -1 ) {
-                logg::error( "Opening file for saving: '{}'", _path );
+                logg$error( "Opening file for saving: '{}'", _path );
 
                 break;
             }
@@ -200,7 +202,7 @@ auto save( std::span< const std::byte > _asset,
 
             if ( l_writtenCount != static_cast< ssize_t >( _asset.size() ) )
                 [[unlikely]] {
-                logg::error( "Writing to file" );
+                logg$error( "Writing to file" );
 
                 goto EXIT_SAVE;
             }
@@ -230,7 +232,7 @@ auto save( std::span< const std::byte > _asset,
         if ( g_saveQueueLength >= MAX_REQUESTS ) {
             stdfunc::trap();
 
-            logg::error( "Save queue length is already full" );
+            logg$error( "Save queue length is already full" );
 
             pthread_mutex_unlock( &g_saveQueueMutex );
 

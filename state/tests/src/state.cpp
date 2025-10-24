@@ -60,12 +60,12 @@ TEST( State, StateRenderOffsetsAnimationBoxAndForwardsNoExtras ) {
     animation_t anim;
     boxes_t bx;
     // set animation current box
-    anim.current_box = boxes::box_t{ 10, 20, 8, 8 };
+    anim.current_box = slickdl::box_t<float>{ 10, 20, 8, 8 };
 
     SDL_Renderer renderer;
     state_t s( std::move( anim ), std::move( bx ), false, &renderer );
 
-    boxes::box_t camera{ 5, 7, 0, 0 };
+    slickdl::box_t<float> camera{ 5, 7, 0, 0 };
 
     // call render without extras; both animation.render() and boxes.render()
     // should be invoked
@@ -90,12 +90,12 @@ TEST( State, StateRenderOffsetsAnimationBoxAndForwardsNoExtras ) {
 TEST( StateRenderForwardsAngleAndFlip ) {
     animation_t anim;
     boxes_t bx;
-    anim.current_box = boxes::box_t{ 2, 3, 4, 4 };
+    anim.current_box = slickdl::box_t<float>{ 2, 3, 4, 4 };
 
     SDL_Renderer renderer;
     state_t s( std::move( anim ), std::move( bx ), false, &renderer );
 
-    boxes::box_t camera{ 1, 1, 0, 0 };
+    slickdl::box_t<float> camera{ 1, 1, 0, 0 };
 
     EXPECT_NO_THROW( s.render( camera, false, false, 45.0,
                                SDL_FlipMode::SDL_FLIP_HORIZONTAL ) );

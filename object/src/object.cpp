@@ -5,13 +5,13 @@ namespace object {
 namespace {
 
 template < typename... Arguments >
-void render( const object_t::position_t& _position,
-             const state::state_t& _state,
-             const boxes::box_t& _cameraBoxCoordinates,
+void render( const slickdl::point_t< float >& _position,
+             state::state_t& _state,
+             const slickdl::box_t< float >& _cameraBoxCoordinates,
              bool _doDrawBoxes,
              bool _doFillBoxes,
              Arguments&&... _arguments ) {
-    const boxes::box_t l_targetRectangle(
+    const slickdl::box_t< float > l_targetRectangle(
         ( _position.x - _cameraBoxCoordinates.x ),
         ( _position.y - _cameraBoxCoordinates.y ), 0, 0 );
 
@@ -21,18 +21,18 @@ void render( const object_t::position_t& _position,
 
 } // namespace
 
-void object_t::render( const boxes::box_t& _cameraBoxCoordinates,
+void object_t::render( const slickdl::box_t< float >& _cameraBoxCoordinates,
                        bool _doDrawBoxes,
-                       bool _doFillBoxes ) const {
+                       bool _doFillBoxes ) {
     ::object::render( _position, _currentState(), _cameraBoxCoordinates,
                       _doDrawBoxes, _doFillBoxes );
 }
 
-void object_t::render( const boxes::box_t& _cameraBoxCoordinates,
+void object_t::render( const slickdl::box_t< float >& _cameraBoxCoordinates,
                        bool _doDrawBoxes,
                        bool _doFillBoxes,
                        double _angle,
-                       SDL_FlipMode _flipMode ) const {
+                       SDL_FlipMode _flipMode ) {
     ::object::render( _position, _currentState(), _cameraBoxCoordinates,
                       _doDrawBoxes, _doFillBoxes, _angle, _flipMode );
 }

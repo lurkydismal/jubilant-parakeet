@@ -4,45 +4,42 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <initializer_list>
 #include <span>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "boxes.hpp"
+#include "slickdl/point.hpp"
 #include "state.hpp"
 #include "stddebug.hpp"
 
 namespace object {
 
 using object_t = struct object {
-    // TODO: Improve
-    using position_t = struct position {
-        float x;
-        float y;
-    };
-
     object() = delete;
-    object( const object& ) = default;
-    object( object&& ) = default;
-    ~object() = default;
+    object( const object& ) = delete;
 
     constexpr object(
-        std::span< const std::pair< std::string, state::state_t > > _states ) {
+        std::span< std::pair< std::string_view, state::state_t > > _states ) {
         _stateNames.reserve( _states.size() );
         this->_states.reserve( _states.size() );
 
-        for ( const auto& [ l_name, l_state ] : _states ) {
-            _stateNames.emplace_back( l_name );
-            this->_states.emplace_back( l_state );
+        for ( auto&& [ _name, _state ] : _states ) {
+            _stateNames.emplace_back( _name );
+            this->_states.emplace_back( std::move( _state ) );
         }
     }
 
+#if 0
+    // FIX: Implement
     constexpr object(
         std::initializer_list< std::pair< std::string, state::state_t > >
             _states )
         : object( std::span( _states ) ) {}
+#endif
+
+    object( object&& ) = default;
+    ~object() = default;
 
     auto operator=( const object& ) -> object& = default;
     auto operator=( object&& ) -> object& = default;
@@ -53,25 +50,25 @@ using object_t = struct object {
 
     constexpr void step() { _currentState().step(); }
 
-    constexpr void move( float _x, float _y ) {
-        stdfunc::assert( _x );
-        stdfunc::assert( _y );
+    constexpr void move( float _offsetX, float _offsetY ) {
+        stdfunc::assert( _offsetX );
+        stdfunc::assert( _offsetY );
 
-        _position.x =
-            std::clamp( ( _position.x + _x ), _minPosition.x, _maxPosition.x );
-        _position.y =
-            std::clamp( ( _position.y + _y ), _minPosition.y, _maxPosition.y );
+        _position.x = std::clamp( ( _position.x + _offsetX ), _minPosition.x,
+                                  _maxPosition.x );
+        _position.y = std::clamp( ( _position.y + _offsetY ), _minPosition.y,
+                                  _maxPosition.y );
     }
 
-    void render( const boxes::box_t& _cameraBoxCoordinates,
+    void render( const slickdl::box_t< float >& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
-                 bool _doFillBoxes ) const;
+                 bool _doFillBoxes );
 
-    void render( const boxes::box_t& _cameraBoxCoordinates,
+    void render( const slickdl::box_t< float >& _cameraBoxCoordinates,
                  bool _doDrawBoxes,
                  bool _doFillBoxes,
                  double _angle,
-                 SDL_FlipMode _flipMode ) const;
+                 SDL_FlipMode _flipMode );
 
     // helpers
 private:
@@ -90,9 +87,9 @@ private:
     std::vector< state::state_t > _states;
     size_t _currentStateIndex{};
 
-    position_t _position{};
-    position_t _minPosition{};
-    position_t _maxPosition{};
+    slickdl::point_t< float > _position{};
+    slickdl::point_t< float > _minPosition{};
+    slickdl::point_t< float > _maxPosition{};
 };
 
 } // namespace object

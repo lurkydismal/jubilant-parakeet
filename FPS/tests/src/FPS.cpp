@@ -8,14 +8,14 @@
 using namespace std::chrono_literals;
 
 TEST( FPS, InitQuit_NoCrash_FastInterval ) {
-    std::atomic< size_t > l_frameCount{ 0 };
+    size_t l_frameCount{ 0 };
 
     // use a short interval so tests run fast
     FPS::init( l_frameCount );
 
     // simulate some frames being produced
     for ( int l_i = 0; l_i < 200; ++l_i ) {
-        l_frameCount.fetch_add( 1 );
+        l_frameCount++;
         std::this_thread::sleep_for( 1ms );
     }
 
@@ -29,14 +29,14 @@ TEST( FPS, InitQuit_NoCrash_FastInterval ) {
 }
 
 TEST( FPS, RepeatedInitQuit ) {
-    std::atomic< size_t > l_frameCount{ 0 };
+    size_t l_frameCount{ 0 };
 
     for ( int l_cycle = 0; l_cycle < 5; ++l_cycle ) {
         FPS::init( l_frameCount );
 
         // produce a few frames
         for ( int l_i = 0; l_i < 50; ++l_i ) {
-            l_frameCount.fetch_add( 1 );
+            l_frameCount++;
             std::this_thread::sleep_for( 1ms );
         }
 

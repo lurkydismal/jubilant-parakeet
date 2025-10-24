@@ -52,19 +52,7 @@ watch::~watch() {
     l_closeDescriptor( _epollDescriptor );
 };
 
-watch::watch( std::string_view _path, callbackFile_t _callback, event_t _event )
-    : watch( _path,
-             static_cast< callback_t >( std::move( _callback ) ),
-             _event ) {}
-
-watch::watch( std::string_view _path,
-              callbackDirectory_t _callback,
-              event_t _event )
-    : watch( _path,
-             static_cast< callback_t >( std::move( _callback ) ),
-             _event ) {}
-
-watch::watch( std::string_view _path, callback_t _callback, event_t _event )
+watch::watch( std::string_view _path, callback_t&& _callback, event_t _event )
     : _inotifyDescriptor( inotify_init1( IN_NONBLOCK | IN_ONLYDIR ) ),
       _epollDescriptor( epoll_create1( 0 ) ),
       _callback( std::move( _callback ) ) {

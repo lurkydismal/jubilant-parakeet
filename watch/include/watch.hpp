@@ -31,16 +31,25 @@ using watch_t = struct watch {
         bool( std::string_view _fileName, event_t _event, uint32_t _cookie ) >;
 
     watch() = delete;
-    watch( const watch& ) = default;
+
+    watch( std::string_view _path, callbackFile_t&& _callback, event_t _event )
+        : watch( _path,
+                 static_cast< callback_t >( std::move( _callback ) ),
+                 _event ) {}
+
+    watch( std::string_view _path,
+           callbackDirectory_t&& _callback,
+           event_t _event )
+        : watch( _path,
+                 static_cast< callback_t >( std::move( _callback ) ),
+                 _event ) {}
+
+    watch( const watch& ) = delete;
     watch( watch&& ) = default;
+
     ~watch();
 
-    watch( std::string_view _path, callbackFile_t _callback, event_t _event );
-    watch( std::string_view _path,
-           callbackDirectory_t _callback,
-           event_t _event );
-
-    auto operator=( const watch& ) -> watch& = default;
+    auto operator=( const watch& ) -> watch& = delete;
     auto operator=( watch&& ) -> watch& = default;
 
     void check( bool _isBlocking );
@@ -50,7 +59,7 @@ private:
     // TODO: Improve
     using callback_t = std::variant< callbackFile_t, callbackDirectory_t >;
 
-    watch( std::string_view _path, callback_t _callback, event_t _event );
+    watch( std::string_view _path, callback_t&& _callback, event_t _event );
 
     // Variable
 private:
