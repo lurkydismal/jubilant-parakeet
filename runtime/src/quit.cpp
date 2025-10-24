@@ -1,14 +1,12 @@
 #include "quit.hpp"
 
-#include <SDL3/SDL_error.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_render.h>
 #include <SDL3/SDL_video.h>
 
-#include <string_view>
-
 #include "FPS.hpp"
 #include "log.hpp"
+#include "slickdl/error.hpp"
 #include "vsync.hpp"
 
 namespace runtime {
@@ -16,10 +14,10 @@ namespace runtime {
 void quit( applicationState_t& _applicationState ) {
     // Report if SDL error occured before quitting
     {
-        std::string_view l_errorMessage = SDL_GetError();
+        const std::optional l_errorMessage = slickdl::error::get();
 
-        if ( !l_errorMessage.empty() ) [[unlikely]] {
-            logg::error( "Application quit: '{}'", l_errorMessage );
+        if ( l_errorMessage ) [[unlikely]] {
+            logg$error( "Application quit: '{}'", l_errorMessage.value() );
         }
     }
 
@@ -37,15 +35,16 @@ void quit( applicationState_t& _applicationState ) {
     // Application state
     {
         if ( !_applicationState.unload() ) [[unlikely]] {
-            logg::error( "Unloading application state" );
+            logg$error( "Unloading application state" );
         }
 
         // Report if SDL error occured during quitting
         {
-            std::string_view l_errorMessage = SDL_GetError();
+            const std::optional l_errorMessage = slickdl::error::get();
 
-            if ( !l_errorMessage.empty() ) [[unlikely]] {
-                logg::error( "Application shutdown: '{}'", l_errorMessage );
+            if ( l_errorMessage ) [[unlikely]] {
+                logg$error( "Application shutdown: '{}'",
+                            l_errorMessage.value() );
             }
         }
 
@@ -60,7 +59,7 @@ void quit( applicationState_t& _applicationState ) {
 
     SDL_Quit();
 
-    logg::debug( "Quitted" );
+    logg$debug( "Quitted" );
 }
 
 } // namespace runtime

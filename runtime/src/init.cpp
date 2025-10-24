@@ -1,144 +1,69 @@
 #include "init.hpp"
 
-#include <SDL3/SDL_error.h>
-#include <SDL3/SDL_gamepad.h>
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_surface.h>
 #include <SDL3/SDL_video.h>
 
 #include <format>
-#include <map>
-#include <string>
 
 #include "FPS.hpp"
-#include "arhodigp.hpp"
 #include "log.hpp"
+#include "slickdl/render_texture.hpp"
+#include "slickdl/surface.hpp"
 #include "vsync.hpp"
 #include "window.hpp"
 
 namespace runtime {
 
-auto init( applicationState_t& _applicationState,
-           std::span< const std::string_view > _arguments ) -> bool {
+auto init( applicationState_t& _applicationState ) -> bool {
     bool l_returnValue = false;
 
     do {
-        // Parse arguments
-        {
-            std::map< int, arhodigp::option_t > l_options{};
+        // Default scale mode
+        _applicationState.renderContext.renderer.defaultTextureScaleMode(
+            slickdl::scale_t::pixelArt );
 
-            if ( !arhodigp::parseArguments(
-                     "", _arguments, applicationState_t::metadata::g_identifier,
-                     applicationState_t::metadata::g_description,
-                     applicationState_t::metadata::g_version,
-                     applicationState_t::metadata::g_contactAddress,
-                     l_options ) ) {
-                break;
-            }
+#if 0
+        {
+                logg$error( "Setting render pixel art scale mode: '{}'",
+                            slickdl::error::get().value() );
+
+                logg::warning( "Falling back to render nearest scale mode" );
+
+            _applicationState.renderContext.renderer.defaultTextureScaleMode(slickdl::scale_t::nearest);
+                    logg$error( "Setting render nearest scale mode: '{}'",
+                                slickdl::error::get().value() );
+        }
+#endif
+
+        // TODO: Set SDL3 logical resolution
+        // TODO: Set new SDL3 things
+
+        // Scaling
+        {
+            const float l_scaleX =
+                ( static_cast< float >(
+                      _applicationState.renderContext.window.width ) /
+                  static_cast< float >(
+                      _applicationState.renderContext.logicalWidth ) );
+            const float l_scaleY =
+                ( static_cast< float >(
+                      _applicationState.renderContext.window.height ) /
+                  static_cast< float >(
+                      _applicationState.renderContext.logicalHeight ) );
+
+            _applicationState.renderContext.renderer.scale( l_scaleX,
+                                                            l_scaleY );
+
+#if 0
+            logg$error( "Setting render scale: '{}'",
+                        slickdl::error::get().value() );
+#endif
         }
 
-        // Generate application state
-        {
-            // Metadata
-            {
-                logg::info(
-                    "Window name: '{}', Version: '{}', Identifier: '{}'",
-                    window::window_t::g_name,
-                    applicationState_t::metadata::g_version,
-                    applicationState_t::metadata::g_identifier );
+        // Load resources
+        if ( !_applicationState.load() ) {
+            logg$error( "Loading application state" );
 
-                if ( !SDL_SetAppMetadata(
-                         std::string( window::window_t::g_name ).c_str(),
-                         std::format( "{}",
-                                      applicationState_t::metadata::g_version )
-                             .c_str(),
-                         std::string(
-                             applicationState_t::metadata::g_identifier )
-                             .c_str() ) ) {
-                    logg::error( "Setting render scale: '{}'", SDL_GetError() );
-
-                    break;
-                }
-            }
-
-            // TODO: Setup recources to load
-
-            // Init SDL sub-systems
-            SDL_Init( SDL_INIT_VIDEO );
-
-            // Window and Renderer
-            {
-                if ( !SDL_CreateWindowAndRenderer(
-                         std::string( window::window_t::g_name ).c_str(),
-                         _applicationState.renderContext.window.width,
-                         _applicationState.renderContext.window.height,
-                         ( SDL_WINDOW_INPUT_FOCUS ),
-                         &( _applicationState.renderContext.window.handle ),
-                         &( _applicationState.renderContext.renderer ) ) ) {
-                    logg::error( "Window or Renderer creation: '{}'",
-                                 SDL_GetError() );
-
-                    break;
-                }
-
-                logg::variable( _applicationState.renderContext.window.width );
-                logg::variable( _applicationState.renderContext.window.height );
-            }
-
-            // Default scale mode
-            {
-                if ( !SDL_SetDefaultTextureScaleMode(
-                         _applicationState.renderContext.renderer,
-                         SDL_SCALEMODE_PIXELART ) ) {
-                    logg::error( "Setting render pixel art scale mode: '{}'",
-                                 SDL_GetError() );
-
-                    logg::warning(
-                        "Falling back to render nearest scale mode" );
-
-                    if ( !SDL_SetDefaultTextureScaleMode(
-                             _applicationState.renderContext.renderer,
-                             SDL_SCALEMODE_NEAREST ) ) {
-                        logg::error( "Setting render nearest scale mode: '{}'",
-                                     SDL_GetError() );
-
-                        break;
-                    }
-                }
-            }
-
-            // TODO: Set SDL3 logical resolution
-            // TODO: Set new SDL3 things
-
-            // Scaling
-            {
-                const float l_scaleX =
-                    ( static_cast< float >(
-                          _applicationState.renderContext.window.width ) /
-                      static_cast< float >(
-                          _applicationState.renderContext.logicalWidth ) );
-                const float l_scaleY =
-                    ( static_cast< float >(
-                          _applicationState.renderContext.window.height ) /
-                      static_cast< float >(
-                          _applicationState.renderContext.logicalHeight ) );
-
-                if ( !SDL_SetRenderScale(
-                         _applicationState.renderContext.renderer, l_scaleX,
-                         l_scaleY ) ) {
-                    logg::error( "Setting render scale: '{}'", SDL_GetError() );
-
-                    break;
-                }
-            }
-
-            // Load resources
-            if ( !_applicationState.load() ) {
-                logg::error( "Loading application state" );
-
-                break;
-            }
+            break;
         }
 
         // Vsync
@@ -146,21 +71,21 @@ auto init( applicationState_t& _applicationState,
                      _applicationState.renderContext.window.desiredFPS );
 
         // FPS
-        FPS::init( _applicationState.renderContext.totalFramesRendered );
+        FPS::init( _applicationState.renderContext.window.totalFramesRendered );
 
         // Gamepad
         {
-            if ( !!( SDL_HasGamepad() ) ) {
-                logg::error( "Initializing Gamepad" );
+            if ( SDL_HasGamepad() ) {
+                logg$error( "Initializing Gamepad" );
 
                 break;
             }
         }
 
-        logg::debug( "Initialized" );
-
         l_returnValue = true;
     } while ( false );
+
+    logg$debug( "Initialized" );
 
     return ( l_returnValue );
 }
