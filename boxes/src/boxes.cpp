@@ -41,9 +41,8 @@ void boxes_t::render( slickdl::renderer_t& _renderer,
         };
 
         auto l_render = [ & ]( auto _renderFunction ) -> void {
-            const SDL_FRect l_temp = l_targetRectangle;
-
-            const bool l_result = _renderFunction( _renderer, &l_temp );
+            const bool l_result =
+                _renderFunction( _renderer, l_targetRectangle );
 
             slickdl::assert( l_result );
         };

@@ -28,5 +28,5 @@ Improve watch
 Implement nullopt in slickdl
 
 P0
-Implement slickdl: video
+Implement slickdl: video, font
 Improve slickdl: GUID, sensor, joystick, gamepad, mouse

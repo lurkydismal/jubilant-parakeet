@@ -32,7 +32,7 @@ export testsToBuild=(
     # "plthook"
     "ctre"
 
-    # "slickdl"
+    "slickdl"
     "arhodigp"
     "log"
     "forward_circular_buffer"

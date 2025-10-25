@@ -25,11 +25,9 @@ void render( const slickdl::box_t< float >& _targetBoxSizes,
 
     // Render
     {
-        const SDL_FRect l_temp = l_resolvedTargetRectangle;
-
-        const bool l_result =
-            _renderFunction( _renderer, _keyFrame, nullptr, &l_temp,
-                             std::forward< Arguments >( _arguments )... );
+        const bool l_result = _renderFunction(
+            _renderer, _keyFrame, nullptr, l_resolvedTargetRectangle,
+            std::forward< Arguments >( _arguments )... );
 
         slickdl::assert( l_result );
     }
