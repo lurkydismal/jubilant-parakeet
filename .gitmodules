@@ -16,3 +16,6 @@
 [submodule "slickdl"]
 	path = slickdl
 	url = https://github.com/lurkydismal/slickdl.git
+[submodule "rapidhash"]
+	path = rapidhash
+	url = https://github.com/lurkydismal/rapidhash.git
