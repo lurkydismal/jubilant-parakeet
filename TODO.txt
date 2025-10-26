@@ -1,5 +1,6 @@
 P6
 Implement slickdl: audio, events
+Implement nullopt in slickdl
 Make texture_t shareable
 Move to available C++ 26
 Change pthread() to fork() in asset_t async save
@@ -25,8 +26,7 @@ Wrap plthook
 P1
 Implement inputBuffer
 Improve watch
-Implement nullopt in slickdl
 
 P0
-Implement slickdl: video, font
-Improve slickdl: GUID, sensor, joystick, gamepad, mouse
+Implement slickdl: video, font, hints, time
+Fix box_t: intersection and enclosing points ( width and height is incorrect )
