@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_surface.h>
-
 #include <utility>
 
 #include "animation.hpp"
@@ -49,7 +47,9 @@ using state_t = struct state {
                  bool _doDrawBoxes,
                  bool _doFillBoxes,
                  double _angle,
-                 SDL_FlipMode _flipMode );
+                 slickdl::flip_t _flipMode,
+                 const std::optional< slickdl::point_t< float > >& _center =
+                     std::nullopt );
 
     // Variables
 private:

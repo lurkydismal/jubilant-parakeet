@@ -1,11 +1,10 @@
 #include "init.hpp"
 
-#include <SDL3/SDL_video.h>
-
 #include <format>
 
 #include "FPS.hpp"
 #include "log.hpp"
+#include "slickdl/gamepad.hpp"
 #include "slickdl/render_texture.hpp"
 #include "slickdl/surface.hpp"
 #include "vsync.hpp"
@@ -75,7 +74,7 @@ auto init( applicationState_t& _applicationState ) -> bool {
 
         // Gamepad
         {
-            if ( SDL_HasGamepad() ) {
+            if ( slickdl::gamepad::hasAny() ) {
                 logg$error( "Initializing Gamepad" );
 
                 break;

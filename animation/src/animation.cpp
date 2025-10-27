@@ -1,36 +1,21 @@
 #include "animation.hpp"
 
-#include <SDL3/SDL_render.h>
-
-#include "slickdl.hpp"
 #include "slickdl/line_box.hpp"
 
 namespace animation {
 
 namespace {
 
-template < typename... Arguments >
-void render( const slickdl::box_t< float >& _targetBoxSizes,
-             const slickdl::texture_t& _keyFrame,
-             slickdl::renderer_t& _renderer,
-             const slickdl::box_t< float >& _targetBoxCoordinates,
-             auto _renderFunction,
-             Arguments&&... _arguments ) {
-    const slickdl::box_t< float > l_resolvedTargetRectangle = {
+inline auto resolveTargetBox(
+    const slickdl::box_t< float >& _targetBoxSizes,
+    const slickdl::box_t< float >& _targetBoxCoordinates )
+    -> slickdl::box_t< float > {
+    return ( slickdl::box_t< float >{
         _targetBoxCoordinates.x,
         _targetBoxCoordinates.y,
         _targetBoxSizes.width,
         _targetBoxSizes.height,
-    };
-
-    // Render
-    {
-        const bool l_result = _renderFunction(
-            _renderer, _keyFrame, nullptr, l_resolvedTargetRectangle,
-            std::forward< Arguments >( _arguments )... );
-
-        slickdl::assert( l_result );
-    }
+    } );
 }
 
 } // namespace
@@ -38,17 +23,21 @@ void render( const slickdl::box_t< float >& _targetBoxSizes,
 void animation_t::render(
     slickdl::renderer_t& _renderer,
     const slickdl::box_t< float >& _targetBoxCoordinates ) const {
-    ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,
-                         _targetBoxCoordinates, SDL_RenderTexture );
+    currentKeyFrame().render(
+        _renderer,
+        resolveTargetBox( currentTargetBox(), _targetBoxCoordinates ) );
 }
 
-void animation_t::render( slickdl::renderer_t& _renderer,
-                          const slickdl::box_t< float >& _targetBoxCoordinates,
-                          double _angle,
-                          SDL_FlipMode _flipMode ) const {
-    ::animation::render( currentTargetBox(), currentKeyFrame(), _renderer,
-                         _targetBoxCoordinates, SDL_RenderTextureRotated,
-                         _angle, nullptr, _flipMode );
+void animation_t::render(
+    slickdl::renderer_t& _renderer,
+    const slickdl::box_t< float >& _targetBoxCoordinates,
+    double _angle,
+    slickdl::flip_t _flipMode,
+    const std::optional< slickdl::point_t< float > >& _center ) const {
+    currentKeyFrame().renderRotated(
+        _renderer, _angle,
+        resolveTargetBox( currentTargetBox(), _targetBoxCoordinates ),
+        _flipMode, _center );
 }
 
 } // namespace animation

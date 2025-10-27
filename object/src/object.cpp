@@ -28,13 +28,15 @@ void object_t::render( const slickdl::box_t< float >& _cameraBoxCoordinates,
                       _doDrawBoxes, _doFillBoxes );
 }
 
-void object_t::render( const slickdl::box_t< float >& _cameraBoxCoordinates,
-                       bool _doDrawBoxes,
-                       bool _doFillBoxes,
-                       double _angle,
-                       SDL_FlipMode _flipMode ) {
+void object_t::render(
+    const slickdl::box_t< float >& _cameraBoxCoordinates,
+    bool _doDrawBoxes,
+    bool _doFillBoxes,
+    double _angle,
+    slickdl::flip_t _flipMode,
+    const std::optional< slickdl::point_t< float > >& _center ) {
     ::object::render( _position, _currentState(), _cameraBoxCoordinates,
-                      _doDrawBoxes, _doFillBoxes, _angle, _flipMode );
+                      _doDrawBoxes, _doFillBoxes, _angle, _flipMode, _center );
 }
 
 } // namespace object

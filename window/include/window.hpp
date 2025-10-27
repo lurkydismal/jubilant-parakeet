@@ -5,6 +5,7 @@
 
 #include "log.hpp"
 #include "slickdl.hpp"
+#include "slickdl/video.hpp"
 #include "vsync.hpp"
 
 namespace window {
@@ -18,14 +19,16 @@ using window_t = struct window {
                     640,
                     480,
                 },
-            SDL_WindowFlags _flags = SDL_WINDOW_INPUT_FOCUS )
+            slickdl::video::window::flags_t _flags =
+                slickdl::video::window::flags_t::inputFocus )
         : name( _title ),
           width( _volume.width ),
           height( _volume.height ),
-          handle( SDL_CreateWindow( std::string( _title ).c_str(),
-                                    _volume.width,
-                                    _volume.height,
-                                    _flags ) ) {
+          handle(
+              SDL_CreateWindow( std::string( _title ).c_str(),
+                                _volume.width,
+                                _volume.height,
+                                slickdl::video::window::toLegacy( _flags ) ) ) {
         logg::info( "Window '{}' created", name );
     }
 

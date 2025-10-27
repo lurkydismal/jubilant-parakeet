@@ -1,14 +1,10 @@
 #include "event.hpp"
 
-#include <SDL3/SDL_render.h>
-
 #include <cstddef>
 #include <ranges>
 
 #include "input.hpp"
-#include "log.hpp"
 #include "runtime.hpp"
-#include "slickdl/error.hpp"
 #include "slickdl/keyboard.hpp"
 #include "slickdl/scancode.hpp"
 #include "stddebug.hpp"
@@ -40,13 +36,8 @@ auto onWindowResize( applicationState_t& _applicationState,
             const float l_scaleX = ( _width / l_logicalWidth );
             const float l_scaleY = ( _height / l_logicalHeigth );
 
-            if ( !SDL_SetRenderScale( _applicationState.renderContext.renderer,
-                                      l_scaleX, l_scaleY ) ) [[unlikely]] {
-                logg$error( "Setting render scale: '{}'",
-                            slickdl::error::get().value() );
-
-                break;
-            }
+            _applicationState.renderContext.renderer.scale( l_scaleX,
+                                                            l_scaleY );
         }
 
         l_lastResizeFrame = l_totalFramesRendered;

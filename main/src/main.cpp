@@ -26,8 +26,6 @@
 
 #endif
 
-#include <SDL3/SDL_events.h>
-
 #include <algorithm>
 #include <cstdlib>
 #include <experimental/scope>
@@ -555,12 +553,10 @@ auto main( int _argumentCount, char** _argumentVector ) -> int {
                         {
                             l_events.clear();
 
-                            SDL_PumpEvents();
+                            slickdl::events::pump();
 
-                            runtime::event_t l_event{};
-
-                            while ( SDL_PollEvent( &l_event ) ) {
-                                l_events.emplace_back( l_event );
+                            while ( auto l_event = slickdl::events::poll() ) {
+                                l_events.emplace_back( l_event.value() );
                             }
                         }
 

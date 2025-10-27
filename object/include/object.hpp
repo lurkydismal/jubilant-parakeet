@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_surface.h>
-
 #include <algorithm>
 #include <cstddef>
 #include <span>
@@ -68,7 +66,9 @@ using object_t = struct object {
                  bool _doDrawBoxes,
                  bool _doFillBoxes,
                  double _angle,
-                 SDL_FlipMode _flipMode );
+                 slickdl::flip_t _flipMode,
+                 const std::optional< slickdl::point_t< float > >& _center =
+                     std::nullopt );
 
     // helpers
 private:

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL3/SDL_surface.h>
-
 #include <cstddef>
 #include <initializer_list>
 #include <ranges>
@@ -94,7 +92,9 @@ using animation_t = struct animation {
     void render( slickdl::renderer_t& _renderer,
                  const slickdl::box_t< float >& _targetBoxCoordinates,
                  double _angle,
-                 SDL_FlipMode _flipMode ) const;
+                 slickdl::flip_t _flipMode,
+                 const std::optional< slickdl::point_t< float > >& _center =
+                     std::nullopt ) const;
 
     // Variables
 private:

@@ -1,7 +1,5 @@
 #include "iterate.hpp"
 
-#include <SDL3/SDL_render.h>
-
 namespace runtime {
 
 auto iterate( applicationState_t& _applicationState ) -> bool {
@@ -16,14 +14,14 @@ auto iterate( applicationState_t& _applicationState ) -> bool {
         {
             // Begin frame
             {
-                SDL_RenderClear( _applicationState.renderContext.renderer );
+                _applicationState.renderContext.renderer.clear();
             }
 
             // TODO: Scene
 
             // End frame
             {
-                SDL_RenderPresent( _applicationState.renderContext.renderer );
+                _applicationState.renderContext.renderer.present();
             }
         }
 

@@ -1,9 +1,8 @@
 #include "animation.hpp"
 
-#include <SDL3/SDL_render.h>
-
 #include <gsl/pointers>
 
+#include "slickdl/render_texture.hpp"
 #include "test.hpp"
 
 using namespace animation;

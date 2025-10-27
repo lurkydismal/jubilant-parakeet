@@ -1,12 +1,9 @@
 #include "quit.hpp"
 
-#include <SDL3/SDL_init.h>
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_video.h>
-
 #include "FPS.hpp"
 #include "log.hpp"
 #include "slickdl/error.hpp"
+#include "slickdl/init_quit.hpp"
 #include "vsync.hpp"
 
 namespace runtime {
@@ -47,17 +44,9 @@ void quit( applicationState_t& _applicationState ) {
                             l_errorMessage.value() );
             }
         }
-
-        if ( _applicationState.renderContext.renderer ) [[likely]] {
-            SDL_DestroyRenderer( _applicationState.renderContext.renderer );
-        }
-
-        if ( _applicationState.renderContext.window.handle ) [[likely]] {
-            SDL_DestroyWindow( _applicationState.renderContext.window.handle );
-        }
     }
 
-    SDL_Quit();
+    slickdl::quit::all();
 
     logg$debug( "Quitted" );
 }
