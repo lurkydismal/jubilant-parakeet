@@ -61,7 +61,7 @@ export BUILD_TYPE="${BUILD_TYPE:-${BUILD_TYPES[$BUILD_TYPE_NAME]}}"
     function show_help {
         cat <<EOF
 Usage: $0 [OPTION...]
-TODO: Description
+Modular Bash build system: configure modules in config.sh to build each module with make (parallel), supports Debug/ Release/ Profile/ Tests modes, ccache/ pkg-config, and optional hot-reload (make modules into shared objects).
 
   -v     Print version
   -h     Show this help message
