@@ -1,10 +1,8 @@
 P6
-Implement slickdl: audio, events
+Implement slickdl: audio
 Implement nullopt in slickdl
-Make texture_t shareable
 Move to available C++ 26
 Change pthread() to fork() in asset_t async save
-Implement hot reload callbacks in modules
 Implement asset
 
 P5
@@ -15,7 +13,7 @@ P4
 Move plthook to C++ 26
 
 P3
-Test state, object, animation
+Test state, object
 Improve watch check()
 Implement container for watch check() cases
 
@@ -28,5 +26,4 @@ Implement inputBuffer
 Improve watch
 
 P0
-Implement slickdl: video, font, hints, time
-Fix box_t: intersection and enclosing points ( width and height is incorrect )
+Implement slickdl: video
