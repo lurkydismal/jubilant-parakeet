@@ -1,86 +1,36 @@
-FROM alpine
+FROM archlinux:latest
 
-# Ordered by size
-RUN apk add \
-    make pkgconf bash fd mold git \
-    gtest gmock \
-    xxhash mimalloc libelf libunwind zstd-libs \
-    llvm20 clang20 clang20-extra-tools \
-    build-base cmake samurai ccache
+RUN pacman-key --init && pacman-key --populate archlinux
 
-# Build snappy
-WORKDIR /tmp
+RUN pacman -Syu --noconfirm
 
-RUN git clone --depth=1 --single-branch https://github.com/google/snappy.git snappy
+RUN pacman -S --needed --noconfirm git base-devel
 
-WORKDIR /tmp/snappy
+RUN sed -i 's/^OPTIONS=.*/OPTIONS=(strip !debug)/' /etc/makepkg.conf
 
-RUN git submodule update --init --depth 1
+# Create non-root user
+RUN useradd -m builder && \
+    echo "builder ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-RUN export CC="clang" && \
-    export CXX="clang++" && \
-    cmake -B build -G Ninja \
-    -Wno-dev \
-    -DCMAKE_LINKER=mold \
-    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build build && \
-    cmake --install build
+USER builder
 
-# Build SDL3, SDL3 image and SDL3 ttf
-WORKDIR /tmp
+WORKDIR /home/builder
 
-RUN git clone --depth=1 --single-branch https://github.com/libsdl-org/SDL.git SDL3
+RUN git clone https://aur.archlinux.org/yay-bin.git && \
+    cd yay-bin && \
+    makepkg -si --noconfirm
 
-RUN apk add \
-    libx11-dev libxext-dev libxrandr-dev libxrender-dev libxcursor-dev libxfixes-dev libxi-dev libxinerama-dev
+RUN yay -S --noconfirm \
+    --mflags "--nocheck --skipinteg" \
+    --sudoloop --noanswerclean --noanswerdiff --noansweredit \
+    fd mold \
+    clang cmake ninja ccache \
+    mimalloc snappy \
+    sdl3 sdl3_ttf sdl3_image
 
-RUN git clone --depth=1 --single-branch https://github.com/libsdl-org/SDL_image.git SDL3_image
+USER root
 
-RUN git clone --depth=1 --single-branch https://github.com/libsdl-org/SDL_ttf.git SDL3_ttf
-
-# Build SDL3
-WORKDIR /tmp/SDL3
-
-RUN export CC="clang" && \
-    export CXX="clang++" && \
-    cmake -B build -G Ninja \
-    -DCMAKE_LINKER=mold \
-    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build build && \
-    cmake --install build
-
-# Build SDL3 image
-WORKDIR /tmp/SDL3_image
-
-RUN export CC="clang" && \
-    export CXX="clang++" && \
-    cmake -B build -G Ninja \
-    -DCMAKE_LINKER=mold \
-    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build build && \
-    cmake --install build
-
-# Build SDL3 ttf
-WORKDIR /tmp/SDL3_ttf
-
-RUN apk add \
-    freetype-dev
-
-RUN export CC="clang" && \
-    export CXX="clang++" && \
-    cmake -B build -G Ninja \
-    -DCMAKE_LINKER=mold \
-    -DCMAKE_EXE_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=mold" \
-    -DCMAKE_INSTALL_PREFIX=/usr/local && \
-    cmake --build build && \
-    cmake --install build
+RUN rm -rf /var/cache/pacman/pkg/* /tmp/*
 
 WORKDIR /build
 
